@@ -21,6 +21,7 @@ export function TestRunnerPage() {
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [submitting, setSubmitting] = useState(false);
+  const [starting, setStarting] = useState(false);
   const [submittedResult, setSubmittedResult] = useState<{score:number;correct:number;incorrect:number;unanswered:number;expired?:boolean}> | null>(null);
 
   useEffect(() => {
@@ -51,7 +52,8 @@ export function TestRunnerPage() {
   };
 
   const handleBeginAttempt = async () => {
-    if (!testId || !test) return;
+    if (!testId || !test || starting) return;
+    setStarting(true);
     try {
       setError(null);
       const data = await authenticatedRequest('/api/student/tests/' + encodeURIComponent(testId) + '/start');
@@ -59,6 +61,7 @@ export function TestRunnerPage() {
       setQuestions(data.questions as SafeQuestion[]);
       setElapsedSeconds(0);
     } catch (err) { setError(err instanceof Error ? err.message : 'Could not start test attempt.'); }
+    finally { setStarting(false); }
   };
 
   const handleSubmit = async () => {
@@ -103,9 +106,10 @@ export function TestRunnerPage() {
         </div>
       ) : !attemptId ? (
         <div className="bg-panel border border-edge rounded-xl p-8 max-w-2xl shadow-sm">
+          {error && <ErrorState message={error} />}
           <h2 className="text-xl font-bold text-ink">{test.title}</h2>
           <p className="mt-2 text-sm text-ink-muted">Duration: <span className="font-mono text-ink">{test.durationMinutes} minutes</span> · Total Marks: <span className="font-mono text-ink">{test.totalMarks}</span> · Negative Marking: <span className="font-mono text-ink">{test.negativeMarking}</span></p>
-          <button type="button" onClick={() => void handleBeginAttempt()} className="mt-6 px-5 py-2.5 text-sm font-semibold rounded-lg bg-accent text-accent-ink hover:bg-accent-hover">Begin Timed Examination</button>
+          <button type="button" disabled={starting} onClick={() => void handleBeginAttempt()} className="mt-6 px-5 py-2.5 text-sm font-semibold rounded-lg bg-accent text-accent-ink hover:bg-accent-hover disabled:opacity-60">{starting ? 'Starting...' : 'Begin Timed Examination'}</button>
         </div>
       ) : (
         <div className="space-y-6">
