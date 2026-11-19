@@ -81,8 +81,16 @@ export async function verifyBearerToken(
     // verifyIdToken(idToken) verifies the signature & expiry against Google public keys (no IAM required).
     const decoded = await getAuth(getAdminApp()).verifyIdToken(idToken);
     // Keep server authorization aligned with Firestore's controlled admins registry.
-    const adminRecord = await getFirestore(getAdminApp()).collection('admins').doc(decoded.uid).get();
-    const role = resolveServerRole(decoded) === 'admin' || adminRecord.exists ? 'admin' : 'student';
+    let role = resolveServerRole(decoded);
+    if (role !== 'admin') {
+      try {
+        const adminRecord = await getFirestore(getAdminApp()).collection('admins').doc(decoded.uid).get();
+        if (adminRecord.exists) role = 'admin';
+      } catch (registryError) {
+        // Registry lookup failure must not block ordinary verified student sessions.
+        console.error('Admin registry lookup unavailable:', registryError);
+      }
+    }
     req.authUser = {
       uid: decoded.uid,
       email: decoded.email ?? null,
