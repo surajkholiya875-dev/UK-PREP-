@@ -21,7 +21,7 @@ export function TestRunnerPage() {
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [submitting, setSubmitting] = useState(false);
-  const [submittedResult, setSubmittedResult] = useState<{score:number;correct:number;incorrect:number;unanswered:number}> | null>(null);
+  const [submittedResult, setSubmittedResult] = useState<{score:number;correct:number;incorrect:number;unanswered:number;expired?:boolean}> | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -36,12 +36,6 @@ export function TestRunnerPage() {
     void init();
     return () => { active = false; };
   }, [testId]);
-
-  useEffect(() => {
-    if (!attemptId || submittedResult) return;
-    const timer = window.setInterval(() => setElapsedSeconds((s) => s + 1), 1000);
-    return () => window.clearInterval(timer);
-  }, [attemptId, submittedResult]);
 
   const authenticatedRequest = async (url: string, body?: unknown) => {
     if (!firebaseUser) throw new Error('Please sign in again to continue.');
@@ -72,10 +66,24 @@ export function TestRunnerPage() {
     setSubmitting(true);
     try {
       const data = await authenticatedRequest('/api/student/tests/attempts/' + encodeURIComponent(attemptId) + '/submit', { answers });
-      setSubmittedResult({ score: data.score, correct: data.correct, incorrect: data.incorrect, unanswered: data.unanswered });
+      setSubmittedResult({ score: data.score, correct: data.correct, incorrect: data.incorrect, unanswered: data.unanswered, expired: Boolean(data.expired) });
     } catch (err) { setError(err instanceof Error ? err.message : 'Failed to submit test attempt.'); }
     finally { setSubmitting(false); }
   };
+
+  const timeLimitSeconds = Math.max(60, Number(test?.durationMinutes || 1) * 60);
+
+  useEffect(() => {
+    if (!attemptId || submittedResult) return;
+    const timer = window.setInterval(() => setElapsedSeconds((s) => s + 1), 1000);
+    return () => window.clearInterval(timer);
+  }, [attemptId, submittedResult]);
+
+  useEffect(() => {
+    if (attemptId && !submittedResult && !submitting && elapsedSeconds >= timeLimitSeconds) {
+      void handleSubmit();
+    }
+  }, [attemptId, elapsedSeconds, submittedResult, submitting, timeLimitSeconds]);
 
   const formatClock = (secs: number) => String(Math.floor(secs / 60)).padStart(2, '0') + ':' + String(secs % 60).padStart(2, '0');
 
@@ -84,7 +92,7 @@ export function TestRunnerPage() {
       headerAction={<Link to="/student/tests" className="inline-flex items-center gap-1.5 text-xs font-medium text-ink-muted hover:text-ink hover:underline whitespace-nowrap"><ArrowLeft className="w-3.5 h-3.5" /><span>All Tests</span></Link>}>
       {loading ? <LoadingState label="Preparing examination paper..." /> : error && !test ? <ErrorState message={error} /> : !test ? <EmptyState title="Test paper not found" description="This test may be unpublished or removed." /> : submittedResult ? (
         <div className="space-y-6">
-          <SuccessBanner message="Test attempt submitted and recorded to your Attempt History." />
+          <SuccessBanner message={submittedResult.expired ? "Time expired. Your saved answers were submitted and graded." : "Test attempt submitted and recorded to your Attempt History."} />
           <div className="bg-panel border border-edge rounded-xl p-6 grid grid-cols-2 sm:grid-cols-4 gap-4 shadow-sm">
             <div><div className="text-xs text-ink-faint">Score</div><div className="text-2xl font-bold font-mono text-ink mt-1">{submittedResult.score} / {test.totalMarks}</div></div>
             <div><div className="text-xs text-ink-faint">Correct</div><div className="text-2xl font-bold text-emerald-600 mt-1">{submittedResult.correct}</div></div>
@@ -102,7 +110,7 @@ export function TestRunnerPage() {
       ) : (
         <div className="space-y-6">
           <div className="bg-panel border border-edge rounded-xl p-4 flex items-center justify-between sticky top-16 z-20 shadow-sm">
-            <div className="flex items-center gap-2 text-sm font-mono text-ink"><Clock className="w-4 h-4 text-accent-text" /><span>Elapsed: {formatClock(elapsedSeconds)}</span></div>
+            <div className="flex items-center gap-2 text-sm font-mono text-ink"><Clock className="w-4 h-4 text-accent-text" /><span>Time left: {formatClock(Math.max(0, timeLimitSeconds - elapsedSeconds))}</span></div>
             <button type="button" disabled={submitting} onClick={() => void handleSubmit()} className="px-4 py-2 text-xs font-semibold rounded-lg bg-accent text-accent-ink disabled:opacity-60">{submitting ? 'Submitting...' : 'Submit Examination'}</button>
           </div>
           {error && <ErrorState message={error} />}
