@@ -11,7 +11,7 @@ import {
   generateSafeId,
   upsertAdminEntity,
 } from '../../services/firestoreService';
-import { Examination, Question, QuestionDifficulty, QuestionType, Topic } from '../../types/academic';
+import { Chapter, Course, Examination, Question, QuestionDifficulty, QuestionType, Subject, Topic } from '../../types/academic';
 
 export function AdminQuestionBankPage({ defaultType = 'mcq' }: { defaultType?: QuestionType }) {
   const { firebaseUser } = useAuth();
@@ -20,6 +20,9 @@ export function AdminQuestionBankPage({ defaultType = 'mcq' }: { defaultType?: Q
   const [notice, setNotice] = useState<string | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [topics, setTopics] = useState<Topic[]>([]);
+  const [chapters, setChapters] = useState<Chapter[]>([]);
+  const [subjects, setSubjects] = useState<Subject[]>([]);
+  const [courses, setCourses] = useState<Course[]>([]);
   const [exams, setExams] = useState<Examination[]>([]);
 
   const [form, setForm] = useState({
@@ -42,14 +45,20 @@ export function AdminQuestionBankPage({ defaultType = 'mcq' }: { defaultType?: Q
     setLoading(true);
     setError(null);
     try {
-      const [qs, tpcs, exms] = await Promise.all([
+      const [qs, tpcs, exms, crs, chps, subjs] = await Promise.all([
         fetchAllAdminCollection<Question>('questions'),
         fetchAllAdminCollection<Topic>('topics'),
         fetchAllAdminCollection<Examination>('examinations'),
+        fetchAllAdminCollection<Course>('courses'),
+        fetchAllAdminCollection<Chapter>('chapters'),
+        fetchAllAdminCollection<Subject>('subjects'),
       ]);
       setQuestions(qs);
       setTopics(tpcs);
       setExams(exms);
+      setCourses(crs);
+      setChapters(chps);
+      setSubjects(subjs);
       if (tpcs.length > 0 && !form.topicId) setForm((p) => ({ ...p, topicId: tpcs[0].id }));
       if (exms.length > 0 && !form.examinationId) setForm((p) => ({ ...p, examinationId: exms[0].id }));
     } catch (err) {
@@ -68,7 +77,11 @@ export function AdminQuestionBankPage({ defaultType = 'mcq' }: { defaultType?: Q
     e.preventDefault();
     if (!firebaseUser || !form.topicId || !form.examinationId) return;
     const topic = topics.find((t) => t.id === form.topicId);
-    if (!topic) return;
+    const parentCourse = topic ? courses.find((course) => course.id === topic.courseId) : undefined;
+    if (!topic || !parentCourse || parentCourse.examinationId !== form.examinationId) {
+      setError('Choose a topic that belongs to the selected examination.');
+      return;
+    }
 
     const options = [form.optA, form.optB, form.optC, form.optD]
       .map((o) => o.trim())
@@ -111,6 +124,8 @@ export function AdminQuestionBankPage({ defaultType = 'mcq' }: { defaultType?: Q
 
   const displayed = defaultType === 'pyq' ? questions.filter((q) => q.questionType === 'pyq') : questions;
 
+  const topicsForSelectedExam = topics.filter((topic) => courses.some((course) => course.id === topic.courseId && course.examinationId === form.examinationId));
+
   return (
     <AppShell
       workspaceTitle="Admin Workspace"
@@ -124,7 +139,7 @@ export function AdminQuestionBankPage({ defaultType = 'mcq' }: { defaultType?: Q
           <h2 className="text-base font-semibold text-ink mb-4">
             {defaultType === 'pyq' ? 'Add Previous Year Question' : 'Add Question'}
           </h2>
-          {topics.length === 0 || exams.length === 0 ? (
+          {topics.length === 0 || exams.length === 0 || courses.length === 0 ? (
             <p className="text-xs text-accent-text">
               Create at least one Examination and Topic before adding questions.
             </p>
@@ -136,7 +151,11 @@ export function AdminQuestionBankPage({ defaultType = 'mcq' }: { defaultType?: Q
                   <select
                     id="q-exam"
                     value={form.examinationId}
-                    onChange={(e) => setForm((p) => ({ ...p, examinationId: e.target.value }))}
+                    onChange={(e) => {
+                      const examinationId = e.target.value;
+                      const firstTopic = topics.find((topic) => courses.some((course) => course.id === topic.courseId && course.examinationId === examinationId));
+                      setForm((p) => ({ ...p, examinationId, topicId: firstTopic?.id || '' }));
+                    }}
                     className="w-full px-3 py-2 text-xs rounded-lg border border-edge-strong bg-field text-ink focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent"
                   >
                     {exams.map((ex) => (
@@ -149,12 +168,15 @@ export function AdminQuestionBankPage({ defaultType = 'mcq' }: { defaultType?: Q
                   <select
                     id="q-topic"
                     value={form.topicId}
+                    disabled={topicsForSelectedExam.length === 0}
                     onChange={(e) => setForm((p) => ({ ...p, topicId: e.target.value }))}
                     className="w-full px-3 py-2 text-xs rounded-lg border border-edge-strong bg-field text-ink focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent"
                   >
-                    {topics.map((t) => (
-                      <option key={t.id} value={t.id}>{t.title}</option>
-                    ))}
+                    {topicsForSelectedExam.map((t) => {
+                      const chapter = chapters.find((item) => item.id === t.chapterId);
+                      const subject = subjects.find((item) => item.id === t.subjectId);
+                      return <option key={t.id} value={t.id}>{subject?.title || 'Subject'} / {chapter?.title || 'Chapter'} / {t.title}</option>;
+                    })}
                   </select>
                 </div>
               </div>
