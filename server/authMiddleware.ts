@@ -4,6 +4,7 @@ import { fileURLToPath } from 'url';
 import { NextFunction, Request, Response } from 'express';
 import { getApp, getApps, initializeApp } from 'firebase-admin/app';
 import { DecodedIdToken, getAuth } from 'firebase-admin/auth';
+import { getFirestore } from 'firebase-admin/firestore';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -26,12 +27,12 @@ function loadProjectId(): string | null {
 
 const projectId = loadProjectId();
 
-function getAdminAuth() {
+export function getAdminApp() {
   if (!projectId) {
     throw new Error('Firebase project configuration is unavailable.');
   }
   const app = getApps().length ? getApp() : initializeApp({ projectId });
-  return getAuth(app);
+  return app;
 }
 
 export interface VerifiedRequestUser {
@@ -78,7 +79,7 @@ export async function verifyBearerToken(
 
   try {
     // verifyIdToken(idToken) verifies the signature & expiry against Google public keys (no IAM required).
-    const decoded = await getAdminAuth().verifyIdToken(idToken);
+    const decoded = await getAuth(getAdminApp()).verifyIdToken(idToken);
     const role = resolveServerRole(decoded);
     req.authUser = {
       uid: decoded.uid,
@@ -123,4 +124,8 @@ export function requireAdminRole(
     return;
   }
   next();
+}
+
+export function getAdminDatabase() {
+  return getFirestore(getAdminApp());
 }
