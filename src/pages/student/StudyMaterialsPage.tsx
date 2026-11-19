@@ -18,7 +18,13 @@ const materialLabel: Record<string, string> = {
   current_affairs: 'Current Affairs', reference: 'Reference Material',
 };
 
-export function StudyMaterialsPage() {
+export function stripEditorialFooter(content: string): string {
+  const footerMarkers = [/^##\\s+Sources\\s*$/im, /^##\\s+Legal accuracy note\\s*$/im];
+  const positions = footerMarkers.map(marker => content.search(marker)).filter(position => position >= 0);
+  return positions.length ? content.slice(0, Math.min(...positions)).trimEnd() : content.trimEnd();
+}
+
+function StudyMaterialsPage() {
   const { firebaseUser } = useAuth();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -37,7 +43,7 @@ export function StudyMaterialsPage() {
   const [subjectFilter, setSubjectFilter] = useState('all');
   const [search, setSearch] = useState('');
   const [activeTopicId, setActiveTopicId] = useState('');
-  const [contentTab, setContentTab] = useState<'notes' | 'practice' | 'resources'>('notes');
+  const [contentTab, setContentTab] = useState<'notes' | 'mcq' | 'pyq' | 'resources'>('notes');
 
   const loadLibrary = async () => {
     if (!firebaseUser) return;
@@ -79,11 +85,11 @@ export function StudyMaterialsPage() {
   useEffect(() => {
     let cancelled = false;
     const loadQuestions = async () => {
-      if (!firebaseUser || !activeTopic) { setQuestions([]); return; }
+      if (!firebaseUser || !activeTopic || (contentTab !== 'mcq' && contentTab !== 'pyq')) { setQuestions([]); return; }
       setQuestionError(null); setFeedback({});
       try {
         const token = await firebaseUser.getIdToken();
-        const response = await fetch('/api/student/questions?topicId=' + encodeURIComponent(activeTopic.id), {
+        const response = await fetch('/api/student/questions?topicId=' + encodeURIComponent(activeTopic.id) + '&questionType=' + contentTab, {
           headers: { Authorization: 'Bearer ' + token },
         });
         const payload = await response.json();
@@ -95,7 +101,7 @@ export function StudyMaterialsPage() {
     };
     void loadQuestions();
     return () => { cancelled = true; };
-  }, [firebaseUser?.uid, activeTopic?.id, questionReload]);
+  }, [firebaseUser?.uid, activeTopic?.id, contentTab, questionReload]);
 
   const answerQuestion = async (q: PracticeQuestion, optionIndex: number) => {
     if (!firebaseUser || feedback[q.id]) return;
@@ -176,21 +182,21 @@ export function StudyMaterialsPage() {
                 </header>
 
                 <nav className="flex flex-wrap gap-2" aria-label="Topic learning sections">
-                  {([{id:'notes',label:'Complete Notes'},{id:'practice',label:'MCQs & PYQs'},{id:'resources',label:'Study Resources'}] as const).map(tab => <button key={tab.id} onClick={() => setContentTab(tab.id)} className={'rounded-full border px-4 py-2 text-sm font-semibold ' + (contentTab === tab.id ? 'border-amber-400 bg-amber-400 text-slate-950' : 'border-edge bg-panel text-ink-muted hover:border-amber-400/60')}>{tab.label}</button>)}
+                  {([{id:'notes',label:'Complete Notes'},{id:'mcq',label:'MCQs'},{id:'pyq',label:'PYQs'},{id:'resources',label:'Study Resources'}] as const).map(tab => <button key={tab.id} onClick={() => setContentTab(tab.id)} className={'rounded-full border px-4 py-2 text-sm font-semibold ' + (contentTab === tab.id ? 'border-amber-400 bg-amber-400 text-slate-950' : 'border-edge bg-panel text-ink-muted hover:border-amber-400/60')}>{tab.label}</button>)}
                 </nav>
 
                 {contentTab === 'notes' && (notes.length === 0 ? <EmptyState title="Complete notes are not published yet" description="This topic has no full notes yet. The topic remains visible, but no shortened or invented notes are shown."/> : (
                   <div className="space-y-4">{notes.map(note => <article key={note.id} className="rounded-2xl border border-amber-500/20 bg-panel p-5 sm:p-8">
                     <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-amber-600 dark:text-amber-300"><FileText className="h-4 w-4"/>{materialLabel[note.materialType] || 'Study Material'} · {note.estimatedMinutes} min read</div>
                     <h2 className="mt-2 font-serif text-2xl font-bold text-ink">{note.title}</h2>
-                    <div className="mt-5 max-w-none whitespace-pre-wrap break-words font-serif text-[15px] leading-8 text-ink">{note.contentMarkdown || 'Complete notes have not been added for this topic yet.'}</div>
+                    <div className="mt-5 max-w-none whitespace-pre-wrap break-words font-serif text-[15px] leading-8 text-ink">{stripEditorialFooter(note.contentMarkdown || 'Complete notes have not been added for this topic yet.')}</div>
                     {note.resourceUrl && <a className="mt-5 inline-flex items-center text-sm font-semibold text-amber-600 hover:underline" href={note.resourceUrl} target="_blank" rel="noreferrer">Open source reference</a>}
                   </article>)}</div>
                 ))}
 
-                {contentTab === 'practice' && (questionError ? <ErrorState message={questionError} onRetry={() => setQuestionReload(value => value + 1)}/> : questions.length === 0 ? <EmptyState title="No MCQs or PYQs for this topic yet" description="Questions assigned to this exact topic will appear here after they are published."/> : (
+                {(contentTab === 'mcq' || contentTab === 'pyq') && (questionError ? <ErrorState message={questionError} onRetry={() => setQuestionReload(value => value + 1)}/> : questions.length === 0 ? <EmptyState title={contentTab === 'mcq' ? 'No MCQs for this topic yet' : 'No PYQs for this topic yet'} description={contentTab === 'mcq' ? 'MCQs assigned to this exact topic will appear here after they are published.' : 'Previous-year questions assigned to this exact topic will appear here after they are published.'}/> : (
                   <div className="space-y-4">{questions.map((q,index) => { const answer = feedback[q.id]; return <article key={q.id} className="rounded-2xl border border-edge bg-panel p-5 space-y-4">
-                    <div className="text-xs font-semibold text-amber-600 dark:text-amber-300">Question {index+1} · {q.questionType.toUpperCase()}{q.examYear ? ' · '+q.examYear : ''} · {q.difficulty}</div>
+                    <div className="text-xs font-semibold text-amber-600 dark:text-amber-300">{contentTab === 'mcq' ? 'MCQ' : 'Previous Year Question'} {index+1}{q.examYear ? ' · '+q.examYear : ''} · {q.difficulty}</div>
                     <h3 className="font-semibold leading-7 text-ink">{q.stem}</h3>
                     <div className="grid gap-2 sm:grid-cols-2">{q.options.map((option,i) => <button key={i} disabled={Boolean(answer) || checkingId === q.id} onClick={() => void answerQuestion(q,i)} className={'rounded-lg border p-3 text-left text-sm ' + (answer?.correctOptionIndex === i ? 'border-emerald-500 bg-emerald-500/10 text-ink' : answer?.selectedIndex === i ? 'border-red-500 bg-red-500/10 text-ink' : 'border-edge-strong bg-field text-ink')}>{String.fromCharCode(65+i)}. {option}</button>)}</div>
                     {answer && <div className="rounded-lg bg-subtle p-4 text-sm text-ink"><strong>{answer.correct ? 'Correct' : 'Incorrect'}</strong>{answer.explanation && <p className="mt-2 leading-7">{answer.explanation}</p>}</div>}
