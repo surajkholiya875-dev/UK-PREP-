@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
+import { Timestamp } from 'firebase/firestore';
 import { Download, Upload } from 'lucide-react';
 import { AppShell } from '../../components/ui/AppShell';
 import { ErrorState, SuccessBanner } from '../../components/ui/StateBlocks';
 import { ADMIN_NAV_ITEMS } from '../../config/navigation';
+import { useAuth } from '../../context/AuthContext';
 import { fetchAllAdminCollection, upsertAdminEntity } from '../../services/firestoreService';
 
 const EXPORTABLE_COLLECTIONS = [
@@ -20,6 +22,7 @@ const EXPORTABLE_COLLECTIONS = [
 ] as const;
 
 export function AdminImportExportPage() {
+  const { firebaseUser } = useAuth();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -60,6 +63,7 @@ export function AdminImportExportPage() {
   };
 
   const handleFileInspect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    setPendingImport({}); setImportPreview(null);
     const file = e.target.files?.[0];
     if (!file) return;
     setError(null);
@@ -102,6 +106,7 @@ export function AdminImportExportPage() {
   };
 
   const handleImport = async () => {
+    if (!firebaseUser) { setError('Please sign in again before importing.'); return; }
     setBusy(true); setError(null); setNotice(null);
     try {
       let imported = 0; let skipped = 0;
@@ -112,7 +117,16 @@ export function AdminImportExportPage() {
         const existingIds = new Set(existing.map((item) => item.id));
         for (const record of rows) {
           if (existingIds.has(String(record.id))) { skipped += 1; continue; }
-          await upsertAdminEntity(collectionName, String(record.id), record as { id: string }, false);
+          const restored = { ...record, createdBy: firebaseUser.uid } as Record<string, unknown>;
+          for (const [key, value] of Object.entries(restored)) {
+            if (value && typeof value === 'object' && 'seconds' in value && 'nanoseconds' in value) {
+              const timestamp = value as { seconds: number; nanoseconds: number };
+              if (Number.isFinite(timestamp.seconds) && Number.isFinite(timestamp.nanoseconds)) {
+                restored[key] = Timestamp.fromMillis(timestamp.seconds * 1000 + timestamp.nanoseconds / 1e6);
+              }
+            }
+          }
+          await upsertAdminEntity(collectionName, String(record.id), restored as { id: string }, false);
           imported += 1;
         }
       }
