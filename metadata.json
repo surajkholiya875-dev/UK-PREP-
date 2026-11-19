@@ -1,0 +1,6 @@
+{
+  "name": "UK Prep – Uttarakhand Exam Preparation Platform",
+  "description": "Structured learning management system for UKPSC, UKSSSC, and national competitive examinations with Uttarakhand-specific syllabus architecture, mock tests, and progress tracking.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

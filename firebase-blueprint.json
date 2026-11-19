@@ -1,0 +1,461 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User profile and controlled role metadata stored at /users/{userId}. Protected by strict owner/admin read and server/rules validation.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "fullName": { "type": "string", "minLength": 2, "maxLength": 120 },
+        "displayName": { "type": "string", "minLength": 2, "maxLength": 120 },
+        "email": { "type": "string", "minLength": 3, "maxLength": 160 },
+        "phoneNumber": { "type": "string", "maxLength": 20, "pattern": "^[0-9+\\-\\s]{0,20}$" },
+        "district": { "type": "string", "maxLength": 80 },
+        "primaryTargetExam": { "type": "string", "maxLength": 120 },
+        "targetExam": { "type": "string", "maxLength": 120 },
+        "role": { "type": "string", "enum": ["student", "admin"] },
+        "emailVerified": { "type": "boolean" },
+        "accountStatus": { "type": "string", "enum": ["active", "disabled", "suspended"] },
+        "status": { "type": "string", "enum": ["active", "disabled", "suspended"] },
+        "preferredTheme": { "type": "string", "enum": ["light", "dark"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "fullName", "displayName", "email", "phoneNumber", "district", "primaryTargetExam", "role", "emailVerified", "accountStatus", "preferredTheme", "createdAt", "updatedAt"]
+    },
+    "UserPrivateInfo": {
+      "title": "UserPrivateInfo",
+      "description": "Isolated PII document stored at /users/{userId}/private/info.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "fullName": { "type": "string", "minLength": 2, "maxLength": 120 },
+        "email": { "type": "string", "minLength": 3, "maxLength": 160 },
+        "phone": { "type": "string", "maxLength": 20, "pattern": "^[0-9+\\-\\s]{0,20}$" },
+        "district": { "type": "string", "maxLength": 80 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "fullName", "email", "phone", "createdAt", "updatedAt"]
+    },
+    "AdminGrant": {
+      "title": "AdminGrant",
+      "description": "Controlled administrator registry document.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "email": { "type": "string", "minLength": 3, "maxLength": 160 },
+        "grantedBy": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "grantedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email", "grantedBy", "grantedAt"]
+    },
+    "Examination": {
+      "title": "Examination",
+      "description": "Top-level competitive examination category (e.g., UKPSC, UKSSSC, UPSC).",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "title": { "type": "string", "minLength": 2, "maxLength": 160 },
+        "code": { "type": "string", "minLength": 2, "maxLength": 40 },
+        "category": { "type": "string", "enum": ["UKPSC", "UKSSSC", "UPSC", "Other"] },
+        "description": { "type": "string", "maxLength": 2000 },
+        "eligibilitySummary": { "type": "string", "maxLength": 1000 },
+        "isPublished": { "type": "boolean" },
+        "sortOrder": { "type": "number" },
+        "createdBy": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "title", "code", "category", "isPublished", "sortOrder", "createdBy", "createdAt", "updatedAt"]
+    },
+    "Course": {
+      "title": "Course",
+      "description": "Structured course under an examination.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "examinationId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "title": { "type": "string", "minLength": 2, "maxLength": 180 },
+        "slug": { "type": "string", "minLength": 2, "maxLength": 128 },
+        "summary": { "type": "string", "maxLength": 2500 },
+        "level": { "type": "string", "enum": ["Prelims", "Mains", "Integrated", "Foundation"] },
+        "language": { "type": "string", "enum": ["English", "Hindi", "Bilingual"] },
+        "isPublished": { "type": "boolean" },
+        "sortOrder": { "type": "number" },
+        "createdBy": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "examinationId", "title", "slug", "level", "language", "isPublished", "sortOrder", "createdBy", "createdAt", "updatedAt"]
+    },
+    "Subject": {
+      "title": "Subject",
+      "description": "Subject belonging to a course (Uttarakhand-specific or General).",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "courseId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "examinationId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "title": { "type": "string", "minLength": 2, "maxLength": 160 },
+        "scope": { "type": "string", "enum": ["uttarakhand", "general"] },
+        "description": { "type": "string", "maxLength": 2000 },
+        "sortOrder": { "type": "number" },
+        "isPublished": { "type": "boolean" },
+        "createdBy": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "courseId", "examinationId", "title", "scope", "sortOrder", "isPublished", "createdBy", "createdAt", "updatedAt"]
+    },
+    "Unit": {
+      "title": "Unit",
+      "description": "Syllabus unit within a subject.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "subjectId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "courseId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "title": { "type": "string", "minLength": 2, "maxLength": 180 },
+        "description": { "type": "string", "maxLength": 1500 },
+        "sortOrder": { "type": "number" },
+        "isPublished": { "type": "boolean" },
+        "createdBy": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "subjectId", "courseId", "title", "sortOrder", "isPublished", "createdBy", "createdAt", "updatedAt"]
+    },
+    "Chapter": {
+      "title": "Chapter",
+      "description": "Chapter within a unit.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "unitId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "subjectId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "courseId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "title": { "type": "string", "minLength": 2, "maxLength": 180 },
+        "summary": { "type": "string", "maxLength": 2000 },
+        "sortOrder": { "type": "number" },
+        "isPublished": { "type": "boolean" },
+        "createdBy": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "unitId", "subjectId", "courseId", "title", "sortOrder", "isPublished", "createdBy", "createdAt", "updatedAt"]
+    },
+    "Topic": {
+      "title": "Topic",
+      "description": "Topic within a chapter.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "chapterId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "unitId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "subjectId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "courseId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "title": { "type": "string", "minLength": 2, "maxLength": 180 },
+        "syllabusNotes": { "type": "string", "maxLength": 2500 },
+        "sortOrder": { "type": "number" },
+        "isPublished": { "type": "boolean" },
+        "createdBy": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "chapterId", "unitId", "subjectId", "courseId", "title", "sortOrder", "isPublished", "createdBy", "createdAt", "updatedAt"]
+    },
+    "StudyMaterial": {
+      "title": "StudyMaterial",
+      "description": "Study material document linked to a topic.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "topicId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "chapterId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "subjectId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "courseId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "title": { "type": "string", "minLength": 2, "maxLength": 200 },
+        "materialType": { "type": "string", "enum": ["notes", "summary", "pyq_analysis", "current_affairs", "reference"] },
+        "contentMarkdown": { "type": "string", "maxLength": 30000 },
+        "resourceUrl": { "type": "string", "maxLength": 1000 },
+        "estimatedMinutes": { "type": "number" },
+        "isPublished": { "type": "boolean" },
+        "createdBy": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "topicId", "chapterId", "subjectId", "courseId", "title", "materialType", "estimatedMinutes", "isPublished", "createdBy", "createdAt", "updatedAt"]
+    },
+    "Question": {
+      "title": "Question",
+      "description": "Practice or previous-year examination question.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "topicId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "chapterId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "subjectId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "examinationId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "questionType": { "type": "string", "enum": ["mcq", "pyq", "current_affairs"] },
+        "stem": { "type": "string", "minLength": 5, "maxLength": 3000 },
+        "options": { "type": "array", "description": "Bounded list of 2 to 5 answer choices." },
+        "correctOptionIndex": { "type": "number" },
+        "explanation": { "type": "string", "maxLength": 3000 },
+        "difficulty": { "type": "string", "enum": ["foundation", "standard", "advanced"] },
+        "examYear": { "type": "number" },
+        "isPublished": { "type": "boolean" },
+        "createdBy": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "topicId", "chapterId", "subjectId", "examinationId", "questionType", "stem", "options", "correctOptionIndex", "difficulty", "isPublished", "createdBy", "createdAt", "updatedAt"]
+    },
+    "TestPaper": {
+      "title": "TestPaper",
+      "description": "Mock or sectional test configuration.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "examinationId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "courseId": { "type": "string", "maxLength": 128 },
+        "subjectId": { "type": "string", "maxLength": 128 },
+        "title": { "type": "string", "minLength": 2, "maxLength": 200 },
+        "testType": { "type": "string", "enum": ["mock", "sectional", "pyq", "current_affairs"] },
+        "durationMinutes": { "type": "number" },
+        "totalMarks": { "type": "number" },
+        "negativeMarking": { "type": "number" },
+        "questionCount": { "type": "number" },
+        "questionIds": { "type": "array", "description": "Bounded list of question IDs." },
+        "isPublished": { "type": "boolean" },
+        "createdBy": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "examinationId", "title", "testType", "durationMinutes", "totalMarks", "negativeMarking", "questionCount", "questionIds", "isPublished", "createdBy", "createdAt", "updatedAt"]
+    },
+    "Enrollment": {
+      "title": "Enrollment",
+      "description": "Student enrollment in a course.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "userId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "courseId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "examinationId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "status": { "type": "string", "enum": ["active", "archived"] },
+        "enrolledAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "userId", "courseId", "examinationId", "status", "enrolledAt", "updatedAt"]
+    },
+    "TestAttempt": {
+      "title": "TestAttempt",
+      "description": "Student test attempt record.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "userId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "testId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "testTitle": { "type": "string", "minLength": 2, "maxLength": 200 },
+        "status": { "type": "string", "enum": ["in_progress", "submitted"] },
+        "score": { "type": "number" },
+        "totalMarks": { "type": "number" },
+        "correctCount": { "type": "number" },
+        "incorrectCount": { "type": "number" },
+        "unansweredCount": { "type": "number" },
+        "durationSeconds": { "type": "number" },
+        "startedAt": { "type": "string", "format": "date-time" },
+        "submittedAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "userId", "testId", "testTitle", "status", "score", "totalMarks", "correctCount", "incorrectCount", "unansweredCount", "durationSeconds", "startedAt", "updatedAt"]
+    },
+    "LearningProgress": {
+      "title": "LearningProgress",
+      "description": "Per-student topic or material learning progress.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "userId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "courseId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "subjectId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "chapterId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "topicId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "materialId": { "type": "string", "maxLength": 128 },
+        "completionStatus": { "type": "string", "enum": ["not_started", "in_progress", "completed"] },
+        "lastAccessedAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "userId", "courseId", "subjectId", "chapterId", "topicId", "completionStatus", "lastAccessedAt", "updatedAt"]
+    },
+    "Bookmark": {
+      "title": "Bookmark",
+      "description": "Student-saved study material, question, topic, or course.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "userId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "targetType": { "type": "string", "enum": ["material", "question", "topic", "course"] },
+        "targetId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "title": { "type": "string", "minLength": 1, "maxLength": 200 },
+        "subjectTitle": { "type": "string", "maxLength": 160 },
+        "note": { "type": "string", "maxLength": 1000 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "userId", "targetType", "targetId", "title", "createdAt", "updatedAt"]
+    },
+    "Announcement": {
+      "title": "Announcement",
+      "description": "Platform or examination announcement.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "title": { "type": "string", "minLength": 2, "maxLength": 200 },
+        "body": { "type": "string", "minLength": 2, "maxLength": 5000 },
+        "category": { "type": "string", "enum": ["exam_notice", "syllabus", "platform", "current_affairs"] },
+        "examinationId": { "type": "string", "maxLength": 128 },
+        "isPinned": { "type": "boolean" },
+        "isPublished": { "type": "boolean" },
+        "publishedAt": { "type": "string", "format": "date-time" },
+        "createdBy": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "title", "body", "category", "isPinned", "isPublished", "publishedAt", "createdBy", "createdAt", "updatedAt"]
+    },
+    "CurrentAffairsEntry": {
+      "title": "CurrentAffairsEntry",
+      "description": "Curated current affairs brief for Uttarakhand and National exams.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "title": { "type": "string", "minLength": 2, "maxLength": 200 },
+        "summary": { "type": "string", "minLength": 2, "maxLength": 6000 },
+        "scope": { "type": "string", "enum": ["uttarakhand", "national", "international"] },
+        "eventDate": { "type": "string", "maxLength": 20 },
+        "subjectTag": { "type": "string", "maxLength": 120 },
+        "isPublished": { "type": "boolean" },
+        "createdBy": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "title", "summary", "scope", "eventDate", "isPublished", "createdBy", "createdAt", "updatedAt"]
+    },
+    "ContactInquiry": {
+      "title": "ContactInquiry",
+      "description": "Public contact or guidance inquiry submitted from the landing page.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "userId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "fullName": { "type": "string", "minLength": 2, "maxLength": 120 },
+        "email": { "type": "string", "minLength": 3, "maxLength": 160 },
+        "phone": { "type": "string", "maxLength": 20 },
+        "subject": { "type": "string", "minLength": 2, "maxLength": 200 },
+        "message": { "type": "string", "minLength": 5, "maxLength": 3000 },
+        "status": { "type": "string", "enum": ["new", "reviewed"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "userId", "fullName", "email", "subject", "message", "status", "createdAt"]
+    },
+    "PlatformSettings": {
+      "title": "PlatformSettings",
+      "description": "Global platform configuration controlled by administrators.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "platformName": { "type": "string", "minLength": 2, "maxLength": 120 },
+        "supportEmail": { "type": "string", "minLength": 3, "maxLength": 160 },
+        "maintenanceNotice": { "type": "string", "maxLength": 500 },
+        "allowNewRegistrations": { "type": "boolean" },
+        "updatedBy": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "platformName", "supportEmail", "allowNewRegistrations", "updatedBy", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/UserProfile" },
+      "description": "Public-safe user profile and role metadata."
+    },
+    "/users/{userId}/private/{infoId}": {
+      "schema": { "$ref": "#/entities/UserPrivateInfo" },
+      "description": "Isolated PII document for user email and phone number."
+    },
+    "/admins/{userId}": {
+      "schema": { "$ref": "#/entities/AdminGrant" },
+      "description": "Admin role grant registry."
+    },
+    "/examinations/{examId}": {
+      "schema": { "$ref": "#/entities/Examination" },
+      "description": "Competitive examinations directory."
+    },
+    "/courses/{courseId}": {
+      "schema": { "$ref": "#/entities/Course" },
+      "description": "Courses linked to examinations."
+    },
+    "/subjects/{subjectId}": {
+      "schema": { "$ref": "#/entities/Subject" },
+      "description": "Subjects linked to courses."
+    },
+    "/units/{unitId}": {
+      "schema": { "$ref": "#/entities/Unit" },
+      "description": "Units linked to subjects."
+    },
+    "/chapters/{chapterId}": {
+      "schema": { "$ref": "#/entities/Chapter" },
+      "description": "Chapters linked to units."
+    },
+    "/topics/{topicId}": {
+      "schema": { "$ref": "#/entities/Topic" },
+      "description": "Topics linked to chapters."
+    },
+    "/studyMaterials/{materialId}": {
+      "schema": { "$ref": "#/entities/StudyMaterial" },
+      "description": "Study materials linked to topics."
+    },
+    "/questions/{questionId}": {
+      "schema": { "$ref": "#/entities/Question" },
+      "description": "Question bank items linked to topics."
+    },
+    "/tests/{testId}": {
+      "schema": { "$ref": "#/entities/TestPaper" },
+      "description": "Tests and mock examinations."
+    },
+    "/enrollments/{enrollmentId}": {
+      "schema": { "$ref": "#/entities/Enrollment" },
+      "description": "Student course enrollments."
+    },
+    "/testAttempts/{attemptId}": {
+      "schema": { "$ref": "#/entities/TestAttempt" },
+      "description": "Student test attempts and scores."
+    },
+    "/learningProgress/{progressId}": {
+      "schema": { "$ref": "#/entities/LearningProgress" },
+      "description": "Student learning progress records."
+    },
+    "/bookmarks/{bookmarkId}": {
+      "schema": { "$ref": "#/entities/Bookmark" },
+      "description": "Student saved bookmarks."
+    },
+    "/announcements/{announcementId}": {
+      "schema": { "$ref": "#/entities/Announcement" },
+      "description": "Examination and platform announcements."
+    },
+    "/currentAffairs/{entryId}": {
+      "schema": { "$ref": "#/entities/CurrentAffairsEntry" },
+      "description": "Uttarakhand and National current affairs briefs."
+    },
+    "/contactInquiries/{inquiryId}": {
+      "schema": { "$ref": "#/entities/ContactInquiry" },
+      "description": "Submitted student and visitor inquiries."
+    },
+    "/platformSettings/{settingId}": {
+      "schema": { "$ref": "#/entities/PlatformSettings" },
+      "description": "Global platform configuration."
+    }
+  }
+}

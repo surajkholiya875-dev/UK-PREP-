@@ -1,0 +1,110 @@
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Central UK Prep Design Tokens */
+:root {
+  /* Light Study Theme (Optional) */
+  --uk-bg-primary: #F8FAFC;
+  --uk-bg-secondary: #FFFFFF;
+  --uk-bg-card: #FFFFFF;
+  --uk-bg-subtle: #F1F5F9;
+  --uk-bg-input: #FFFFFF;
+  --uk-text-primary: #0B1224;
+  --uk-text-secondary: #475569;
+  --uk-text-muted: #64748B;
+  --uk-border-subtle: #E2E8F0;
+  --uk-border-strong: #CBD5E1;
+  --uk-accent: #F28C00;
+  --uk-accent-hover: #FF9E1B;
+  --uk-accent-ink: #0B1224;
+  --uk-accent-text: #C25E00;
+}
+
+.dark {
+  /* Default UK Prep Midnight Navy & Saffron Theme */
+  --uk-bg-primary: #0B1224;
+  --uk-bg-secondary: #111B32;
+  --uk-bg-card: #17243D;
+  --uk-bg-subtle: #1D2C4B;
+  --uk-bg-input: #0E172B;
+  --uk-text-primary: #F8FAFC;
+  --uk-text-secondary: #A8B6CC;
+  --uk-text-muted: #8B9BB5;
+  --uk-border-subtle: #243554;
+  --uk-border-strong: #32476D;
+  --uk-accent: #F28C00;
+  --uk-accent-hover: #FF9E1B;
+  --uk-accent-ink: #0B1224;
+  --uk-accent-text: #F28C00;
+
+  /* Align Tailwind dark slate palette consistently with navy hierarchy */
+  --color-slate-950: #0B1224;
+  --color-slate-900: #111B32;
+  --color-slate-800: #17243D;
+  --color-slate-700: #243554;
+  --color-slate-600: #33486E;
+  --color-slate-500: #8B9BB5;
+  --color-slate-400: #A8B6CC;
+  --color-slate-300: #CBD5E1;
+  --color-slate-100: #F8FAFC;
+  --color-slate-50: #F8FAFC;
+}
+
+@theme inline {
+  --font-display: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, monospace;
+
+  /* Semantic theme tokens mapped from CSS variables */
+  --color-canvas: var(--uk-bg-primary);
+  --color-surface: var(--uk-bg-secondary);
+  --color-panel: var(--uk-bg-card);
+  --color-subtle: var(--uk-bg-subtle);
+  --color-field: var(--uk-bg-input);
+  --color-ink: var(--uk-text-primary);
+  --color-ink-muted: var(--uk-text-secondary);
+  --color-ink-faint: var(--uk-text-muted);
+  --color-edge: var(--uk-border-subtle);
+  --color-edge-strong: var(--uk-border-strong);
+  --color-accent: var(--uk-accent);
+  --color-accent-hover: var(--uk-accent-hover);
+  --color-accent-ink: var(--uk-accent-ink);
+  --color-accent-text: var(--uk-accent-text);
+
+  /* Brand Palette */
+  --color-navy-950: #0B1224;
+  --color-navy-900: #111B32;
+  --color-navy-800: #17243D;
+  --color-navy-700: #243554;
+  --color-saffron-600: #D97706;
+  --color-saffron-500: #F28C00;
+  --color-saffron-400: #FF9E1B;
+}
+
+@layer base {
+  html {
+    font-family: var(--font-sans);
+    scroll-behavior: smooth;
+    background-color: var(--uk-bg-primary);
+    color: var(--uk-text-primary);
+  }
+
+  h1, h2, h3, h4, .font-display {
+    font-family: var(--font-display);
+  }
+
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
