@@ -131,7 +131,7 @@ export function AdminQuestionBankPage({ defaultType = 'mcq' }: { defaultType?: Q
     }
   };
 
-  const displayed = defaultType === 'pyq' ? questions.filter((q) => q.questionType === 'pyq') : questions;
+  const displayed = questions.filter((q) => q.questionType === (defaultType === 'pyq' ? 'pyq' : 'mcq'));
 
   const topicsForSelectedExam = topics.filter((topic) => courses.some((course) => course.id === topic.courseId && course.examinationId === form.examinationId));
 
