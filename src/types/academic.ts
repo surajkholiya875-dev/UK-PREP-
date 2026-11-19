@@ -50,6 +50,23 @@ export const GENERAL_SUBJECT_TAXONOMY = [
   'Environment',
   'Current Affairs',
   'CSAT',
+  'Art and Culture of India',
+  'Science and Technology',
+  'Indian Society',
+  'Social Justice',
+  'Governance and Public Policy',
+  'International Relations',
+  'Internal Security',
+  'Disaster Management',
+  'Ethics, Integrity and Aptitude',
+  'Essay and Mains Answer Writing',
+  'General Hindi',
+  'General English',
+  'Logical Reasoning',
+  'Quantitative Aptitude',
+  'Data Interpretation',
+  'Computer Awareness',
+  'Agriculture and Rural Development',
 ] as const;
 
 export const UTTARAKHAND_DISTRICTS = [
