@@ -50,14 +50,12 @@ export interface AuthenticatedRequest extends Request {
 const BOOTSTRAP_ADMIN_EMAIL = 'surajkholiya875@gmail.com';
 
 export function resolveServerRole(decoded: DecodedIdToken): 'student' | 'admin' {
-  const claims = decoded as Record<string, unknown>;
-  const isClaimAdmin = claims.admin === true || claims.role === 'admin';
-  const isVerifiedBootstrapAdmin =
+  const isVerifiedOwner =
     decoded.email_verified === true &&
     typeof decoded.email === 'string' &&
-    decoded.email.toLowerCase() === BOOTSTRAP_ADMIN_EMAIL;
+    decoded.email.trim().toLowerCase() === BOOTSTRAP_ADMIN_EMAIL;
 
-  return isClaimAdmin || isVerifiedBootstrapAdmin ? 'admin' : 'student';
+  return isVerifiedOwner ? 'admin' : 'student';
 }
 
 export async function verifyBearerToken(
@@ -80,17 +78,8 @@ export async function verifyBearerToken(
   try {
     // verifyIdToken(idToken) verifies the signature & expiry against Google public keys (no IAM required).
     const decoded = await getAuth(getAdminApp()).verifyIdToken(idToken);
-    // Keep server authorization aligned with Firestore's controlled admins registry.
-    let role = resolveServerRole(decoded);
-    if (role !== 'admin') {
-      try {
-        const adminRecord = await getFirestore(getAdminApp()).collection('admins').doc(decoded.uid).get();
-        if (adminRecord.exists) role = 'admin';
-      } catch (registryError) {
-        // Registry lookup failure must not block ordinary verified student sessions.
-        console.error('Admin registry lookup unavailable:', registryError);
-      }
-    }
+    // Server admin authorization is restricted to the single verified owner email.
+    const role = resolveServerRole(decoded);
     req.authUser = {
       uid: decoded.uid,
       email: decoded.email ?? null,
