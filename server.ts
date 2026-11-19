@@ -239,7 +239,13 @@ async function createServer() {
       if (!startedAt || Number.isNaN(startedAt.getTime())) return res.status(409).json({ error: 'Attempt start time is invalid. Please contact support.' });
       const durationLimit = Number(attempt.durationLimitSeconds) || Math.max(60, Number(test.durationMinutes) * 60);
       const elapsed = Math.max(0, Math.floor((Date.now() - startedAt.getTime()) / 1000));
-      const expired = elapsed > durationLimit;
+      const expired = elapsed > durationLimit + 10;
+      // A short network grace period supports automatic client submission; late submissions score as unanswered.
+      if (expired) {
+        correct = 0;
+        incorrect = 0;
+        unanswered = ids.length;
+      }
       const durationSeconds = Math.min(elapsed, durationLimit);
       const perQuestionMarks = ids.length ? Number(test.totalMarks) / ids.length : 0;
       const score = Math.round((correct * perQuestionMarks - incorrect * Number(test.negativeMarking || 0)) * 100) / 100;
