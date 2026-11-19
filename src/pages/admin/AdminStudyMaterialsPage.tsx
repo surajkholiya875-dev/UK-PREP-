@@ -169,6 +169,17 @@ export function AdminStudyMaterialsPage() {
                   className="w-full px-3 py-2 text-sm rounded-lg border border-edge-strong bg-field text-ink focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent"
                 />
               </div>
+              <div>
+                <label htmlFor="m-resource-url" className="block text-xs font-medium text-ink-muted mb-1">Resource URL (optional)</label>
+                <input
+                  id="m-resource-url"
+                  type="url"
+                  value={form.resourceUrl}
+                  onChange={(e) => setForm((p) => ({ ...p, resourceUrl: e.target.value }))}
+                  placeholder="https://..."
+                  className="w-full px-3 py-2 text-sm rounded-lg border border-edge-strong bg-field text-ink focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent"
+                />
+              </div>
               <button type="submit" className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold rounded-lg bg-accent text-accent-ink hover:bg-accent-hover transition-colors">
                 {editingId ? <Pencil className="w-3.5 h-3.5" /> : <Plus className="w-3.5 h-3.5" />}
                 <span>{editingId ? "Update Material" : "Save Material"}</span>
