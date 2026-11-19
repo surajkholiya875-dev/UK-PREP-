@@ -10,6 +10,7 @@ import {
   requireVerifiedEmail,
   verifyBearerToken,
   getAdminDatabase,
+  getAdminDatabaseInfo,
 } from './server/authMiddleware';
 import { randomUUID } from 'crypto';
 import { FieldValue } from 'firebase-admin/firestore';
@@ -205,15 +206,26 @@ async function createServer() {
       const firestoreCode = typeof error === 'object' && error !== null && 'code' in error
         ? (error as { code?: unknown }).code
         : undefined;
+      let databaseInfo: ReturnType<typeof getAdminDatabaseInfo> | null = null;
+      try { databaseInfo = getAdminDatabaseInfo(); } catch { /* Preserve the original Firestore failure. */ }
       console.error('Unable to deliver practice questions:', {
         code: firestoreCode,
         message: error instanceof Error ? error.message : String(error),
-        configuredDatabaseId: process.env.FIRESTORE_DATABASE_ID || 'firebase-applet-config.json',
+        ...databaseInfo,
+        firestoreDatabaseEnvOverride: process.env.FIRESTORE_DATABASE_ID && process.env.FIRESTORE_DATABASE_ID !== 'firebase-applet-config.json'
+          ? process.env.FIRESTORE_DATABASE_ID
+          : undefined,
       });
       if (firestoreCode === 5 || firestoreCode === 'not-found') {
         return res.status(503).json({
-          error: 'The server cannot find the configured Firestore database. Check that the database ID in firebase-applet-config.json exists in the same Firebase project and that the server Admin SDK is using that database. No questions were deleted.',
+          error: 'The configured Firestore database could not be found. Verify the database ID and Firebase project in the app configuration.',
           code: 'FIRESTORE_DATABASE_NOT_FOUND',
+        });
+      }
+      if (firestoreCode === 7 || firestoreCode === 'permission-denied') {
+        return res.status(503).json({
+          error: 'Firestore rejected the server Admin SDK request. The Google service identity used by this server needs Firestore data access in the configured Firebase project. Ask the project owner to verify its IAM role; do not make the questions collection public.',
+          code: 'FIRESTORE_PERMISSION_DENIED',
         });
       }
       return res.status(500).json({ error: 'Unable to load practice questions. Check the server log for the Firestore error code.' });
