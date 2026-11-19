@@ -350,7 +350,9 @@ async function createServer() {
   });
 
   if (!isProduction) {
-    const hmrDisabled = process.env.DISABLE_HMR === 'true';
+    // AI Studio's reverse proxy may not expose Vite's HMR WebSocket reliably.
+    // Keep HMR off by default; enable only when the environment explicitly opts in.
+    const hmrDisabled = process.env.ENABLE_HMR !== 'true';
     const viteReady = import('vite').then(({ createServer: createViteServer }) =>
       createViteServer({
         server: {
