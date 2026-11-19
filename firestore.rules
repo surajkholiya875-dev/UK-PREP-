@@ -634,8 +634,8 @@ service cloud.firestore {
 
     // Academic Hierarchy: Questions
     match /questions/{questionId} {
-      allow get: if isValidId(questionId) && (isAdmin() || (isSignedIn() && existing().isPublished == true));
-      allow list: if isAdmin() || (isSignedIn() && resource.data.isPublished == true);
+      // Answer keys and explanations are admin-only. Students receive sanitized questions through the trusted API.
+      allow get, list: if isAdmin();
       allow create: if isValidId(questionId)
         && isAdmin()
         && isValidQuestion(incoming(), questionId)
@@ -707,30 +707,8 @@ service cloud.firestore {
     match /testAttempts/{attemptId} {
       allow get: if isValidId(attemptId) && (isAdmin() || (isVerifiedUser() && existing().userId == request.auth.uid));
       allow list: if isAdmin() || (isVerifiedUser() && resource.data.userId == request.auth.uid);
-      allow create: if isValidId(attemptId)
-        && isVerifiedUser()
-        && isValidTestAttempt(incoming(), attemptId)
-        && incoming().userId == request.auth.uid
-        && incoming().status == 'in_progress'
-        && exists(/databases/$(database)/documents/tests/$(incoming().testId))
-        && incoming().startedAt == request.time
-        && incoming().updatedAt == request.time;
-      allow update: if isValidId(attemptId)
-        && isVerifiedUser()
-        && isValidTestAttempt(incoming(), attemptId)
-        && incoming().userId == existing().userId
-        && incoming().testId == existing().testId
-        && incoming().startedAt == existing().startedAt
-        && incoming().updatedAt == request.time
-        && (
-          isAdmin() || (
-            existing().userId == request.auth.uid
-            && existing().status == 'in_progress'
-            && incoming().status in ['in_progress', 'submitted']
-            && incoming().diff(existing()).affectedKeys().hasOnly(['status', 'score', 'correctCount', 'incorrectCount', 'unansweredCount', 'durationSeconds', 'submittedAt', 'updatedAt'])
-          )
-        );
-      allow delete: if isValidId(attemptId) && isAdmin();
+      // Only the Admin SDK server endpoints may create or grade student attempts.
+      allow create, update, delete: if isAdmin();
     }
 
     // Student-Owned: Learning Progress
