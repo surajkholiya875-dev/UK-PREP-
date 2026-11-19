@@ -62,7 +62,7 @@ export default function App() {
               <Route path="/student/courses/:courseId" element={<StudentRoute><CourseDetailPage /></StudentRoute>} />
               <Route path="/student/syllabus" element={<Navigate to="/student/materials" replace />} />
               <Route path="/student/materials" element={<StudentRoute><StudyMaterialsPage /></StudentRoute>} />
-              <Route path="/student/practice" element={<StudentRoute><PracticeQuestionsPage /></StudentRoute>} />
+              <Route path="/student/practice" element={<Navigate to="/student/materials" replace />} />
               <Route path="/student/tests" element={<StudentRoute><TestsListPage /></StudentRoute>} />
               <Route path="/student/tests/:testId" element={<StudentRoute><TestRunnerPage /></StudentRoute>} />
               <Route path="/student/bookmarks" element={<StudentRoute><BookmarksPage /></StudentRoute>} />
