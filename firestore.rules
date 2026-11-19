@@ -34,13 +34,10 @@ service cloud.firestore {
       return isVerifiedUser() && request.auth.uid == userId;
     }
 
+    // Single-owner admin policy. Custom claims and client-writable profile roles
+    // must never grant administrator access to another account.
     function isAdmin() {
-      return isVerifiedUser() && (
-        request.auth.token.admin == true ||
-        request.auth.token.role == 'admin' ||
-        exists(/databases/$(database)/documents/admins/$(request.auth.uid)) ||
-        request.auth.token.email == 'surajkholiya875@gmail.com'
-      );
+      return isVerifiedUser() && request.auth.token.email == 'surajkholiya875@gmail.com';
     }
 
     function isValidString(val, minLen, maxLen) {
