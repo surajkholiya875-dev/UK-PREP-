@@ -259,7 +259,20 @@ async function createServer() {
         explanation: typeof question.explanation === 'string' ? question.explanation : '',
       });
     } catch (error) {
-      console.error('Unable to check practice answer:', error);
+      const firestoreCode = typeof error === 'object' && error !== null && 'code' in error
+        ? (error as { code?: unknown }).code
+        : undefined;
+      console.error('Unable to check practice answer:', {
+        code: firestoreCode,
+        message: error instanceof Error ? error.message : String(error),
+        ...(() => { try { return getAdminDatabaseInfo(); } catch { return {}; } })(),
+      });
+      if (firestoreCode === 7 || firestoreCode === 'permission-denied') {
+        return res.status(503).json({
+          error: 'Firestore rejected the server Admin SDK request. The Google service identity used by this server needs Firestore data access in the configured Firebase project.',
+          code: 'FIRESTORE_PERMISSION_DENIED',
+        });
+      }
       return res.status(500).json({ error: 'Unable to check this answer right now.' });
     }
   });
