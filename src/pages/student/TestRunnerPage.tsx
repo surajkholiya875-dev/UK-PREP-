@@ -22,7 +22,7 @@ export function TestRunnerPage() {
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [starting, setStarting] = useState(false);
-  const [submittedResult, setSubmittedResult] = useState<{score:number;correct:number;incorrect:number;unanswered:number;expired?:boolean}> | null>(null);
+  const [submittedResult, setSubmittedResult] = useState<{score:number;correct:number;incorrect:number;unanswered:number;expired?:boolean} | null>(null);
 
   useEffect(() => {
     let active = true;
