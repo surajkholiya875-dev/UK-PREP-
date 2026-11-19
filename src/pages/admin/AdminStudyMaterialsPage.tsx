@@ -11,7 +11,7 @@ import {
   generateSafeId,
   upsertAdminEntity,
 } from '../../services/firestoreService';
-import { MaterialType, StudyMaterial, Topic } from '../../types/academic';
+import { Chapter, MaterialType, StudyMaterial, Subject, Topic, Unit } from '../../types/academic';
 
 export function AdminStudyMaterialsPage() {
   const { firebaseUser } = useAuth();
@@ -20,6 +20,9 @@ export function AdminStudyMaterialsPage() {
   const [notice, setNotice] = useState<string | null>(null);
   const [materials, setMaterials] = useState<StudyMaterial[]>([]);
   const [topics, setTopics] = useState<Topic[]>([]);
+  const [chapters, setChapters] = useState<Chapter[]>([]);
+  const [units, setUnits] = useState<Unit[]>([]);
+  const [subjects, setSubjects] = useState<Subject[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
 
   const [form, setForm] = useState({
@@ -36,12 +39,18 @@ export function AdminStudyMaterialsPage() {
     setLoading(true);
     setError(null);
     try {
-      const [mats, tpcs] = await Promise.all([
+      const [mats, tpcs, chps, unt, subjs] = await Promise.all([
         fetchAllAdminCollection<StudyMaterial>('studyMaterials'),
         fetchAllAdminCollection<Topic>('topics'),
+        fetchAllAdminCollection<Chapter>('chapters'),
+        fetchAllAdminCollection<Unit>('units'),
+        fetchAllAdminCollection<Subject>('subjects'),
       ]);
       setMaterials(mats);
       setTopics(tpcs);
+      setChapters(chps);
+      setUnits(unt);
+      setSubjects(subjs);
       if (tpcs.length > 0 && !form.topicId) setForm((p) => ({ ...p, topicId: tpcs[0].id }));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unable to load study materials.');
@@ -114,9 +123,12 @@ export function AdminStudyMaterialsPage() {
                   onChange={(e) => setForm((p) => ({ ...p, topicId: e.target.value }))}
                   className="w-full px-3 py-2 text-sm rounded-lg border border-edge-strong bg-field text-ink focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent"
                 >
-                  {topics.map((t) => (
-                    <option key={t.id} value={t.id}>{t.title}</option>
-                  ))}
+                  {topics.map((t) => {
+                    const chapter = chapters.find((item) => item.id === t.chapterId);
+                    const subject = subjects.find((item) => item.id === t.subjectId);
+                    const unit = units.find((item) => item.id === t.unitId);
+                    return <option key={t.id} value={t.id}>{subject?.title || 'Subject'} / {unit?.title || 'Unit'} / {chapter?.title || 'Chapter'} / {t.title}</option>;
+                  })}
                 </select>
               </div>
               <div>
@@ -160,10 +172,10 @@ export function AdminStudyMaterialsPage() {
                 </div>
               </div>
               <div>
-                <label htmlFor="m-content" className="block text-xs font-medium text-ink-muted mb-1">Study Notes Content</label>
+                <label htmlFor="m-content" className="block text-xs font-medium text-ink-muted mb-1">Written Study Content (Markdown supported)</label>
                 <textarea
                   id="m-content"
-                  rows={5}
+                  rows={10}
                   value={form.contentMarkdown}
                   onChange={(e) => setForm((p) => ({ ...p, contentMarkdown: e.target.value }))}
                   className="w-full px-3 py-2 text-sm rounded-lg border border-edge-strong bg-field text-ink focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent"
@@ -204,6 +216,9 @@ export function AdminStudyMaterialsPage() {
                       {m.materialType.replace('_', ' ')} · {m.estimatedMinutes} min
                     </div>
                     <div className="text-sm font-semibold text-ink">{m.title}</div>
+                    <div className="mt-1 text-[11px] text-ink-faint">
+                      {subjects.find((item) => item.id === m.subjectId)?.title || 'Subject'} / {chapters.find((item) => item.id === m.chapterId)?.title || 'Chapter'} / {topics.find((item) => item.id === m.topicId)?.title || 'Topic'}
+                    </div>
                   </div>
                   <div className="flex items-center gap-2"><button
                     type="button"
