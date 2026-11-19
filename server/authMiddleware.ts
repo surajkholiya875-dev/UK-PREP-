@@ -80,7 +80,9 @@ export async function verifyBearerToken(
   try {
     // verifyIdToken(idToken) verifies the signature & expiry against Google public keys (no IAM required).
     const decoded = await getAuth(getAdminApp()).verifyIdToken(idToken);
-    const role = resolveServerRole(decoded);
+    // Keep server authorization aligned with Firestore's controlled admins registry.
+    const adminRecord = await getFirestore(getAdminApp()).collection('admins').doc(decoded.uid).get();
+    const role = resolveServerRole(decoded) === 'admin' || adminRecord.exists ? 'admin' : 'student';
     req.authUser = {
       uid: decoded.uid,
       email: decoded.email ?? null,
