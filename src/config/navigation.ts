@@ -40,6 +40,7 @@ export const STUDENT_NAV_ITEMS: NavItem[] = [
 export const ADMIN_NAV_ITEMS: NavItem[] = [
   { label: 'Overview', to: '/admin/overview', icon: LayoutDashboard, section: 'Workspace' },
   { label: 'Student Management', to: '/admin/students', icon: Users, section: 'Workspace' },
+  { label: 'Data Import / Export', to: '/admin/import-export', icon: Database, section: 'Workspace' },
   { label: 'Examinations', to: '/admin/examinations', icon: Award, section: 'Academic Hierarchy' },
   { label: 'Course Catalogue', to: '/admin/courses', icon: Library, section: 'Academic Hierarchy' },
   { label: 'Subjects', to: '/admin/subjects', icon: BookOpen, section: 'Academic Hierarchy' },
@@ -51,6 +52,5 @@ export const ADMIN_NAV_ITEMS: NavItem[] = [
   { label: 'PYQ Management', to: '/admin/pyq', icon: FileCheck2, section: 'Content & Assessment' },
   { label: 'Current Affairs', to: '/admin/current-affairs', icon: Newspaper, section: 'Publications' },
   { label: 'Announcements', to: '/admin/announcements', icon: Bell, section: 'Publications' },
-  { label: 'Data Import / Export', to: '/admin/import-export', icon: Database, section: 'Operations' },
   { label: 'Platform Settings', to: '/admin/settings', icon: Settings, section: 'Operations' },
 ];
