@@ -169,8 +169,8 @@ export function StudyMaterialsPage() {
               <h2 className="mt-1 text-xl sm:text-2xl font-bold text-ink">Learn topic by topic</h2>
               <p className="mt-1 max-w-2xl text-sm text-ink-muted">Every resource is organised under its subject, chapter and exact syllabus topic. Choose a topic to view its notes and revision resources.</p>
             </div>
-            <Link to="/student/practice" className="inline-flex items-center justify-center rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-accent-ink hover:bg-accent-hover">
-              Open Practice Questions
+            <Link to={activeTopic ? `/student/practice?topicId=${encodeURIComponent(activeTopic.id)}` : '/student/practice'} className="inline-flex items-center justify-center rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-accent-ink hover:bg-accent-hover">
+              Practise this topic's MCQs
             </Link>
           </div>
           <div className="mt-5 grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_minmax(220px,0.55fr)] gap-3">
