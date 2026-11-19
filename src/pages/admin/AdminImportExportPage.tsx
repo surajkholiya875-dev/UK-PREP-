@@ -3,7 +3,7 @@ import { Download, Upload } from 'lucide-react';
 import { AppShell } from '../../components/ui/AppShell';
 import { ErrorState, SuccessBanner } from '../../components/ui/StateBlocks';
 import { ADMIN_NAV_ITEMS } from '../../config/navigation';
-import { fetchAllAdminCollection } from '../../services/firestoreService';
+import { fetchAllAdminCollection, upsertAdminEntity } from '../../services/firestoreService';
 
 const EXPORTABLE_COLLECTIONS = [
   'examinations',
@@ -23,6 +23,7 @@ export function AdminImportExportPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [pendingImport, setPendingImport] = useState<Record<string, Record<string, unknown>[]>>({});
   const [importPreview, setImportPreview] = useState<{
     fileName: string;
     collections: string[];
@@ -65,20 +66,60 @@ export function AdminImportExportPage() {
     setNotice(null);
     try {
       const text = await file.text();
-      const parsed = JSON.parse(text) as { collections?: Record<string, unknown[]> };
+      if (file.size > 10 * 1024 * 1024) throw new Error('Archive must be 10 MB or smaller.');
+      const parsed = JSON.parse(text) as { platform?: string; collections?: Record<string, unknown[]> };
+      if (parsed.platform !== 'UK Prep') throw new Error('This is not a UK Prep export archive.');
       if (!parsed.collections || typeof parsed.collections !== 'object') {
         throw new Error('Invalid UK Prep export JSON format: missing "collections" object.');
       }
       const cols = Object.keys(parsed.collections);
+      const allowed = new Set<string>(EXPORTABLE_COLLECTIONS);
+      const normalized: Record<string, Record<string, unknown>[]> = {};
+      for (const name of cols) {
+        if (!allowed.has(name)) throw new Error('Unsupported collection: ' + name);
+        const rows = parsed.collections[name];
+        if (!Array.isArray(rows)) throw new Error('Collection ' + name + ' must contain an array.');
+        const seen = new Set<string>();
+        normalized[name] = rows.map((row, index) => {
+          if (!row || typeof row !== 'object' || Array.isArray(row)) throw new Error('Invalid record in ' + name + ' at row ' + (index + 1));
+          const record = row as Record<string, unknown>;
+          if (typeof record.id !== 'string' || !/^[a-zA-Z0-9_-]{1,128}$/.test(record.id)) throw new Error('Invalid ID in ' + name + ' at row ' + (index + 1));
+          if (seen.has(record.id)) throw new Error('Duplicate ID ' + record.id + ' in ' + name);
+          seen.add(record.id);
+          return record;
+        });
+      }
+      setPendingImport(normalized);
       const total = cols.reduce(
         (sum, k) => sum + (Array.isArray(parsed.collections?.[k]) ? parsed.collections[k].length : 0),
         0
       );
       setImportPreview({ fileName: file.name, collections: cols, totalRecords: total });
-      setNotice(`Validated "${file.name}" (${total} records across ${cols.length} collections).`);
+      setNotice(`Validated "${file.name}" (${total} records across ${cols.length} collections). Existing IDs will be skipped; nothing has been imported yet.`);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to parse JSON file.');
     }
+  };
+
+  const handleImport = async () => {
+    setBusy(true); setError(null); setNotice(null);
+    try {
+      let imported = 0; let skipped = 0;
+      for (const collectionName of EXPORTABLE_COLLECTIONS) {
+        const rows = pendingImport[collectionName] ?? [];
+        if (!rows.length) continue;
+        const existing = await fetchAllAdminCollection<{ id: string }>(collectionName);
+        const existingIds = new Set(existing.map((item) => item.id));
+        for (const record of rows) {
+          if (existingIds.has(String(record.id))) { skipped += 1; continue; }
+          await upsertAdminEntity(collectionName, String(record.id), record as { id: string }, false);
+          imported += 1;
+        }
+      }
+      setNotice('Import complete: ' + imported + ' new records added; ' + skipped + ' existing IDs skipped. Review data before publishing.');
+      setPendingImport({}); setImportPreview(null);
+    } catch (err) { setError(err instanceof Error ? err.message : 'Import failed. Earlier records may already have been imported; export a backup before retrying.'); }
+    finally { setBusy(false); }
   };
 
   return (
@@ -135,6 +176,9 @@ export function AdminImportExportPage() {
               <div className="text-ink-muted">
                 Collections: {importPreview.collections.join(', ')}
               </div>
+              <button type="button" disabled={busy || importPreview.totalRecords === 0} onClick={() => void handleImport()} className="mt-3 inline-flex items-center gap-2 px-4 py-2.5 text-xs font-semibold rounded-lg bg-accent text-accent-ink hover:bg-accent-hover disabled:opacity-60">
+                <Upload className="w-4 h-4" /> {busy ? 'Importing...' : 'Import New Records'}
+              </button>
             </div>
           )}
         </div>
