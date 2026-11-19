@@ -19,7 +19,7 @@ const materialLabel: Record<string, string> = {
 };
 
 export function stripEditorialFooter(content: string): string {
-  const footerMarkers = [/^##\\s+Sources\\s*$/im, /^##\\s+Legal accuracy note\\s*$/im];
+  const footerMarkers = [/^##\s+Sources\s*$/im, /^##\s+Legal accuracy note\s*$/im];
   const positions = footerMarkers.map(marker => content.search(marker)).filter(position => position >= 0);
   return positions.length ? content.slice(0, Math.min(...positions)).trimEnd() : content.trimEnd();
 }
