@@ -27,7 +27,6 @@ export const STUDENT_NAV_ITEMS: NavItem[] = [
   { label: 'My Courses', to: '/student/courses', icon: BookOpen, section: 'Overview' },
   { label: 'Course Catalogue', to: '/student/catalogue', icon: Compass, section: 'Overview' },
   { label: 'Topic-wise Study', to: '/student/materials', icon: FileText, section: 'Learning' },
-  { label: 'Practice Questions', to: '/student/practice', icon: HelpCircle, section: 'Assessment' },
   { label: 'Tests & Mock Exams', to: '/student/tests', icon: ClipboardCheck, section: 'Assessment' },
   { label: 'Attempt History', to: '/student/attempts', icon: History, section: 'Assessment' },
   { label: 'Learning Progress', to: '/student/progress', icon: TrendingUp, section: 'Tracking' },
