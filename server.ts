@@ -167,23 +167,36 @@ async function createServer() {
   app.post('/api/student/tests/:testId/start', verifyBearerToken, requireVerifiedEmail, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const db = getAdminDatabase();
-      const testSnap = await db.collection('tests').doc(req.params.testId).get();
+      const testId = String(req.params.testId || '');
+      if (!/^[a-zA-Z0-9_-]{1,128}$/.test(testId)) return res.status(400).json({ error: 'Invalid test ID.' });
+      const testSnap = await db.collection('tests').doc(testId).get();
       if (!testSnap.exists || testSnap.data()?.isPublished !== true) return res.status(404).json({ error: 'Test not found or not published.' });
       const test = testSnap.data()!;
-      const ids = Array.isArray(test.questionIds) ? test.questionIds.slice(0, 200) : [];
-      if (!ids.length || ids.some((id: unknown) => typeof id !== 'string')) return res.status(400).json({ error: 'This test has no valid questions.' });
+      const durationMinutes = Number(test.durationMinutes);
+      const totalMarks = Number(test.totalMarks);
+      const negativeMarking = Number(test.negativeMarking ?? 0);
+      const ids = Array.isArray(test.questionIds) ? test.questionIds : [];
+      if (!Number.isInteger(durationMinutes) || durationMinutes < 1 || durationMinutes > 600 ||
+          !Number.isFinite(totalMarks) || totalMarks <= 0 || !Number.isFinite(negativeMarking) || negativeMarking < 0 ||
+          ids.length < 1 || ids.length > 200 || ids.some((id: unknown) => typeof id !== 'string' || !/^[a-zA-Z0-9_-]{1,128}$/.test(id))) {
+        return res.status(400).json({ error: 'This test has invalid settings or question references.' });
+      }
+      if (new Set(ids).size !== ids.length) return res.status(400).json({ error: 'This test contains duplicate question references.' });
       const docs = await Promise.all(ids.map((id: string) => db.collection('questions').doc(id).get()));
       const questionDocs = docs.map((d) => d.exists ? d.data()! : null);
-      if (questionDocs.some((q) => !q || q.isPublished !== true || !Number.isInteger(q.correctOptionIndex) || !Array.isArray(q.options))) return res.status(409).json({ error: 'This test contains an unavailable or invalid question.' });
+      if (questionDocs.some((q) => !q || q.isPublished !== true || !Number.isInteger(q.correctOptionIndex) || !Array.isArray(q.options) || q.options.length < 2 || q.options.length > 8 || q.options.some((option: unknown) => typeof option !== 'string'))) {
+        return res.status(409).json({ error: 'This test contains an unavailable or invalid question.' });
+      }
       const attemptId = randomUUID().replace(/-/g, '');
       const startedAt = FieldValue.serverTimestamp();
       await db.collection('testAttempts').doc(attemptId).create({
-        id: attemptId, userId: req.authUser!.uid, testId: req.params.testId, testTitle: String(test.title).slice(0, 200),
-        status: 'in_progress', score: 0, totalMarks: Number(test.totalMarks), correctCount: 0,
-        incorrectCount: 0, unansweredCount: ids.length, durationSeconds: 0, startedAt, updatedAt: startedAt,
+        id: attemptId, userId: req.authUser!.uid, testId, testTitle: String(test.title ?? 'Test').slice(0, 200),
+        status: 'in_progress', score: 0, totalMarks, correctCount: 0,
+        incorrectCount: 0, unansweredCount: ids.length, durationSeconds: 0, durationLimitSeconds: durationMinutes * 60,
+        startedAt, updatedAt: startedAt,
       });
-      const questions = questionDocs.map((q: any) => ({ id: q.id, stem: q.stem, options: q.options }));
-      return res.status(200).json({ attemptId, test: { id: req.params.testId, title: test.title, durationMinutes: test.durationMinutes, totalMarks: test.totalMarks, negativeMarking: test.negativeMarking, questionCount: ids.length }, questions });
+      const questions = questionDocs.map((q: any, index: number) => ({ id: ids[index], stem: q.stem, options: q.options }));
+      return res.status(200).json({ attemptId, startedAt: Date.now(), test: { id: testId, title: test.title, durationMinutes, totalMarks, negativeMarking, questionCount: ids.length }, questions });
     } catch (error) {
       console.error('Unable to start test:', error);
       return res.status(500).json({ error: 'Unable to start test attempt.' });
@@ -192,10 +205,15 @@ async function createServer() {
 
   app.post('/api/student/tests/attempts/:attemptId/submit', verifyBearerToken, requireVerifiedEmail, async (req: AuthenticatedRequest, res: Response) => {
     try {
+      const attemptId = String(req.params.attemptId || '');
+      if (!/^[a-zA-Z0-9_-]{1,128}$/.test(attemptId)) return res.status(400).json({ error: 'Invalid attempt ID.' });
       const answers = req.body?.answers;
-      if (!answers || typeof answers !== 'object' || Array.isArray(answers) || Object.keys(answers).length > 200) return res.status(400).json({ error: 'Invalid answer submission.' });
+      if (!answers || typeof answers !== 'object' || Array.isArray(answers) || Object.keys(answers).length > 200 ||
+          Object.values(answers).some((value) => !Number.isInteger(value) || (value as number) < 0 || (value as number) > 7)) {
+        return res.status(400).json({ error: 'Invalid answer submission.' });
+      }
       const db = getAdminDatabase();
-      const attemptRef = db.collection('testAttempts').doc(req.params.attemptId);
+      const attemptRef = db.collection('testAttempts').doc(attemptId);
       const attemptSnap = await attemptRef.get();
       if (!attemptSnap.exists) return res.status(404).json({ error: 'Attempt not found.' });
       const attempt = attemptSnap.data()!;
@@ -204,30 +222,40 @@ async function createServer() {
       const testSnap = await db.collection('tests').doc(attempt.testId).get();
       if (!testSnap.exists) return res.status(404).json({ error: 'Test configuration not found.' });
       const test = testSnap.data()!;
-      const ids: string[] = Array.isArray(test.questionIds) ? test.questionIds.slice(0, 200) : [];
+      const ids: string[] = Array.isArray(test.questionIds) ? test.questionIds : [];
+      if (!ids.length || ids.length > 200) return res.status(409).json({ error: 'Test configuration is invalid.' });
       const questionDocs = await Promise.all(ids.map((id) => db.collection('questions').doc(id).get()));
       let correct = 0, incorrect = 0, unanswered = 0;
       questionDocs.forEach((snap, index) => {
         const q = snap.data();
         const selected = answers[ids[index]];
-        if (!q || !Number.isInteger(q.correctOptionIndex)) throw new Error('Invalid question answer key.');
+        if (!snap.exists || !q || !Number.isInteger(q.correctOptionIndex) || !Array.isArray(q.options)) throw new Error('Invalid question answer key.');
         if (selected === undefined) unanswered += 1;
-        else if (!Number.isInteger(selected) || selected < 0 || selected >= q.options.length) incorrect += 1;
+        else if (selected >= q.options.length) incorrect += 1;
         else if (selected === q.correctOptionIndex) correct += 1;
         else incorrect += 1;
       });
-      const startedAt = attempt.startedAt?.toDate?.() ?? new Date();
+      const startedAt = attempt.startedAt?.toDate?.();
+      if (!startedAt || Number.isNaN(startedAt.getTime())) return res.status(409).json({ error: 'Attempt start time is invalid. Please contact support.' });
+      const durationLimit = Number(attempt.durationLimitSeconds) || Math.max(60, Number(test.durationMinutes) * 60);
       const elapsed = Math.max(0, Math.floor((Date.now() - startedAt.getTime()) / 1000));
-      const durationLimit = Math.max(60, Number(test.durationMinutes) * 60);
+      const expired = elapsed > durationLimit;
       const durationSeconds = Math.min(elapsed, durationLimit);
       const perQuestionMarks = ids.length ? Number(test.totalMarks) / ids.length : 0;
       const score = Math.round((correct * perQuestionMarks - incorrect * Number(test.negativeMarking || 0)) * 100) / 100;
-      await attemptRef.update({
-        status: 'submitted', score, correctCount: correct, incorrectCount: incorrect, unansweredCount: unanswered,
-        durationSeconds, submittedAt: FieldValue.serverTimestamp(), updatedAt: FieldValue.serverTimestamp(),
+      const result = { status: 'submitted', score, correctCount: correct, incorrectCount: incorrect, unansweredCount: unanswered,
+        durationSeconds, expired, submittedAt: FieldValue.serverTimestamp(), updatedAt: FieldValue.serverTimestamp() };
+      await db.runTransaction(async (transaction) => {
+        const fresh = await transaction.get(attemptRef);
+        if (!fresh.exists || fresh.data()?.userId !== req.authUser!.uid) throw new Error('Attempt not found or not owned by this user.');
+        if (fresh.data()?.status !== 'in_progress') throw new Error('This attempt has already been submitted.');
+        transaction.update(attemptRef, result);
       });
-      return res.status(200).json({ score, correct, incorrect, unanswered, totalMarks: Number(test.totalMarks) });
+      return res.status(200).json({ score, correct, incorrect, unanswered, totalMarks: Number(test.totalMarks), expired, durationSeconds });
     } catch (error) {
+      const message = error instanceof Error ? error.message : '';
+      if (message.includes('already been submitted')) return res.status(409).json({ error: message });
+      if (message.includes('not owned')) return res.status(403).json({ error: message });
       console.error('Unable to grade test:', error);
       return res.status(500).json({ error: 'Unable to grade test submission.' });
     }
