@@ -163,6 +163,82 @@ async function createServer() {
     }
   });
 
+  // Student practice delivery: answer keys are never sent with the question list.
+  app.get('/api/student/questions', verifyBearerToken, requireVerifiedEmail, async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const db = getAdminDatabase();
+      const requestedTopicId = typeof req.query.topicId === 'string' ? req.query.topicId : '';
+      const requestedType = typeof req.query.questionType === 'string' ? req.query.questionType : '';
+      if (requestedTopicId && !/^[a-zA-Z0-9_-]{1,128}$/.test(requestedTopicId)) {
+        return res.status(400).json({ error: 'Invalid topic filter.' });
+      }
+      if (requestedType && !['mcq', 'pyq', 'current_affairs'].includes(requestedType)) {
+        return res.status(400).json({ error: 'Invalid question type filter.' });
+      }
+
+      const snapshot = await db.collection('questions')
+        .where('isPublished', '==', true)
+        .limit(500)
+        .get();
+      const questions = snapshot.docs
+        .map((document) => ({ id: document.id, ...document.data() }))
+        .filter((question: any) =>
+          (!requestedTopicId || question.topicId === requestedTopicId) &&
+          (!requestedType || question.questionType === requestedType)
+        )
+        .slice(0, 200)
+        .map((question: any) => ({
+          id: question.id,
+          topicId: question.topicId,
+          chapterId: question.chapterId,
+          subjectId: question.subjectId,
+          examinationId: question.examinationId,
+          questionType: question.questionType,
+          stem: question.stem,
+          options: question.options,
+          difficulty: question.difficulty,
+          ...(Number.isInteger(question.examYear) ? { examYear: question.examYear } : {}),
+        }));
+
+      return res.status(200).json({ questions });
+    } catch (error) {
+      console.error('Unable to deliver practice questions:', error);
+      return res.status(500).json({ error: 'Unable to load practice questions.' });
+    }
+  });
+
+  // Answer checking is server-side. The correct option is disclosed only after the student answers.
+  app.post('/api/student/questions/:questionId/answer', verifyBearerToken, requireVerifiedEmail, async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const questionId = String(req.params.questionId || '');
+      const optionIndex = req.body?.optionIndex;
+      if (!/^[a-zA-Z0-9_-]{1,128}$/.test(questionId) ||
+          !Number.isInteger(optionIndex) || optionIndex < 0 || optionIndex > 7) {
+        return res.status(400).json({ error: 'Invalid question or answer selection.' });
+      }
+
+      const questionSnap = await getAdminDatabase().collection('questions').doc(questionId).get();
+      if (!questionSnap.exists || questionSnap.data()?.isPublished !== true) {
+        return res.status(404).json({ error: 'Published question not found.' });
+      }
+      const question = questionSnap.data()!;
+      if (!Array.isArray(question.options) || optionIndex >= question.options.length ||
+          !Number.isInteger(question.correctOptionIndex) || question.correctOptionIndex < 0 ||
+          question.correctOptionIndex >= question.options.length) {
+        return res.status(409).json({ error: 'This question has invalid answer settings.' });
+      }
+
+      return res.status(200).json({
+        correct: optionIndex === question.correctOptionIndex,
+        correctOptionIndex: question.correctOptionIndex,
+        explanation: typeof question.explanation === 'string' ? question.explanation : '',
+      });
+    } catch (error) {
+      console.error('Unable to check practice answer:', error);
+      return res.status(500).json({ error: 'Unable to check this answer right now.' });
+    }
+  });
+
   // Test delivery and grading happen on the trusted server. Correct answers never reach the browser.
   app.post('/api/student/tests/:testId/start', verifyBearerToken, requireVerifiedEmail, async (req: AuthenticatedRequest, res: Response) => {
     try {
