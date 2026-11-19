@@ -1,47 +1,28 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Bookmark as BookmarkIcon, CheckCircle2, ExternalLink, FileText, Search } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { CheckCircle2, FileText, BookOpen } from 'lucide-react';
 import { AppShell } from '../../components/ui/AppShell';
 import { EmptyState, ErrorState, LoadingState, SuccessBanner } from '../../components/ui/StateBlocks';
 import { STUDENT_NAV_ITEMS } from '../../config/navigation';
 import { useAuth } from '../../context/AuthContext';
-import {
-  fetchPublishedCollection,
-  fetchStudentOwned,
-  saveTopicProgress,
-  toggleBookmark,
-} from '../../services/firestoreService';
-import {
-  Bookmark,
-  Chapter,
-  MaterialType,
-  StudyMaterial,
-  Subject,
-  Topic,
-  Unit,
-} from '../../types/academic';
+import { fetchPublishedCollection, fetchStudentOwned, saveTopicProgress, toggleBookmark } from '../../services/firestoreService';
+import { Bookmark, Chapter, StudyMaterial, Subject, Topic, Unit } from '../../types/academic';
 
-const MATERIAL_FILTERS: { id: 'all' | MaterialType; label: string }[] = [
-  { id: 'all', label: 'All' },
-  { id: 'notes', label: 'Class Notes' },
-  { id: 'summary', label: 'Quick Revision' },
-  { id: 'pyq_analysis', label: 'PYQ Analysis' },
-  { id: 'current_affairs', label: 'Current Affairs' },
-  { id: 'reference', label: 'References' },
-];
+interface PracticeQuestion {
+  id: string; topicId: string; subjectId: string; questionType: 'mcq' | 'pyq' | 'current_affairs';
+  stem: string; options: string[]; difficulty: string; examYear?: number;
+}
+interface Feedback { selectedIndex: number; correctOptionIndex: number; correct: boolean; explanation: string; }
 
-const formatMaterialType = (type: MaterialType) => ({
-  notes: 'Class Notes',
-  summary: 'Quick Revision',
-  pyq_analysis: 'PYQ Analysis',
-  current_affairs: 'Current Affairs',
-  reference: 'Reference Material',
-}[type]);
+const materialLabel: Record<string, string> = {
+  notes: 'Complete Notes', summary: 'Revision Sheet', pyq_analysis: 'PYQ Analysis',
+  current_affairs: 'Current Affairs', reference: 'Reference Material',
+};
 
 export function StudyMaterialsPage() {
   const { firebaseUser } = useAuth();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [questionError, setQuestionError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [materials, setMaterials] = useState<StudyMaterial[]>([]);
   const [subjects, setSubjects] = useState<Subject[]>([]);
@@ -49,18 +30,20 @@ export function StudyMaterialsPage() {
   const [chapters, setChapters] = useState<Chapter[]>([]);
   const [topics, setTopics] = useState<Topic[]>([]);
   const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
-  const [typeFilter, setTypeFilter] = useState<'all' | MaterialType>('all');
+  const [questions, setQuestions] = useState<PracticeQuestion[]>([]);
+  const [feedback, setFeedback] = useState<Record<string, Feedback>>({});
+  const [checkingId, setCheckingId] = useState<string | null>(null);
+  const [questionReload, setQuestionReload] = useState(0);
   const [subjectFilter, setSubjectFilter] = useState('all');
   const [search, setSearch] = useState('');
   const [activeTopicId, setActiveTopicId] = useState('');
-  const [activeId, setActiveId] = useState('');
+  const [contentTab, setContentTab] = useState<'notes' | 'practice' | 'resources'>('notes');
 
-  const loadMaterials = async () => {
+  const loadLibrary = async () => {
     if (!firebaseUser) return;
-    setLoading(true);
-    setError(null);
+    setLoading(true); setError(null);
     try {
-      const [mats, subjs, unt, chps, tpcs, bm] = await Promise.all([
+      const [mats, subjs, unt, chps, tpcs, saved] = await Promise.all([
         fetchPublishedCollection<StudyMaterial>('studyMaterials'),
         fetchPublishedCollection<Subject>('subjects'),
         fetchPublishedCollection<Unit>('units'),
@@ -68,228 +51,162 @@ export function StudyMaterialsPage() {
         fetchPublishedCollection<Topic>('topics'),
         fetchStudentOwned<Bookmark>('bookmarks', firebaseUser.uid),
       ]);
-      setMaterials(mats);
-      setSubjects(subjs);
-      setUnits(unt);
-      setChapters(chps);
-      setTopics(tpcs);
-      setBookmarks(bm);
-      setActiveTopicId((current) => current || tpcs.find((topic) => mats.some((m) => m.topicId === topic.id))?.id || tpcs[0]?.id || '');
-      setActiveId((current) => current || mats[0]?.id || '');
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unable to load study materials.');
-    } finally {
-      setLoading(false);
-    }
+      setMaterials(mats); setSubjects(subjs); setUnits(unt); setChapters(chps); setTopics(tpcs); setBookmarks(saved);
+      setActiveTopicId(current => current || tpcs[0]?.id || '');
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Unable to load the topic library.');
+    } finally { setLoading(false); }
   };
 
-  useEffect(() => {
-    void loadMaterials();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [firebaseUser?.uid]);
+  useEffect(() => { void loadLibrary(); }, [firebaseUser?.uid]);
 
   const visibleTopics = useMemo(() => {
     const term = search.trim().toLowerCase();
-    return [...topics]
-      .filter((topic) => subjectFilter === 'all' || topic.subjectId === subjectFilter)
-      .filter((topic) => {
+    return topics.filter(t => subjectFilter === 'all' || t.subjectId === subjectFilter)
+      .filter(t => {
         if (!term) return true;
-        const chapter = chapters.find((item) => item.id === topic.chapterId);
-        const subject = subjects.find((item) => item.id === topic.subjectId);
-        const topicMaterials = materials.filter((item) => item.topicId === topic.id);
-        return [topic.title, chapter?.title, subject?.title, ...topicMaterials.map((item) => item.title)]
-          .some((value) => value?.toLowerCase().includes(term));
-      })
-      .sort((a, b) => a.sortOrder - b.sortOrder);
-  }, [topics, subjectFilter, search, chapters, subjects, materials]);
+        const subject = subjects.find(s => s.id === t.subjectId);
+        const chapter = chapters.find(c => c.id === t.chapterId);
+        return [t.title, subject?.title, chapter?.title].some(v => v?.toLowerCase().includes(term));
+      }).sort((a,b) => a.sortOrder - b.sortOrder);
+  }, [topics, subjectFilter, search, subjects, chapters]);
 
-  const activeTopic = visibleTopics.find((topic) => topic.id === activeTopicId)
-    || visibleTopics[0]
-    || null;
+  const activeTopic = visibleTopics.find(t => t.id === activeTopicId) || visibleTopics[0] || null;
+  const topicMaterials = activeTopic ? materials.filter(m => m.topicId === activeTopic.id) : [];
+  const notes = topicMaterials.filter(m => m.materialType === 'notes');
+  const resources = topicMaterials.filter(m => m.materialType !== 'notes');
 
-  const topicMaterials = activeTopic
-    ? materials
-        .filter((item) => item.topicId === activeTopic.id)
-        .filter((item) => typeFilter === 'all' || item.materialType === typeFilter)
-        .sort((a, b) => a.title.localeCompare(b.title))
-    : [];
+  useEffect(() => {
+    let cancelled = false;
+    const loadQuestions = async () => {
+      if (!firebaseUser || !activeTopic) { setQuestions([]); return; }
+      setQuestionError(null); setFeedback({});
+      try {
+        const token = await firebaseUser.getIdToken();
+        const response = await fetch('/api/student/questions?topicId=' + encodeURIComponent(activeTopic.id), {
+          headers: { Authorization: 'Bearer ' + token },
+        });
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload.error || 'Topic questions could not be loaded.');
+        if (!cancelled) setQuestions(Array.isArray(payload.questions) ? payload.questions : []);
+      } catch (e) {
+        if (!cancelled) { setQuestions([]); setQuestionError(e instanceof Error ? e.message : 'Topic questions could not be loaded.'); }
+      }
+    };
+    void loadQuestions();
+    return () => { cancelled = true; };
+  }, [firebaseUser?.uid, activeTopic?.id, questionReload]);
 
-  const selected = topicMaterials.find((item) => item.id === activeId) || topicMaterials[0] || null;
-
-  const handleSelectTopic = (topic: Topic) => {
-    setActiveTopicId(topic.id);
-    const firstMaterial = materials.find((item) =>
-      item.topicId === topic.id && (typeFilter === 'all' || item.materialType === typeFilter)
-    );
-    setActiveId(firstMaterial?.id || '');
-  };
-
-  const handleBookmark = async (mat: StudyMaterial) => {
-    if (!firebaseUser) return;
+  const answerQuestion = async (q: PracticeQuestion, optionIndex: number) => {
+    if (!firebaseUser || feedback[q.id]) return;
+    setCheckingId(q.id);
     try {
-      const subj = subjects.find((s) => s.id === mat.subjectId);
-      const res = await toggleBookmark(firebaseUser.uid, 'material', mat.id, mat.title, subj?.title || '');
-      setNotice(res.saved ? `Saved "${mat.title}" to bookmarks.` : `Removed "${mat.title}" from bookmarks.`);
-      setBookmarks(await fetchStudentOwned<Bookmark>('bookmarks', firebaseUser.uid));
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unable to update bookmark.');
-    }
-  };
-
-  const handleMarkCompleted = async (mat: StudyMaterial) => {
-    if (!firebaseUser) return;
-    try {
-      await saveTopicProgress({
-        userId: firebaseUser.uid,
-        courseId: mat.courseId,
-        subjectId: mat.subjectId,
-        chapterId: mat.chapterId,
-        topicId: mat.topicId,
-        materialId: mat.id,
-        completionStatus: 'completed',
+      const token = await firebaseUser.getIdToken();
+      const response = await fetch('/api/student/questions/' + encodeURIComponent(q.id) + '/answer', {
+        method: 'POST', headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ optionIndex }),
       });
-      setNotice(`Marked "${mat.title}" as completed.`);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unable to save learning progress.');
-    }
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Answer check failed.');
+      setFeedback(prev => ({ ...prev, [q.id]: { selectedIndex: optionIndex, correctOptionIndex: result.correctOptionIndex, correct: Boolean(result.correct), explanation: result.explanation || '' } }));
+    } catch (e) {
+      setQuestionError(e instanceof Error ? e.message : 'Answer check failed.');
+    } finally { setCheckingId(null); }
+  };
+
+  const bookmarkTopic = async () => {
+    if (!firebaseUser || !activeTopic) return;
+    const subject = subjects.find(s => s.id === activeTopic.subjectId);
+    try {
+      const result = await toggleBookmark(firebaseUser.uid, 'topic', activeTopic.id, activeTopic.title, subject?.title || '');
+      setNotice(result.saved ? 'Topic saved to bookmarks.' : 'Topic removed from bookmarks.');
+      setBookmarks(await fetchStudentOwned<Bookmark>('bookmarks', firebaseUser.uid));
+    } catch (e) { setError(e instanceof Error ? e.message : 'Could not update bookmark.'); }
+  };
+
+  const markComplete = async () => {
+    if (!firebaseUser || !activeTopic) return;
+    try {
+      await saveTopicProgress({ userId: firebaseUser.uid, courseId: activeTopic.courseId, subjectId: activeTopic.subjectId, chapterId: activeTopic.chapterId, topicId: activeTopic.id, completionStatus: 'completed' });
+      setNotice('Topic marked as completed.');
+    } catch (e) { setError(e instanceof Error ? e.message : 'Could not save progress.'); }
   };
 
   return (
-    <AppShell
-      workspaceTitle="Student LMS"
-      navItems={STUDENT_NAV_ITEMS}
-      pageTitle="Topic-wise Study"
-      breadcrumb="UK Prep / Student / Topic-wise Learning Library"
-    >
-      <div className="space-y-6">
-        <section className="rounded-2xl border border-edge bg-panel p-5 sm:p-6 shadow-sm">
-          <div className="flex flex-col xl:flex-row xl:items-end xl:justify-between gap-4">
-            <div>
-              <div className="text-xs font-semibold uppercase tracking-wider text-accent-text">Academic Library</div>
-              <h2 className="mt-1 text-xl sm:text-2xl font-bold text-ink">Learn topic by topic</h2>
-              <p className="mt-1 max-w-2xl text-sm text-ink-muted">Every resource is organised under its subject, chapter and exact syllabus topic. Choose a topic to view its notes and revision resources.</p>
-            </div>
-            <Link to={activeTopic ? `/student/practice?topicId=${encodeURIComponent(activeTopic.id)}` : '/student/practice'} className="inline-flex items-center justify-center rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-accent-ink hover:bg-accent-hover">
-              Practise this topic's MCQs
-            </Link>
-          </div>
-          <div className="mt-5 grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_minmax(220px,0.55fr)] gap-3">
-            <label className="relative block">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-ink-faint" />
-              <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search subject, chapter, topic or material..." className="w-full rounded-lg border border-edge-strong bg-field py-2.5 pl-9 pr-3 text-sm text-ink outline-none focus:ring-2 focus:ring-accent" />
-            </label>
-            <select value={subjectFilter} onChange={(e) => setSubjectFilter(e.target.value)} className="w-full rounded-lg border border-edge-strong bg-field px-3 py-2.5 text-sm text-ink outline-none focus:ring-2 focus:ring-accent">
-              <option value="all">All Subjects</option>
-              {subjects.slice().sort((a, b) => a.title.localeCompare(b.title)).map((subject) => (
-                <option key={subject.id} value={subject.id}>{subject.title}</option>
-              ))}
-            </select>
-          </div>
-          <div className="mt-4 flex flex-wrap gap-2">
-            {MATERIAL_FILTERS.map((filter) => (
-              <button key={filter.id} type="button" onClick={() => { setTypeFilter(filter.id); setActiveId(''); }} className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors ${typeFilter === filter.id ? 'border-accent bg-accent text-accent-ink' : 'border-edge-strong bg-subtle text-ink-muted hover:text-ink'}`}>
-                {filter.label}
-              </button>
-            ))}
-          </div>
-        </section>
-
+    <AppShell workspaceTitle="Student LMS" navItems={STUDENT_NAV_ITEMS} pageTitle="Topic-wise Study" breadcrumb="UK Prep / Student / Learning Library">
+      <div className="space-y-5">
         {notice && <SuccessBanner message={notice} />}
-        {error && <ErrorState message={error} />}
-
-        {loading ? (
-          <LoadingState label="Loading your topic-wise academic library..." />
-        ) : topics.length === 0 ? (
-          <EmptyState title="Syllabus topics are not published yet" description="Once topics are added to the academic hierarchy, their notes and learning resources will appear here." />
-        ) : visibleTopics.length === 0 ? (
-          <EmptyState title="No matching topics" description="Try another subject or search phrase." />
+        {error && <ErrorState message={error} onRetry={() => void loadLibrary()} />}
+        {loading ? <LoadingState label="Loading subjects and topics..." /> : topics.length === 0 ? (
+          <EmptyState title="No published topics yet" description="Published subjects, units, chapters and topics will appear here." />
         ) : (
-          <div className="grid grid-cols-1 xl:grid-cols-[minmax(280px,0.78fr)_minmax(0,1.6fr)] gap-5">
-            <aside className="rounded-xl border border-edge bg-panel p-3 sm:p-4 h-fit">
-              <div className="flex items-center justify-between px-1 pb-3">
-                <h3 className="text-sm font-bold text-ink">Syllabus Topics</h3>
-                <span className="text-xs text-ink-faint">{visibleTopics.length} topics</span>
-              </div>
-              <div className="space-y-2 max-h-[720px] overflow-y-auto pr-1">
-                {visibleTopics.map((topic) => {
-                  const subject = subjects.find((item) => item.id === topic.subjectId);
-                  const chapter = chapters.find((item) => item.id === topic.chapterId);
-                  const unit = units.find((item) => item.id === topic.unitId);
-                  const count = materials.filter((item) => item.topicId === topic.id).length;
+          <div className="grid grid-cols-1 xl:grid-cols-[300px_minmax(0,1fr)] gap-5">
+            <aside className="rounded-2xl border border-edge bg-panel p-4 h-fit">
+              <div className="flex items-center gap-2 mb-3"><BookOpen className="h-4 w-4 text-accent-text"/><h2 className="font-bold text-ink">Syllabus</h2></div>
+              <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search topics..." className="w-full rounded-lg border border-edge-strong bg-field px-3 py-2 text-sm text-ink mb-3"/>
+              <select value={subjectFilter} onChange={e => setSubjectFilter(e.target.value)} className="w-full rounded-lg border border-edge-strong bg-field px-3 py-2 text-sm text-ink mb-3">
+                <option value="all">All subjects</option>{subjects.map(s => <option key={s.id} value={s.id}>{s.title}</option>)}
+              </select>
+              <div className="space-y-2 max-h-[70vh] overflow-y-auto">
+                {visibleTopics.map(topic => {
+                  const subject = subjects.find(s => s.id === topic.subjectId);
+                  const chapter = chapters.find(c => c.id === topic.chapterId);
+                  const unit = units.find(u => u.id === topic.unitId);
                   const active = activeTopic?.id === topic.id;
-                  return (
-                    <button key={topic.id} type="button" onClick={() => handleSelectTopic(topic)} className={`w-full rounded-lg border p-3 text-left transition-colors ${active ? 'border-accent bg-accent/10' : 'border-edge bg-subtle hover:border-edge-strong'}`}>
-                      <div className="text-[11px] font-medium text-accent-text">{subject?.title || 'Subject'}{chapter ? ` · ${chapter.title}` : ''}</div>
-                      <div className="mt-1 flex items-start justify-between gap-2">
-                        <span className="text-sm font-semibold text-ink">{topic.title}</span>
-                        <span className="shrink-0 rounded-full bg-canvas px-2 py-0.5 text-[10px] text-ink-muted">{count} {count === 1 ? 'resource' : 'resources'}</span>
-                      </div>
-                      {unit && <div className="mt-1 text-[10px] text-ink-faint">{unit.title}</div>}
-                    </button>
-                  );
+                  return <button key={topic.id} onClick={() => { setActiveTopicId(topic.id); setContentTab('notes'); }} className={'w-full rounded-xl border p-3 text-left transition ' + (active ? 'border-amber-400 bg-amber-400/10' : 'border-edge bg-subtle hover:border-amber-400/60')}>
+                    <div className="text-[11px] text-amber-600 dark:text-amber-300">{subject?.title || 'Subject'}{chapter ? ' · ' + chapter.title : ''}</div>
+                    <div className={'mt-1 text-sm font-semibold ' + (active ? 'text-amber-700 dark:text-amber-200' : 'text-ink')}>{topic.title}</div>
+                    {unit && <div className="mt-1 text-[10px] text-ink-faint">{unit.title}</div>}
+                  </button>;
                 })}
               </div>
             </aside>
 
-            <section className="min-w-0 space-y-4">
-              {activeTopic && (
-                <div className="rounded-xl border border-edge bg-panel p-5 sm:p-6 shadow-sm">
-                  <div className="text-xs font-semibold uppercase tracking-wider text-accent-text">
-                    {subjects.find((item) => item.id === activeTopic.subjectId)?.title || 'Subject'}
+            {!activeTopic ? <EmptyState title="Select a topic" description="Choose a topic from the syllabus."/> : (
+              <main className="min-w-0 space-y-4">
+                <header className="rounded-2xl border border-amber-500/30 bg-gradient-to-br from-[#17243a] via-[#1c2d46] to-[#263a55] p-6 sm:p-8 shadow-lg">
+                  <div className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-300">{subjects.find(s => s.id === activeTopic.subjectId)?.title || 'Subject'}</div>
+                  <h1 className="mt-3 font-serif text-3xl sm:text-4xl font-bold leading-tight text-amber-100">{activeTopic.title}</h1>
+                  <p className="mt-2 text-sm text-slate-300">{[units.find(u => u.id === activeTopic.unitId)?.title, chapters.find(c => c.id === activeTopic.chapterId)?.title].filter(Boolean).join(' / ')}</p>
+                  {activeTopic.syllabusNotes && <p className="mt-4 max-w-3xl border-l-2 border-amber-400 pl-4 text-sm leading-7 text-slate-200">{activeTopic.syllabusNotes}</p>}
+                  <div className="mt-5 flex flex-wrap gap-2">
+                    <button onClick={() => void bookmarkTopic()} className="rounded-lg border border-amber-300/40 px-3 py-2 text-xs font-semibold text-amber-100">{bookmarks.some(b => b.targetType === 'topic' && b.targetId === activeTopic.id) ? 'Saved topic' : 'Bookmark topic'}</button>
+                    <button onClick={() => void markComplete()} className="rounded-lg bg-amber-400 px-3 py-2 text-xs font-bold text-slate-950"><CheckCircle2 className="inline h-4 w-4 mr-1"/>Mark complete</button>
                   </div>
-                  <h2 className="mt-1 text-xl font-bold text-ink">{activeTopic.title}</h2>
-                  <p className="mt-1 text-xs text-ink-muted">
-                    {[units.find((item) => item.id === activeTopic.unitId)?.title, chapters.find((item) => item.id === activeTopic.chapterId)?.title].filter(Boolean).join(' / ')}
-                  </p>
-                  {activeTopic.syllabusNotes && <p className="mt-3 rounded-lg bg-subtle p-3 text-sm leading-relaxed text-ink-muted">{activeTopic.syllabusNotes}</p>}
-                </div>
-              )}
+                </header>
 
-              {!activeTopic || topicMaterials.length === 0 ? (
-                <EmptyState title="No resources published for this topic yet" description="Notes, revision sheets, PYQ analysis and reference material will appear here as soon as they are published for this exact topic." />
-              ) : (
-                <>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {topicMaterials.map((item) => (
-                      <button key={item.id} type="button" onClick={() => setActiveId(item.id)} className={`rounded-xl border p-4 text-left transition-colors ${selected?.id === item.id ? 'border-accent bg-accent/10' : 'border-edge bg-panel hover:border-edge-strong'}`}>
-                        <div className="flex items-center gap-2 text-xs font-semibold text-accent-text"><FileText className="h-4 w-4" />{formatMaterialType(item.materialType)}</div>
-                        <div className="mt-2 text-sm font-bold text-ink">{item.title}</div>
-                        <div className="mt-1 text-xs text-ink-faint">{item.estimatedMinutes} min read</div>
-                      </button>
-                    ))}
-                  </div>
+                <nav className="flex flex-wrap gap-2" aria-label="Topic learning sections">
+                  {([{id:'notes',label:'Complete Notes'},{id:'practice',label:'MCQs & PYQs'},{id:'resources',label:'Study Resources'}] as const).map(tab => <button key={tab.id} onClick={() => setContentTab(tab.id)} className={'rounded-full border px-4 py-2 text-sm font-semibold ' + (contentTab === tab.id ? 'border-amber-400 bg-amber-400 text-slate-950' : 'border-edge bg-panel text-ink-muted hover:border-amber-400/60')}>{tab.label}</button>)}
+                </nav>
 
-                  {selected && (
-                    <article className="rounded-xl border border-edge bg-panel p-5 sm:p-7 shadow-sm">
-                      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 border-b border-edge pb-4">
-                        <div>
-                          <div className="text-xs font-semibold uppercase tracking-wider text-accent-text">{formatMaterialType(selected.materialType)} · {selected.estimatedMinutes} min read</div>
-                          <h3 className="mt-1 text-xl font-bold text-ink">{selected.title}</h3>
-                        </div>
-                        <div className="flex flex-wrap items-center gap-2">
-                          <button type="button" onClick={() => void handleBookmark(selected)} className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-semibold ${bookmarks.some((b) => b.targetType === 'material' && b.targetId === selected.id) ? 'border-accent bg-accent/10 text-accent-text' : 'border-edge-strong bg-subtle text-ink'}`}>
-                            <BookmarkIcon className="h-3.5 w-3.5" /> Save
-                          </button>
-                          <button type="button" onClick={() => void handleMarkCompleted(selected)} className="inline-flex items-center gap-1.5 rounded-lg bg-accent px-3 py-2 text-xs font-semibold text-accent-ink hover:bg-accent-hover">
-                            <CheckCircle2 className="h-3.5 w-3.5" /> Mark complete
-                          </button>
-                        </div>
-                      </div>
-                      <div className="prose prose-slate dark:prose-invert mt-5 max-w-none whitespace-pre-wrap text-sm leading-7 text-ink-muted">
-                        {selected.contentMarkdown || 'Written content has not been added to this resource yet.'}
-                      </div>
-                      {selected.resourceUrl && (
-                        <div className="mt-5 border-t border-edge pt-4">
-                          <a href={selected.resourceUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-sm font-semibold text-accent-text hover:underline">
-                            Open attached reference <ExternalLink className="h-4 w-4" />
-                          </a>
-                        </div>
-                      )}
-                    </article>
-                  )}
-                </>
-              )}
-            </section>
+                {contentTab === 'notes' && (notes.length === 0 ? <EmptyState title="Complete notes are not published yet" description="This topic has no full notes yet. The topic remains visible, but no shortened or invented notes are shown."/> : (
+                  <div className="space-y-4">{notes.map(note => <article key={note.id} className="rounded-2xl border border-amber-500/20 bg-panel p-5 sm:p-8">
+                    <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-amber-600 dark:text-amber-300"><FileText className="h-4 w-4"/>{materialLabel[note.materialType] || 'Study Material'} · {note.estimatedMinutes} min read</div>
+                    <h2 className="mt-2 font-serif text-2xl font-bold text-ink">{note.title}</h2>
+                    <div className="mt-5 max-w-none whitespace-pre-wrap break-words font-serif text-[15px] leading-8 text-ink">{note.contentMarkdown || 'Complete notes have not been added for this topic yet.'}</div>
+                    {note.resourceUrl && <a className="mt-5 inline-flex items-center text-sm font-semibold text-amber-600 hover:underline" href={note.resourceUrl} target="_blank" rel="noreferrer">Open source reference</a>}
+                  </article>)}</div>
+                ))}
+
+                {contentTab === 'practice' && (questionError ? <ErrorState message={questionError} onRetry={() => setQuestionReload(value => value + 1)}/> : questions.length === 0 ? <EmptyState title="No MCQs or PYQs for this topic yet" description="Questions assigned to this exact topic will appear here after they are published."/> : (
+                  <div className="space-y-4">{questions.map((q,index) => { const answer = feedback[q.id]; return <article key={q.id} className="rounded-2xl border border-edge bg-panel p-5 space-y-4">
+                    <div className="text-xs font-semibold text-amber-600 dark:text-amber-300">Question {index+1} · {q.questionType.toUpperCase()}{q.examYear ? ' · '+q.examYear : ''} · {q.difficulty}</div>
+                    <h3 className="font-semibold leading-7 text-ink">{q.stem}</h3>
+                    <div className="grid gap-2 sm:grid-cols-2">{q.options.map((option,i) => <button key={i} disabled={Boolean(answer) || checkingId === q.id} onClick={() => void answerQuestion(q,i)} className={'rounded-lg border p-3 text-left text-sm ' + (answer?.correctOptionIndex === i ? 'border-emerald-500 bg-emerald-500/10 text-ink' : answer?.selectedIndex === i ? 'border-red-500 bg-red-500/10 text-ink' : 'border-edge-strong bg-field text-ink')}>{String.fromCharCode(65+i)}. {option}</button>)}</div>
+                    {answer && <div className="rounded-lg bg-subtle p-4 text-sm text-ink"><strong>{answer.correct ? 'Correct' : 'Incorrect'}</strong>{answer.explanation && <p className="mt-2 leading-7">{answer.explanation}</p>}</div>}
+                  </article>; })}</div>
+                ))}
+
+                {contentTab === 'resources' && (resources.length === 0 ? <EmptyState title="No supplementary resources" description="Only additional revision sheets, PYQ analysis and references assigned to this topic will appear here."/> : (
+                  <div className="space-y-3">{resources.map(item => <article key={item.id} className="rounded-xl border border-edge bg-panel p-5">
+                    <div className="text-xs font-semibold text-amber-600 dark:text-amber-300">{materialLabel[item.materialType] || 'Study Resource'}</div>
+                    <h3 className="mt-1 text-lg font-bold text-ink">{item.title}</h3>
+                    <div className="mt-3 whitespace-pre-wrap leading-7 text-sm text-ink">{item.contentMarkdown || 'No written content has been added.'}</div>
+                    {item.resourceUrl && <a href={item.resourceUrl} target="_blank" rel="noreferrer" className="mt-3 inline-block text-sm text-amber-600 hover:underline">Open reference</a>}
+                  </article>)}</div>
+                ))}
+              </main>
+            )}
           </div>
         )}
       </div>
