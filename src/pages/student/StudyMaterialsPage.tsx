@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Bookmark as BookmarkIcon, CheckCircle2, FileText, Search, BookOpen, CircleHelp } from 'lucide-react';
+import { CheckCircle2, FileText, BookOpen } from 'lucide-react';
 import { AppShell } from '../../components/ui/AppShell';
 import { EmptyState, ErrorState, LoadingState, SuccessBanner } from '../../components/ui/StateBlocks';
 import { STUDENT_NAV_ITEMS } from '../../config/navigation';
@@ -33,6 +33,7 @@ export function StudyMaterialsPage() {
   const [questions, setQuestions] = useState<PracticeQuestion[]>([]);
   const [feedback, setFeedback] = useState<Record<string, Feedback>>({});
   const [checkingId, setCheckingId] = useState<string | null>(null);
+  const [questionReload, setQuestionReload] = useState(0);
   const [subjectFilter, setSubjectFilter] = useState('all');
   const [search, setSearch] = useState('');
   const [activeTopicId, setActiveTopicId] = useState('');
@@ -94,7 +95,7 @@ export function StudyMaterialsPage() {
     };
     void loadQuestions();
     return () => { cancelled = true; };
-  }, [firebaseUser?.uid, activeTopic?.id]);
+  }, [firebaseUser?.uid, activeTopic?.id, questionReload]);
 
   const answerQuestion = async (q: PracticeQuestion, optionIndex: number) => {
     if (!firebaseUser || feedback[q.id]) return;
@@ -187,7 +188,7 @@ export function StudyMaterialsPage() {
                   </article>)}</div>
                 ))}
 
-                {contentTab === 'practice' && (questionError ? <ErrorState message={questionError} onRetry={() => setActiveTopicId(activeTopic.id)}/> : questions.length === 0 ? <EmptyState title="No MCQs or PYQs for this topic yet" description="Questions assigned to this exact topic will appear here after they are published."/> : (
+                {contentTab === 'practice' && (questionError ? <ErrorState message={questionError} onRetry={() => setQuestionReload(value => value + 1)}/> : questions.length === 0 ? <EmptyState title="No MCQs or PYQs for this topic yet" description="Questions assigned to this exact topic will appear here after they are published."/> : (
                   <div className="space-y-4">{questions.map((q,index) => { const answer = feedback[q.id]; return <article key={q.id} className="rounded-2xl border border-edge bg-panel p-5 space-y-4">
                     <div className="text-xs font-semibold text-amber-600 dark:text-amber-300">Question {index+1} · {q.questionType.toUpperCase()}{q.examYear ? ' · '+q.examYear : ''} · {q.difficulty}</div>
                     <h3 className="font-semibold leading-7 text-ink">{q.stem}</h3>
