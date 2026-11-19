@@ -24,7 +24,7 @@ export function stripEditorialFooter(content: string): string {
   return positions.length ? content.slice(0, Math.min(...positions)).trimEnd() : content.trimEnd();
 }
 
-function StudyMaterialsPage() {
+export function StudyMaterialsPage() {
   const { firebaseUser } = useAuth();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
