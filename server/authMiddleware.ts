@@ -37,8 +37,17 @@ export function getAdminApp() {
   if (!firebaseConfig?.projectId) {
     throw new Error('Firebase project configuration is unavailable.');
   }
-  const app = getApps().length ? getApp() : initializeApp({ projectId: firebaseConfig.projectId });
-  return app;
+  const existingApp = getApps().find((candidate) => candidate.name === '[DEFAULT]');
+  if (existingApp) {
+    const activeProjectId = existingApp.options.projectId;
+    if (activeProjectId && activeProjectId !== firebaseConfig.projectId) {
+      throw new Error(
+        `Firebase Admin SDK project mismatch: config targets ${firebaseConfig.projectId}, but the active Admin app targets ${activeProjectId}.`
+      );
+    }
+    return existingApp;
+  }
+  return initializeApp({ projectId: firebaseConfig.projectId });
 }
 
 export interface VerifiedRequestUser {
@@ -131,9 +140,17 @@ export function requireAdminRole(
   next();
 }
 
+export function getAdminDatabaseInfo() {
+  const app = getAdminApp();
+  return {
+    configuredProjectId: firebaseConfig?.projectId ?? null,
+    adminSdkProjectId: app.options.projectId ?? null,
+    configuredDatabaseId: firebaseConfig?.firestoreDatabaseId || '(default)',
+  };
+}
+
 export function getAdminDatabase() {
+  const app = getAdminApp();
   const databaseId = firebaseConfig?.firestoreDatabaseId;
-  return databaseId
-    ? getFirestore(getAdminApp(), databaseId)
-    : getFirestore(getAdminApp());
+  return databaseId ? getFirestore(app, databaseId) : getFirestore(app);
 }
