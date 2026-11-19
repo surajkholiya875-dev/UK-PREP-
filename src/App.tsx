@@ -18,7 +18,6 @@ import { CourseCataloguePage } from './pages/student/CourseCataloguePage';
 import { CourseDetailPage } from './pages/student/CourseDetailPage';
 import { LearningProgressPage } from './pages/student/LearningProgressPage';
 import { MyCoursesPage } from './pages/student/MyCoursesPage';
-import { PracticeQuestionsPage } from './pages/student/PracticeQuestionsPage';
 import { StudentDashboardPage } from './pages/student/StudentDashboardPage';
 import { StudentProfilePage } from './pages/student/StudentProfilePage';
 import { StudyMaterialsPage } from './pages/student/StudyMaterialsPage';
