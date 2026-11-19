@@ -144,7 +144,7 @@ async function createServer() {
   app.post('/api/contact', async (req: Request, res: Response) => {
     const body = (req.body ?? {}) as ContactPayload;
     if (!isNonEmptyString(body.fullName, 2, 120)) return res.status(400).json({ error: 'Please provide your full name (2 to 120 characters).' });
-    if (!isNonEmptyString(body.email, 5, 160) || !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(body.email.trim())) return res.status(400).json({ error: 'Please provide a valid email address.' });
+    if (!isNonEmptyString(body.email, 5, 160) || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(body.email.trim())) return res.status(400).json({ error: 'Please provide a valid email address.' });
     if (body.phone !== undefined && body.phone !== '' && !isNonEmptyString(body.phone, 7, 20)) return res.status(400).json({ error: 'Phone number must be between 7 and 20 characters.' });
     if (!isNonEmptyString(body.subject, 3, 200)) return res.status(400).json({ error: 'Please provide an inquiry subject (3 to 200 characters).' });
     if (!isNonEmptyString(body.message, 10, 3000)) return res.status(400).json({ error: 'Please enter a message of at least 10 characters.' });
