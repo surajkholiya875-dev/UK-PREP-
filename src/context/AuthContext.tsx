@@ -125,7 +125,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const runSync = async () => {
       const userDocRef = doc(db, 'users', user.uid);
       const privateDocRef = doc(db, 'users', user.uid, 'private', 'info');
-      const adminDocRef = doc(db, 'admins', user.uid);
 
       let loadedProfile: UserProfile | null = null;
       let existingUserSnapExists = false;
@@ -263,37 +262,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setPrivateInfo(null);
       }
 
-      // Verify admin authority from token custom claims, Firestore /admins/{uid}, server /api/auth/session, or verified bootstrap admin
-      if (!user.emailVerified) {
-        setProfile(loadedProfile);
-        setIsAdmin(false);
-        return;
-      }
-
-      let verifiedAdmin = false;
-      try {
-        const tokenResult = await user.getIdTokenResult();
-        if (tokenResult.claims.admin === true || tokenResult.claims.role === 'admin') {
-          verifiedAdmin = true;
-        }
-      } catch {
-        verifiedAdmin = false;
-      }
-
-      if (!verifiedAdmin) {
-        try {
-          const adminSnap = await getDoc(adminDocRef);
-          if (adminSnap.exists()) {
-            verifiedAdmin = true;
-          }
-        } catch {
-          verifiedAdmin = false;
-        }
-      }
-
-      if (!verifiedAdmin && user.email?.toLowerCase() === 'surajkholiya875@gmail.com' && user.emailVerified) {
-        verifiedAdmin = true;
-      }
+      // Single-owner administrator access: only the verified owner email is allowed.
+      const verifiedAdmin =
+        user.emailVerified && user.email?.trim().toLowerCase() === 'surajkholiya875@gmail.com';
 
       setProfile(loadedProfile);
       setIsAdmin(verifiedAdmin);
