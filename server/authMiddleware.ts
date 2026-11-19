@@ -11,27 +11,33 @@ const __dirname = path.dirname(__filename);
 
 interface AppletFirebaseConfig {
   projectId?: string;
+  firestoreDatabaseId?: string;
 }
 
-function loadProjectId(): string | null {
+function loadFirebaseConfig(): { projectId: string; firestoreDatabaseId?: string } | null {
   try {
     const configPath = path.resolve(__dirname, '..', 'firebase-applet-config.json');
     if (!fs.existsSync(configPath)) return null;
     const raw = JSON.parse(fs.readFileSync(configPath, 'utf8')) as AppletFirebaseConfig;
     if (!raw.projectId || raw.projectId === 'remixed-project-id') return null;
-    return raw.projectId;
+    return {
+      projectId: raw.projectId,
+      ...(typeof raw.firestoreDatabaseId === 'string' && raw.firestoreDatabaseId.trim()
+        ? { firestoreDatabaseId: raw.firestoreDatabaseId.trim() }
+        : {}),
+    };
   } catch {
     return null;
   }
 }
 
-const projectId = loadProjectId();
+const firebaseConfig = loadFirebaseConfig();
 
 export function getAdminApp() {
-  if (!projectId) {
+  if (!firebaseConfig?.projectId) {
     throw new Error('Firebase project configuration is unavailable.');
   }
-  const app = getApps().length ? getApp() : initializeApp({ projectId });
+  const app = getApps().length ? getApp() : initializeApp({ projectId: firebaseConfig.projectId });
   return app;
 }
 
@@ -126,5 +132,8 @@ export function requireAdminRole(
 }
 
 export function getAdminDatabase() {
-  return getFirestore(getAdminApp());
+  const databaseId = firebaseConfig?.firestoreDatabaseId;
+  return databaseId
+    ? getFirestore(getAdminApp(), databaseId)
+    : getFirestore(getAdminApp());
 }
