@@ -59,8 +59,17 @@ export function AdminQuestionBankPage({ defaultType = 'mcq' }: { defaultType?: Q
       setCourses(crs);
       setChapters(chps);
       setSubjects(subjs);
-      if (tpcs.length > 0 && !form.topicId) setForm((p) => ({ ...p, topicId: tpcs[0].id }));
-      if (exms.length > 0 && !form.examinationId) setForm((p) => ({ ...p, examinationId: exms[0].id }));
+      const initialExamId = form.examinationId || exms[0]?.id || '';
+      const firstTopicForExam = tpcs.find((topic) =>
+        crs.some((course) => course.id === topic.courseId && course.examinationId === initialExamId)
+      );
+      if (!form.examinationId || !form.topicId) {
+        setForm((previous) => ({
+          ...previous,
+          examinationId: previous.examinationId || initialExamId,
+          topicId: previous.topicId || firstTopicForExam?.id || '',
+        }));
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unable to load question bank.');
     } finally {
