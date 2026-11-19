@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Plus, Trash2 } from 'lucide-react';
+import { Pencil, Plus, Trash2, X } from 'lucide-react';
 import { AppShell } from '../../components/ui/AppShell';
 import { EmptyState, ErrorState, LoadingState, SuccessBanner } from '../../components/ui/StateBlocks';
 import { ADMIN_NAV_ITEMS } from '../../config/navigation';
@@ -20,6 +20,7 @@ export function AdminStudyMaterialsPage() {
   const [notice, setNotice] = useState<string | null>(null);
   const [materials, setMaterials] = useState<StudyMaterial[]>([]);
   const [topics, setTopics] = useState<Topic[]>([]);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   const [form, setForm] = useState({
     topicId: '',
@@ -59,7 +60,7 @@ export function AdminStudyMaterialsPage() {
     if (!firebaseUser || !form.topicId) return;
     const topic = topics.find((t) => t.id === form.topicId);
     if (!topic) return;
-    const id = generateSafeId('mat');
+    const id = editingId ?? generateSafeId('mat');
 
     try {
       await upsertAdminEntity<StudyMaterial>(
@@ -79,10 +80,11 @@ export function AdminStudyMaterialsPage() {
           isPublished: form.isPublished,
           createdBy: firebaseUser.uid,
         },
-        false
+        Boolean(editingId)
       );
-      setNotice('Study material published.');
-      setForm((p) => ({ ...p, title: '', contentMarkdown: '', resourceUrl: '' }));
+      setNotice(editingId ? 'Study material updated.' : 'Study material saved.');
+      setEditingId(null);
+      setForm({ topicId: topic.id, title: '', materialType: 'notes', contentMarkdown: '', resourceUrl: '', estimatedMinutes: 15, isPublished: true });
       await loadData();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save study material.');
@@ -99,7 +101,7 @@ export function AdminStudyMaterialsPage() {
     >
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         <div className="lg:col-span-5 bg-panel border border-edge rounded-xl p-6 shadow-sm h-fit">
-          <h2 className="text-base font-semibold text-ink mb-4">Add Study Material</h2>
+          <div className="flex items-center justify-between mb-4"><h2 className="text-base font-semibold text-ink">{editingId ? "Edit Study Material" : "Add Study Material"}</h2>{editingId && <button type="button" onClick={() => { setEditingId(null); setForm({ topicId: topics[0]?.id ?? "", title: "", materialType: "notes", contentMarkdown: "", resourceUrl: "", estimatedMinutes: 15, isPublished: true }); }} className="text-xs text-ink-muted hover:text-ink inline-flex items-center gap-1"><X className="w-3 h-3"/> Cancel</button>}</div>
           {topics.length === 0 ? (
             <p className="text-xs text-accent-text">Create a Topic first.</p>
           ) : (
@@ -168,8 +170,8 @@ export function AdminStudyMaterialsPage() {
                 />
               </div>
               <button type="submit" className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold rounded-lg bg-accent text-accent-ink hover:bg-accent-hover transition-colors">
-                <Plus className="w-3.5 h-3.5" />
-                <span>Save Material</span>
+                {editingId ? <Pencil className="w-3.5 h-3.5" /> : <Plus className="w-3.5 h-3.5" />}
+                <span>{editingId ? "Update Material" : "Save Material"}</span>
               </button>
             </form>
           )}
@@ -192,7 +194,17 @@ export function AdminStudyMaterialsPage() {
                     </div>
                     <div className="text-sm font-semibold text-ink">{m.title}</div>
                   </div>
-                  <button
+                  <div className="flex items-center gap-2"><button
+                    type="button"
+                    aria-label={`Edit ${m.title}`}
+                    onClick={() => {
+                      setEditingId(m.id);
+                      setForm({ topicId: m.topicId, title: m.title, materialType: m.materialType, contentMarkdown: m.contentMarkdown ?? "", resourceUrl: m.resourceUrl ?? "", estimatedMinutes: m.estimatedMinutes, isPublished: m.isPublished });
+                      setError(null);
+                      setNotice(null);
+                    }}
+                    className="p-2 rounded-lg text-ink-muted hover:text-accent-text hover:bg-accent/10 transition-colors"
+                  ><Pencil className="w-4 h-4" /></button><button
                     type="button"
                     onClick={async () => {
                       await deleteAdminEntity('studyMaterials', m.id);
@@ -202,7 +214,7 @@ export function AdminStudyMaterialsPage() {
                     className="p-2 rounded-lg text-ink-muted hover:text-red-500 hover:bg-red-500/10 transition-colors"
                   >
                     <Trash2 className="w-4 h-4" />
-                  </button>
+                  </button></div>
                 </div>
               ))}
             </div>
