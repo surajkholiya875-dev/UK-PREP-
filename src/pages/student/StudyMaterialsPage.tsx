@@ -158,7 +158,7 @@ export function StudyMaterialsPage() {
     <AppShell
       workspaceTitle="Student LMS"
       navItems={STUDENT_NAV_ITEMS}
-      pageTitle="Study Materials"
+      pageTitle="Topic-wise Study"
       breadcrumb="UK Prep / Student / Topic-wise Learning Library"
     >
       <div className="space-y-6">
