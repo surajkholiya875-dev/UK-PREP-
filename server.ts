@@ -202,8 +202,21 @@ async function createServer() {
 
       return res.status(200).json({ questions });
     } catch (error) {
-      console.error('Unable to deliver practice questions:', error);
-      return res.status(500).json({ error: 'Unable to load practice questions.' });
+      const firestoreCode = typeof error === 'object' && error !== null && 'code' in error
+        ? (error as { code?: unknown }).code
+        : undefined;
+      console.error('Unable to deliver practice questions:', {
+        code: firestoreCode,
+        message: error instanceof Error ? error.message : String(error),
+        configuredDatabaseId: process.env.FIRESTORE_DATABASE_ID || 'firebase-applet-config.json',
+      });
+      if (firestoreCode === 5 || firestoreCode === 'not-found') {
+        return res.status(503).json({
+          error: 'The server cannot find the configured Firestore database. Check that the database ID in firebase-applet-config.json exists in the same Firebase project and that the server Admin SDK is using that database. No questions were deleted.',
+          code: 'FIRESTORE_DATABASE_NOT_FOUND',
+        });
+      }
+      return res.status(500).json({ error: 'Unable to load practice questions. Check the server log for the Firestore error code.' });
     }
   });
 
