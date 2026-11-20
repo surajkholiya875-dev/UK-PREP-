@@ -58,7 +58,6 @@ export function StudyMaterialsPage() {
         fetchStudentOwned<Bookmark>('bookmarks', firebaseUser.uid),
       ]);
       setMaterials(mats); setSubjects(subjs); setUnits(unt); setChapters(chps); setTopics(tpcs); setBookmarks(saved);
-      setActiveTopicId(current => current || tpcs[0]?.id || '');
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Unable to load the topic library.');
     } finally { setLoading(false); }
@@ -77,7 +76,7 @@ export function StudyMaterialsPage() {
       }).sort((a,b) => a.sortOrder - b.sortOrder);
   }, [topics, subjectFilter, search, subjects, chapters]);
 
-  const activeTopic = visibleTopics.find(t => t.id === activeTopicId) || visibleTopics[0] || null;
+  const activeTopic = visibleTopics.find(t => t.id === activeTopicId) || null;
   const topicMaterials = activeTopic ? materials.filter(m => m.topicId === activeTopic.id) : [];
   const notes = topicMaterials.filter(m => m.materialType === 'notes');
   const resources = topicMaterials.filter(m => m.materialType !== 'notes');
@@ -145,75 +144,118 @@ export function StudyMaterialsPage() {
         {error && <ErrorState message={error} onRetry={() => void loadLibrary()} />}
         {loading ? <LoadingState label="Loading subjects and topics..." /> : topics.length === 0 ? (
           <EmptyState title="No published topics yet" description="Published subjects, units, chapters and topics will appear here." />
-        ) : (
-          <div className="grid grid-cols-1 xl:grid-cols-[300px_minmax(0,1fr)] gap-5">
-            <aside className="rounded-2xl border border-edge bg-panel p-4 h-fit">
-              <div className="flex items-center gap-2 mb-3"><BookOpen className="h-4 w-4 text-accent-text"/><h2 className="font-bold text-ink">Syllabus</h2></div>
-              <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search topics..." className="w-full rounded-lg border border-edge-strong bg-field px-3 py-2 text-sm text-ink mb-3"/>
-              <select value={subjectFilter} onChange={e => setSubjectFilter(e.target.value)} className="w-full rounded-lg border border-edge-strong bg-field px-3 py-2 text-sm text-ink mb-3">
-                <option value="all">All subjects</option>{subjects.map(s => <option key={s.id} value={s.id}>{s.title}</option>)}
-              </select>
-              <div className="space-y-2 max-h-[70vh] overflow-y-auto">
-                {visibleTopics.map(topic => {
-                  const subject = subjects.find(s => s.id === topic.subjectId);
-                  const chapter = chapters.find(c => c.id === topic.chapterId);
-                  const unit = units.find(u => u.id === topic.unitId);
-                  const active = activeTopic?.id === topic.id;
-                  return <button key={topic.id} onClick={() => { setActiveTopicId(topic.id); setContentTab('notes'); }} className={'w-full rounded-xl border p-3 text-left transition ' + (active ? 'border-amber-400 bg-amber-400/10' : 'border-edge bg-subtle hover:border-amber-400/60')}>
-                    <div className="text-[11px] text-amber-600 dark:text-amber-300">{subject?.title || 'Subject'}{chapter ? ' · ' + chapter.title : ''}</div>
-                    <div className={'mt-1 text-sm font-semibold ' + (active ? 'text-amber-700 dark:text-amber-200' : 'text-ink')}>{topic.title}</div>
-                    {unit && <div className="mt-1 text-[10px] text-ink-faint">{unit.title}</div>}
-                  </button>;
-                })}
+        ) : !activeTopic ? (
+          <section className="space-y-5">
+            <div className="rounded-2xl border border-edge bg-panel p-5 sm:p-6">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-[0.18em] text-amber-500">Learning Library</p>
+                  <h1 className="mt-2 text-2xl sm:text-3xl font-bold text-ink">Browse Topics</h1>
+                  <p className="mt-2 text-sm text-ink-muted">Choose a subject and open any topic to access its notes, MCQs and previous-year questions.</p>
+                </div>
+                <div className="text-sm text-ink-muted">{visibleTopics.length} topics</div>
               </div>
-            </aside>
+              <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-[minmax(0,1fr)_260px]">
+                <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search subjects, chapters or topics..." className="w-full rounded-lg border border-edge-strong bg-field px-3 py-3 text-sm text-ink"/>
+                <select value={subjectFilter} onChange={e => setSubjectFilter(e.target.value)} className="w-full rounded-lg border border-edge-strong bg-field px-3 py-3 text-sm text-ink">
+                  <option value="all">All subjects</option>{subjects.map(s => <option key={s.id} value={s.id}>{s.title}</option>)}
+                </select>
+              </div>
+            </div>
 
-            {!activeTopic ? <EmptyState title="Select a topic" description="Choose a topic from the syllabus."/> : (
-              <main className="min-w-0 space-y-4">
-                <header className="rounded-2xl border border-amber-500/30 bg-gradient-to-br from-[#17243a] via-[#1c2d46] to-[#263a55] p-6 sm:p-8 shadow-lg">
-                  <div className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-300">{subjects.find(s => s.id === activeTopic.subjectId)?.title || 'Subject'}</div>
-                  <h1 className="mt-3 font-serif text-3xl sm:text-4xl font-bold leading-tight text-amber-100">{activeTopic.title}</h1>
-                  <p className="mt-2 text-sm text-slate-300">{[units.find(u => u.id === activeTopic.unitId)?.title, chapters.find(c => c.id === activeTopic.chapterId)?.title].filter(Boolean).join(' / ')}</p>
-                  {activeTopic.syllabusNotes && <p className="mt-4 max-w-3xl border-l-2 border-amber-400 pl-4 text-sm leading-7 text-slate-200">{activeTopic.syllabusNotes}</p>}
-                  <div className="mt-5 flex flex-wrap gap-2">
-                    <button onClick={() => void bookmarkTopic()} className="rounded-lg border border-amber-300/40 px-3 py-2 text-xs font-semibold text-amber-100">{bookmarks.some(b => b.targetType === 'topic' && b.targetId === activeTopic.id) ? 'Saved topic' : 'Bookmark topic'}</button>
-                    <button onClick={() => void markComplete()} className="rounded-lg bg-amber-400 px-3 py-2 text-xs font-bold text-slate-950"><CheckCircle2 className="inline h-4 w-4 mr-1"/>Mark complete</button>
-                  </div>
-                </header>
-
-                <nav className="flex flex-wrap gap-2" aria-label="Topic learning sections">
-                  {([{id:'notes',label:'Complete Notes'},{id:'mcq',label:'MCQs'},{id:'pyq',label:'PYQs'},{id:'resources',label:'Study Resources'}] as const).map(tab => <button key={tab.id} onClick={() => setContentTab(tab.id)} className={'rounded-full border px-4 py-2 text-sm font-semibold ' + (contentTab === tab.id ? 'border-amber-400 bg-amber-400 text-slate-950' : 'border-edge bg-panel text-ink-muted hover:border-amber-400/60')}>{tab.label}</button>)}
-                </nav>
-
-                {contentTab === 'notes' && (notes.length === 0 ? <EmptyState title="Complete notes are not published yet" description="This topic has no full notes yet. The topic remains visible, but no shortened or invented notes are shown."/> : (
-                  <div className="space-y-4">{notes.map(note => <article key={note.id} className="rounded-2xl border border-amber-500/20 bg-panel p-5 sm:p-8">
-                    <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-amber-600 dark:text-amber-300"><FileText className="h-4 w-4"/>{materialLabel[note.materialType] || 'Study Material'} · {note.estimatedMinutes} min read</div>
-                    <h2 className="mt-2 font-serif text-2xl font-bold text-ink">{note.title}</h2>
-                    <div className="mt-5 max-w-none whitespace-pre-wrap break-words font-serif text-[15px] leading-8 text-ink">{stripEditorialFooter(note.contentMarkdown || 'Complete notes have not been added for this topic yet.')}</div>
-                    {note.resourceUrl && <a className="mt-5 inline-flex items-center text-sm font-semibold text-amber-600 hover:underline" href={note.resourceUrl} target="_blank" rel="noreferrer">Open source reference</a>}
-                  </article>)}</div>
-                ))}
-
-                {(contentTab === 'mcq' || contentTab === 'pyq') && (questionError ? <ErrorState message={questionError} onRetry={() => setQuestionReload(value => value + 1)}/> : questions.length === 0 ? <EmptyState title={contentTab === 'mcq' ? 'No MCQs for this topic yet' : 'No PYQs for this topic yet'} description={contentTab === 'mcq' ? 'MCQs assigned to this exact topic will appear here after they are published.' : 'Previous-year questions assigned to this exact topic will appear here after they are published.'}/> : (
-                  <div className="space-y-4">{questions.map((q,index) => { const answer = feedback[q.id]; return <article key={q.id} className="rounded-2xl border border-edge bg-panel p-5 space-y-4">
-                    <div className="text-xs font-semibold text-amber-600 dark:text-amber-300">{contentTab === 'mcq' ? 'MCQ' : 'Previous Year Question'} {index+1}{q.examYear ? ' · '+q.examYear : ''} · {q.difficulty}</div>
-                    <h3 className="font-semibold leading-7 text-ink">{q.stem}</h3>
-                    <div className="grid gap-2 sm:grid-cols-2">{q.options.map((option,i) => <button key={i} disabled={Boolean(answer) || checkingId === q.id} onClick={() => void answerQuestion(q,i)} className={'rounded-lg border p-3 text-left text-sm ' + (answer?.correctOptionIndex === i ? 'border-emerald-500 bg-emerald-500/10 text-ink' : answer?.selectedIndex === i ? 'border-red-500 bg-red-500/10 text-ink' : 'border-edge-strong bg-field text-ink')}>{String.fromCharCode(65+i)}. {option}</button>)}</div>
-                    {answer && <div className="rounded-lg bg-subtle p-4 text-sm text-ink"><strong>{answer.correct ? 'Correct' : 'Incorrect'}</strong>{answer.explanation && <p className="mt-2 leading-7">{answer.explanation}</p>}</div>}
-                  </article>; })}</div>
-                ))}
-
-                {contentTab === 'resources' && (resources.length === 0 ? <EmptyState title="No supplementary resources" description="Only additional revision sheets, PYQ analysis and references assigned to this topic will appear here."/> : (
-                  <div className="space-y-3">{resources.map(item => <article key={item.id} className="rounded-xl border border-edge bg-panel p-5">
-                    <div className="text-xs font-semibold text-amber-600 dark:text-amber-300">{materialLabel[item.materialType] || 'Study Resource'}</div>
-                    <h3 className="mt-1 text-lg font-bold text-ink">{item.title}</h3>
-                    <div className="mt-3 whitespace-pre-wrap leading-7 text-sm text-ink">{item.contentMarkdown || 'No written content has been added.'}</div>
-                    {item.resourceUrl && <a href={item.resourceUrl} target="_blank" rel="noreferrer" className="mt-3 inline-block text-sm text-amber-600 hover:underline">Open reference</a>}
-                  </article>)}</div>
-                ))}
-              </main>
+            {visibleTopics.length === 0 ? <EmptyState title="No matching topics" description="Try another search term or choose a different subject."/> : (
+              <div className="space-y-6">
+                {subjects.filter(subject => visibleTopics.some(topic => topic.subjectId === subject.id)).map(subject => {
+                  const subjectTopics = visibleTopics.filter(topic => topic.subjectId === subject.id);
+                  return (
+                    <section key={subject.id} className="space-y-3">
+                      <div className="flex items-center justify-between border-b border-edge pb-2">
+                        <h2 className="text-lg font-bold text-ink">{subject.title}</h2>
+                        <span className="text-xs text-ink-muted">{subjectTopics.length} topics</span>
+                      </div>
+                      <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+                        {subjectTopics.map(topic => {
+                          const chapter = chapters.find(item => item.id === topic.chapterId);
+                          const unit = units.find(item => item.id === topic.unitId);
+                          return (
+                            <button key={topic.id} onClick={() => { setActiveTopicId(topic.id); setContentTab('notes'); setQuestionError(null); }} className="group rounded-xl border border-edge bg-panel p-4 text-left transition hover:border-amber-400 hover:bg-subtle focus:outline-none focus:ring-2 focus:ring-amber-400">
+                              <div className="text-[11px] font-semibold uppercase tracking-wide text-amber-600 dark:text-amber-300">{unit?.title || 'Unit not specified'}</div>
+                              <div className="mt-1 text-xs text-ink-muted">{chapter?.title || 'Chapter not specified'}</div>
+                              <h3 className="mt-3 text-base font-bold leading-snug text-ink group-hover:text-amber-600">{topic.title}</h3>
+                              {topic.syllabusNotes && <p className="mt-2 line-clamp-2 text-xs leading-5 text-ink-muted">{topic.syllabusNotes}</p>}
+                              <div className="mt-4 flex items-center justify-between border-t border-edge pt-3 text-xs">
+                                <span className="text-ink-muted">Open learning material</span>
+                                <span className="font-bold text-amber-600">Open topic →</span>
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </section>
+                  );
+                })}
+                {visibleTopics.some(topic => !subjects.some(subject => subject.id === topic.subjectId)) && (
+                  <section className="space-y-3">
+                    <h2 className="border-b border-edge pb-2 text-lg font-bold text-ink">Other Topics</h2>
+                    <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+                      {visibleTopics.filter(topic => !subjects.some(subject => subject.id === topic.subjectId)).map(topic => (
+                        <button key={topic.id} onClick={() => { setActiveTopicId(topic.id); setContentTab('notes'); }} className="rounded-xl border border-edge bg-panel p-4 text-left hover:border-amber-400">
+                          <h3 className="font-bold text-ink">{topic.title}</h3><span className="mt-3 inline-block text-xs font-bold text-amber-600">Open topic →</span>
+                        </button>
+                      ))}
+                    </div>
+                  </section>
+                )}
+              </div>
             )}
-          </div>
+          </section>
+        ) : (
+          <main className="min-w-0 space-y-4">
+            <button onClick={() => { setActiveTopicId(''); setQuestionError(null); setQuestions([]); }} className="inline-flex items-center gap-2 rounded-lg border border-edge bg-panel px-4 py-2 text-sm font-semibold text-ink hover:border-amber-400">
+              <span aria-hidden="true">←</span> Back to all topics
+            </button>
+            <header className="rounded-2xl border border-amber-500/30 bg-gradient-to-br from-[#17243a] via-[#1c2d46] to-[#263a55] p-6 sm:p-8 shadow-lg">
+              <div className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-300">{subjects.find(s => s.id === activeTopic.subjectId)?.title || 'Subject'}</div>
+              <h1 className="mt-3 font-serif text-3xl sm:text-4xl font-bold leading-tight text-amber-100">{activeTopic.title}</h1>
+              <p className="mt-2 text-sm text-slate-300">{[units.find(u => u.id === activeTopic.unitId)?.title, chapters.find(c => c.id === activeTopic.chapterId)?.title].filter(Boolean).join(' / ')}</p>
+              {activeTopic.syllabusNotes && <p className="mt-4 max-w-3xl border-l-2 border-amber-400 pl-4 text-sm leading-7 text-slate-200">{activeTopic.syllabusNotes}</p>}
+              <div className="mt-5 flex flex-wrap gap-2">
+                <button onClick={() => void bookmarkTopic()} className="rounded-lg border border-amber-300/40 px-3 py-2 text-xs font-semibold text-amber-100">{bookmarks.some(b => b.targetType === 'topic' && b.targetId === activeTopic.id) ? 'Saved topic' : 'Bookmark topic'}</button>
+                <button onClick={() => void markComplete()} className="rounded-lg bg-amber-400 px-3 py-2 text-xs font-bold text-slate-950"><CheckCircle2 className="inline h-4 w-4 mr-1"/>Mark complete</button>
+              </div>
+            </header>
+
+            <nav className="flex flex-wrap gap-2" aria-label="Topic learning sections">
+              {([{id:'notes',label:'Complete Notes'},{id:'mcq',label:'MCQs'},{id:'pyq',label:'PYQs'},{id:'resources',label:'Study Resources'}] as const).map(tab => <button key={tab.id} onClick={() => setContentTab(tab.id)} className={'rounded-full border px-4 py-2 text-sm font-semibold ' + (contentTab === tab.id ? 'border-amber-400 bg-amber-400 text-slate-950' : 'border-edge bg-panel text-ink-muted hover:border-amber-400/60')}>{tab.label}</button>)}
+            </nav>
+
+            {contentTab === 'notes' && (notes.length === 0 ? <EmptyState title="Complete notes are not published yet" description="This topic has no full notes yet. The topic remains visible, but no shortened or invented notes are shown."/> : (
+              <div className="space-y-4">{notes.map(note => <article key={note.id} className="rounded-2xl border border-amber-500/20 bg-panel p-5 sm:p-8">
+                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-amber-600 dark:text-amber-300"><FileText className="h-4 w-4"/>{materialLabel[note.materialType] || 'Study Material'} · {note.estimatedMinutes} min read</div>
+                <h2 className="mt-2 font-serif text-2xl font-bold text-ink">{note.title}</h2>
+                <div className="mt-5 max-w-none whitespace-pre-wrap break-words font-serif text-[15px] leading-8 text-ink">{stripEditorialFooter(note.contentMarkdown || 'Complete notes have not been added for this topic yet.')}</div>
+                {note.resourceUrl && <a className="mt-5 inline-flex items-center text-sm font-semibold text-amber-600 hover:underline" href={note.resourceUrl} target="_blank" rel="noreferrer">Open source reference</a>}
+              </article>)}</div>
+            ))}
+
+            {(contentTab === 'mcq' || contentTab === 'pyq') && (questionError ? <ErrorState message={questionError} onRetry={() => setQuestionReload(value => value + 1)}/> : questions.length === 0 ? <EmptyState title={contentTab === 'mcq' ? 'No MCQs for this topic yet' : 'No PYQs for this topic yet'} description={contentTab === 'mcq' ? 'MCQs assigned to this exact topic will appear here after they are published.' : 'Previous-year questions assigned to this exact topic will appear here after they are published.'}/> : (
+              <div className="space-y-4">{questions.map((q,index) => { const answer = feedback[q.id]; return <article key={q.id} className="rounded-2xl border border-edge bg-panel p-5 space-y-4">
+                <div className="text-xs font-semibold text-amber-600 dark:text-amber-300">{contentTab === 'mcq' ? 'MCQ' : 'Previous Year Question'} {index+1}{q.examYear ? ' · '+q.examYear : ''} · {q.difficulty}</div>
+                <h3 className="font-semibold leading-7 text-ink">{q.stem}</h3>
+                <div className="grid gap-2 sm:grid-cols-2">{q.options.map((option,i) => <button key={i} disabled={Boolean(answer) || checkingId === q.id} onClick={() => void answerQuestion(q,i)} className={'rounded-lg border p-3 text-left text-sm ' + (answer?.correctOptionIndex === i ? 'border-emerald-500 bg-emerald-500/10 text-ink' : answer?.selectedIndex === i ? 'border-red-500 bg-red-500/10 text-ink' : 'border-edge-strong bg-field text-ink')}>{String.fromCharCode(65+i)}. {option}</button>)}</div>
+                {answer && <div className="rounded-lg bg-subtle p-4 text-sm text-ink"><strong>{answer.correct ? 'Correct' : 'Incorrect'}</strong>{answer.explanation && <p className="mt-2 leading-7">{answer.explanation}</p>}</div>}
+              </article>; })}</div>
+            ))}
+
+            {contentTab === 'resources' && (resources.length === 0 ? <EmptyState title="No supplementary resources" description="Only additional revision sheets, PYQ analysis and references assigned to this topic will appear here."/> : (
+              <div className="space-y-3">{resources.map(item => <article key={item.id} className="rounded-xl border border-edge bg-panel p-5">
+                <div className="text-xs font-semibold text-amber-600 dark:text-amber-300">{materialLabel[item.materialType] || 'Study Resource'}</div>
+                <h3 className="mt-1 text-lg font-bold text-ink">{item.title}</h3>
+                <div className="mt-3 whitespace-pre-wrap leading-7 text-sm text-ink">{item.contentMarkdown || 'No written content has been added.'}</div>
+                {item.resourceUrl && <a href={item.resourceUrl} target="_blank" rel="noreferrer" className="mt-3 inline-block text-sm text-amber-600 hover:underline">Open reference</a>}
+              </article>)}</div>
+            ))}
+          </main>
         )}
       </div>
     </AppShell>
