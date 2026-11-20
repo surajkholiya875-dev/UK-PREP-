@@ -14,7 +14,6 @@ import { VerifyEmailPage } from './pages/public/VerifyEmailPage';
 import { AnnouncementsPage } from './pages/student/AnnouncementsPage';
 import { AttemptHistoryPage } from './pages/student/AttemptHistoryPage';
 import { BookmarksPage } from './pages/student/BookmarksPage';
-import { CourseCataloguePage } from './pages/student/CourseCataloguePage';
 import { CourseDetailPage } from './pages/student/CourseDetailPage';
 import { LearningProgressPage } from './pages/student/LearningProgressPage';
 import { MyCoursesPage } from './pages/student/MyCoursesPage';
@@ -57,7 +56,7 @@ export default function App() {
               <Route path="/student" element={<Navigate to="/student/dashboard" replace />} />
               <Route path="/student/dashboard" element={<StudentRoute><StudentDashboardPage /></StudentRoute>} />
               <Route path="/student/courses" element={<StudentRoute><MyCoursesPage /></StudentRoute>} />
-              <Route path="/student/catalogue" element={<StudentRoute><CourseCataloguePage /></StudentRoute>} />
+              <Route path="/student/catalogue" element={<Navigate to="/student/courses" replace />} />
               <Route path="/student/courses/:courseId" element={<StudentRoute><CourseDetailPage /></StudentRoute>} />
               <Route path="/student/syllabus" element={<Navigate to="/student/materials" replace />} />
               <Route path="/student/materials" element={<StudentRoute><StudyMaterialsPage /></StudentRoute>} />

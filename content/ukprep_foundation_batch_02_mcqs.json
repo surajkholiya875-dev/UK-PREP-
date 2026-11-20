@@ -1,0 +1,848 @@
+{
+  "exportedAt": "2026-11-20T00:00:00.000Z",
+  "platform": "UK Prep",
+  "collections": {
+    "questions": [
+      {
+        "id": "ukprep-foundation02-mcq-01",
+        "topicId": "uk-geo-topic",
+        "chapterId": "uk-geo-chapter",
+        "subjectId": "uk-geo",
+        "examinationId": "ukpsc-pcs-foundation",
+        "questionType": "mcq",
+        "stem": "Which two rivers meet at Devprayag to form the Ganga?",
+        "options": [
+          "Alaknanda and Bhagirathi",
+          "Alaknanda and Mandakini",
+          "Bhagirathi and Yamuna",
+          "Pindar and Alaknanda"
+        ],
+        "correctOptionIndex": 0,
+        "explanation": "The Bhagirathi and Alaknanda meet at Devprayag; downstream of the confluence the river is known as the Ganga.",
+        "difficulty": "standard",
+        "isPublished": true,
+        "createdBy": "imported-by-admin",
+        "createdAt": {
+          "seconds": 1795219200,
+          "nanoseconds": 0
+        },
+        "updatedAt": {
+          "seconds": 1795219200,
+          "nanoseconds": 0
+        }
+      },
+      {
+        "id": "ukprep-foundation02-mcq-02",
+        "topicId": "uk-geo-topic",
+        "chapterId": "uk-geo-chapter",
+        "subjectId": "uk-geo",
+        "examinationId": "ukpsc-pcs-foundation",
+        "questionType": "mcq",
+        "stem": "The Pindar River joins the Alaknanda at which Prayag?",
+        "options": [
+          "Rudraprayag",
+          "Karnaprayag",
+          "Nandprayag",
+          "Vishnuprayag"
+        ],
+        "correctOptionIndex": 1,
+        "explanation": "Karnaprayag is the confluence of the Alaknanda and Pindar rivers.",
+        "difficulty": "standard",
+        "isPublished": true,
+        "createdBy": "imported-by-admin",
+        "createdAt": {
+          "seconds": 1795219200,
+          "nanoseconds": 0
+        },
+        "updatedAt": {
+          "seconds": 1795219200,
+          "nanoseconds": 0
+        }
+      },
+      {
+        "id": "ukprep-foundation02-mcq-03",
+        "topicId": "uk-geo-topic",
+        "chapterId": "uk-geo-chapter",
+        "subjectId": "uk-geo",
+        "examinationId": "ukpsc-pcs-foundation",
+        "questionType": "mcq",
+        "stem": "Which is the easternmost district of Uttarakhand?",
+        "options": [
+          "Chamoli",
+          "Bageshwar",
+          "Pithoragarh",
+          "Champawat"
+        ],
+        "correctOptionIndex": 2,
+        "explanation": "Pithoragarh lies in the eastern Kumaon region and shares an international boundary with Nepal and China.",
+        "difficulty": "standard",
+        "isPublished": true,
+        "createdBy": "imported-by-admin",
+        "createdAt": {
+          "seconds": 1795219200,
+          "nanoseconds": 0
+        },
+        "updatedAt": {
+          "seconds": 1795219200,
+          "nanoseconds": 0
+        }
+      },
+      {
+        "id": "ukprep-foundation02-mcq-04",
+        "topicId": "uk-geo-topic",
+        "chapterId": "uk-geo-chapter",
+        "subjectId": "uk-geo",
+        "examinationId": "ukpsc-pcs-foundation",
+        "questionType": "mcq",
+        "stem": "The Trans-Himalayan region in Uttarakhand is most closely associated with which landscape?",
+        "options": [
+          "Terai plains",
+          "Cold-arid high-altitude terrain",
+          "Coastal wetlands",
+          "Deccan plateau"
+        ],
+        "correctOptionIndex": 1,
+        "explanation": "The northern high-altitude rain-shadow areas, especially around parts of the upper Himalaya, include cold-arid landscapes.",
+        "difficulty": "standard",
+        "isPublished": true,
+        "createdBy": "imported-by-admin",
+        "createdAt": {
+          "seconds": 1795219200,
+          "nanoseconds": 0
+        },
+        "updatedAt": {
+          "seconds": 1795219200,
+          "nanoseconds": 0
+        }
+      },
+      {
+        "id": "ukprep-foundation02-mcq-05",
+        "topicId": "uk-geo-topic",
+        "chapterId": "uk-geo-chapter",
+        "subjectId": "uk-geo",
+        "examinationId": "ukpsc-pcs-foundation",
+        "questionType": "mcq",
+        "stem": "Which river is associated with Vishnuprayag?",
+        "options": [
+          "Dhauliganga and Alaknanda",
+          "Nandakini and Alaknanda",
+          "Pindar and Alaknanda",
+          "Mandakini and Alaknanda"
+        ],
+        "correctOptionIndex": 0,
+        "explanation": "Vishnuprayag is the confluence of the Dhauliganga and Alaknanda.",
+        "difficulty": "standard",
+        "isPublished": true,
+        "createdBy": "imported-by-admin",
+        "createdAt": {
+          "seconds": 1795219200,
+          "nanoseconds": 0
+        },
+        "updatedAt": {
+          "seconds": 1795219200,
+          "nanoseconds": 0
+        }
+      },
+      {
+        "id": "ukprep-foundation02-mcq-06",
+        "topicId": "uk-history-topic",
+        "chapterId": "uk-history-chapter",
+        "subjectId": "uk-history",
+        "examinationId": "ukpsc-pcs-foundation",
+        "questionType": "mcq",
+        "stem": "The Katyuri rulers are historically associated most strongly with which region?",
+        "options": [
+          "Garhwal Himalaya",
+          "Kumaon, with Kartikeyapura as an important centre",
+          "Jaunsar only",
+          "Terai plains"
+        ],
+        "correctOptionIndex": 1,
+        "explanation": "The Katyuris established an influential early-medieval polity in the Kumaon region; Kartikeyapura is associated with their political centre.",
+        "difficulty": "standard",
+        "isPublished": true,
+        "createdBy": "imported-by-admin",
+        "createdAt": {
+          "seconds": 1795219200,
+          "nanoseconds": 0
+        },
+        "updatedAt": {
+          "seconds": 1795219200,
+          "nanoseconds": 0
+        }
+      },
+      {
+        "id": "ukprep-foundation02-mcq-07",
+        "topicId": "uk-history-topic",
+        "chapterId": "uk-history-chapter",
+        "subjectId": "uk-history",
+        "examinationId": "ukpsc-pcs-foundation",
+        "questionType": "mcq",
+        "stem": "The Treaty of Sugauli was concluded in which year?",
+        "options": [
+          "1792",
+          "1804",
+          "1816",
+          "1824"
+        ],
+        "correctOptionIndex": 2,
+        "explanation": "The Treaty of Sugauli was signed in 1815 and ratified in 1816, following the Anglo-Nepalese War.",
+        "difficulty": "standard",
+        "isPublished": true,
+        "createdBy": "imported-by-admin",
+        "createdAt": {
+          "seconds": 1795219200,
+          "nanoseconds": 0
+        },
+        "updatedAt": {
+          "seconds": 1795219200,
+          "nanoseconds": 0
+        }
+      },
+      {
+        "id": "ukprep-foundation02-mcq-08",
+        "topicId": "uk-history-topic",
+        "chapterId": "uk-history-chapter",
+        "subjectId": "uk-history",
+        "examinationId": "ukpsc-pcs-foundation",
+        "questionType": "mcq",
+        "stem": "The Gorkha rule in Kumaon and Garhwal ended after which conflict?",
+        "options": [
+          "Anglo-Gorkha War",
+          "First Anglo-Sikh War",
+          "Anglo-Maratha War",
+          "Gurkha-Tibet War"
+        ],
+        "correctOptionIndex": 0,
+        "explanation": "The Anglo-Gorkha War (1814–1816) ended Gorkha expansion in the region; British rule followed under the treaty settlement.",
+        "difficulty": "standard",
+        "isPublished": true,
+        "createdBy": "imported-by-admin",
+        "createdAt": {
+          "seconds": 1795219200,
+          "nanoseconds": 0
+        },
+        "updatedAt": {
+          "seconds": 1795219200,
+          "nanoseconds": 0
+        }
+      },
+      {
+        "id": "ukprep-foundation02-mcq-09",
+        "topicId": "uk-history-topic",
+        "chapterId": "uk-history-chapter",
+        "subjectId": "uk-history",
+        "examinationId": "ukpsc-pcs-foundation",
+        "questionType": "mcq",
+        "stem": "Tehri Garhwal merged with the Indian Union in which year?",
+        "options": [
+          "1947",
+          "1948",
+          "1949",
+          "1950"
+        ],
+        "correctOptionIndex": 2,
+        "explanation": "The princely state of Tehri Garhwal merged with India in 1949.",
+        "difficulty": "standard",
+        "isPublished": true,
+        "createdBy": "imported-by-admin",
+        "createdAt": {
+          "seconds": 1795219200,
+          "nanoseconds": 0
+        },
+        "updatedAt": {
+          "seconds": 1795219200,
+          "nanoseconds": 0
+        }
+      },
+      {
+        "id": "ukprep-foundation02-mcq-10",
+        "topicId": "uk-history-topic",
+        "chapterId": "uk-history-chapter",
+        "subjectId": "uk-history",
+        "examinationId": "ukpsc-pcs-foundation",
+        "questionType": "mcq",
+        "stem": "The Chipko movement is most closely associated with which kind of public action?",
+        "options": [
+          "Opposing dam construction through court cases only",
+          "Villagers embracing trees to prevent felling",
+          "A campaign for land revenue reform",
+          "A movement for separate statehood only"
+        ],
+        "correctOptionIndex": 1,
+        "explanation": "The Chipko movement used non-violent tree-embracing actions to resist commercial felling and defend forest livelihoods.",
+        "difficulty": "standard",
+        "isPublished": true,
+        "createdBy": "imported-by-admin",
+        "createdAt": {
+          "seconds": 1795219200,
+          "nanoseconds": 0
+        },
+        "updatedAt": {
+          "seconds": 1795219200,
+          "nanoseconds": 0
+        }
+      },
+      {
+        "id": "ukprep-foundation02-mcq-11",
+        "topicId": "uk-culture-topic",
+        "chapterId": "uk-culture-chapter",
+        "subjectId": "uk-culture",
+        "examinationId": "ukpsc-pcs-foundation",
+        "questionType": "mcq",
+        "stem": "A traditional Aipan design is commonly made using which material on a red background?",
+        "options": [
+          "Rice paste on geru-coated surface",
+          "Indigo on cotton",
+          "Charcoal on slate",
+          "Turmeric on silk"
+        ],
+        "correctOptionIndex": 0,
+        "explanation": "Aipan commonly uses white rice paste on a red geru (ochre) background, especially on ritual surfaces.",
+        "difficulty": "standard",
+        "isPublished": true,
+        "createdBy": "imported-by-admin",
+        "createdAt": {
+          "seconds": 1795219200,
+          "nanoseconds": 0
+        },
+        "updatedAt": {
+          "seconds": 1795219200,
+          "nanoseconds": 0
+        }
+      },
+      {
+        "id": "ukprep-foundation02-mcq-12",
+        "topicId": "uk-culture-topic",
+        "chapterId": "uk-culture-chapter",
+        "subjectId": "uk-culture",
+        "examinationId": "ukpsc-pcs-foundation",
+        "questionType": "mcq",
+        "stem": "Jagar in Uttarakhand is best described as:",
+        "options": [
+          "A harvest tax",
+          "A ritual singing tradition invoking local deities and spirits",
+          "A classical court dance",
+          "A type of copper coin"
+        ],
+        "correctOptionIndex": 1,
+        "explanation": "Jagar is a ritual performance tradition involving singing and drumming, associated with invocation of local deities and ancestral spirits.",
+        "difficulty": "standard",
+        "isPublished": true,
+        "createdBy": "imported-by-admin",
+        "createdAt": {
+          "seconds": 1795219200,
+          "nanoseconds": 0
+        },
+        "updatedAt": {
+          "seconds": 1795219200,
+          "nanoseconds": 0
+        }
+      },
+      {
+        "id": "ukprep-foundation02-mcq-13",
+        "topicId": "uk-culture-topic",
+        "chapterId": "uk-culture-chapter",
+        "subjectId": "uk-culture",
+        "examinationId": "ukpsc-pcs-foundation",
+        "questionType": "mcq",
+        "stem": "Chholiya is traditionally associated with which cultural form?",
+        "options": [
+          "Martial folk dance of Kumaon",
+          "Puppet theatre of Garhwal",
+          "Buddhist masked dance of Ladakh",
+          "Harvest song of the Terai"
+        ],
+        "correctOptionIndex": 0,
+        "explanation": "Chholiya is a martial folk dance tradition of Kumaon, often performed in wedding processions.",
+        "difficulty": "standard",
+        "isPublished": true,
+        "createdBy": "imported-by-admin",
+        "createdAt": {
+          "seconds": 1795219200,
+          "nanoseconds": 0
+        },
+        "updatedAt": {
+          "seconds": 1795219200,
+          "nanoseconds": 0
+        }
+      },
+      {
+        "id": "ukprep-foundation02-mcq-14",
+        "topicId": "uk-culture-topic",
+        "chapterId": "uk-culture-chapter",
+        "subjectId": "uk-culture",
+        "examinationId": "ukpsc-pcs-foundation",
+        "questionType": "mcq",
+        "stem": "The Nanda Devi Raj Jat is traditionally associated with which broad region?",
+        "options": [
+          "Kumaon only",
+          "Garhwal Himalaya, especially the Nanda Devi region",
+          "Haridwar plains",
+          "Jaunsar-Bawar only"
+        ],
+        "correctOptionIndex": 1,
+        "explanation": "The Nanda Devi Raj Jat is a major pilgrimage tradition centred on the Nanda Devi region of Garhwal.",
+        "difficulty": "standard",
+        "isPublished": true,
+        "createdBy": "imported-by-admin",
+        "createdAt": {
+          "seconds": 1795219200,
+          "nanoseconds": 0
+        },
+        "updatedAt": {
+          "seconds": 1795219200,
+          "nanoseconds": 0
+        }
+      },
+      {
+        "id": "ukprep-foundation02-mcq-15",
+        "topicId": "uk-culture-topic",
+        "chapterId": "uk-culture-chapter",
+        "subjectId": "uk-culture",
+        "examinationId": "ukpsc-pcs-foundation",
+        "questionType": "mcq",
+        "stem": "Which language group includes Garhwali and Kumaoni?",
+        "options": [
+          "Indo-Aryan",
+          "Dravidian",
+          "Tibeto-Burman only",
+          "Austroasiatic"
+        ],
+        "correctOptionIndex": 0,
+        "explanation": "Garhwali and Kumaoni are Indo-Aryan languages of the Central Pahari group.",
+        "difficulty": "standard",
+        "isPublished": true,
+        "createdBy": "imported-by-admin",
+        "createdAt": {
+          "seconds": 1795219200,
+          "nanoseconds": 0
+        },
+        "updatedAt": {
+          "seconds": 1795219200,
+          "nanoseconds": 0
+        }
+      },
+      {
+        "id": "ukprep-foundation02-mcq-16",
+        "topicId": "uk-env-topic",
+        "chapterId": "uk-env-chapter",
+        "subjectId": "uk-env",
+        "examinationId": "ukpsc-pcs-foundation",
+        "questionType": "mcq",
+        "stem": "The Valley of Flowers National Park is located in which district?",
+        "options": [
+          "Pithoragarh",
+          "Chamoli",
+          "Uttarkashi",
+          "Nainital"
+        ],
+        "correctOptionIndex": 1,
+        "explanation": "The Valley of Flowers National Park is in Chamoli district and is part of the UNESCO World Heritage property with Nanda Devi National Park.",
+        "difficulty": "standard",
+        "isPublished": true,
+        "createdBy": "imported-by-admin",
+        "createdAt": {
+          "seconds": 1795219200,
+          "nanoseconds": 0
+        },
+        "updatedAt": {
+          "seconds": 1795219200,
+          "nanoseconds": 0
+        }
+      },
+      {
+        "id": "ukprep-foundation02-mcq-17",
+        "topicId": "uk-env-topic",
+        "chapterId": "uk-env-chapter",
+        "subjectId": "uk-env",
+        "examinationId": "ukpsc-pcs-foundation",
+        "questionType": "mcq",
+        "stem": "The Nanda Devi and Valley of Flowers World Heritage property is recognised by which organisation?",
+        "options": [
+          "UNESCO",
+          "UNEP only",
+          "FAO",
+          "WMO"
+        ],
+        "correctOptionIndex": 0,
+        "explanation": "UNESCO inscribed the Nanda Devi and Valley of Flowers National Parks as a World Heritage property.",
+        "difficulty": "standard",
+        "isPublished": true,
+        "createdBy": "imported-by-admin",
+        "createdAt": {
+          "seconds": 1795219200,
+          "nanoseconds": 0
+        },
+        "updatedAt": {
+          "seconds": 1795219200,
+          "nanoseconds": 0
+        }
+      },
+      {
+        "id": "ukprep-foundation02-mcq-18",
+        "topicId": "uk-env-topic",
+        "chapterId": "uk-env-chapter",
+        "subjectId": "uk-env",
+        "examinationId": "ukpsc-pcs-foundation",
+        "questionType": "mcq",
+        "stem": "The Chipko movement is an example of which broad approach to conservation?",
+        "options": [
+          "Community-based non-violent forest protection",
+          "Ex-situ gene banking only",
+          "Industrial afforestation",
+          "Wildlife translocation"
+        ],
+        "correctOptionIndex": 0,
+        "explanation": "Chipko is a landmark example of community participation and non-violent resistance in forest conservation.",
+        "difficulty": "standard",
+        "isPublished": true,
+        "createdBy": "imported-by-admin",
+        "createdAt": {
+          "seconds": 1795219200,
+          "nanoseconds": 0
+        },
+        "updatedAt": {
+          "seconds": 1795219200,
+          "nanoseconds": 0
+        }
+      },
+      {
+        "id": "ukprep-foundation02-mcq-19",
+        "topicId": "uk-env-topic",
+        "chapterId": "uk-env-chapter",
+        "subjectId": "uk-env",
+        "examinationId": "ukpsc-pcs-foundation",
+        "questionType": "mcq",
+        "stem": "Which protected area is particularly known for the conservation of the Himalayan musk deer?",
+        "options": [
+          "Askot Wildlife Sanctuary",
+          "Rajaji National Park",
+          "Jhilmil Jheel Conservation Reserve",
+          "Asan Conservation Reserve"
+        ],
+        "correctOptionIndex": 0,
+        "explanation": "Askot Wildlife Sanctuary in Pithoragarh is known for high-altitude Himalayan wildlife, including musk deer habitat.",
+        "difficulty": "standard",
+        "isPublished": true,
+        "createdBy": "imported-by-admin",
+        "createdAt": {
+          "seconds": 1795219200,
+          "nanoseconds": 0
+        },
+        "updatedAt": {
+          "seconds": 1795219200,
+          "nanoseconds": 0
+        }
+      },
+      {
+        "id": "ukprep-foundation02-mcq-20",
+        "topicId": "uk-env-topic",
+        "chapterId": "uk-env-chapter",
+        "subjectId": "uk-env",
+        "examinationId": "ukpsc-pcs-foundation",
+        "questionType": "mcq",
+        "stem": "A major ecological concern associated with Himalayan road construction is:",
+        "options": [
+          "No impact on slope stability",
+          "Slope cutting, landslides and habitat fragmentation",
+          "Permanent reduction in seismicity",
+          "Elimination of erosion"
+        ],
+        "correctOptionIndex": 1,
+        "explanation": "Poorly planned slope cutting and drainage can increase landslide risk, erosion and habitat fragmentation in fragile mountain terrain.",
+        "difficulty": "standard",
+        "isPublished": true,
+        "createdBy": "imported-by-admin",
+        "createdAt": {
+          "seconds": 1795219200,
+          "nanoseconds": 0
+        },
+        "updatedAt": {
+          "seconds": 1795219200,
+          "nanoseconds": 0
+        }
+      },
+      {
+        "id": "ukprep-foundation02-mcq-21",
+        "topicId": "uk-polity-topic",
+        "chapterId": "uk-polity-chapter",
+        "subjectId": "uk-polity",
+        "examinationId": "ukpsc-pcs-foundation",
+        "questionType": "mcq",
+        "stem": "Uttarakhand was formed as a separate state on:",
+        "options": [
+          "1 January 2007",
+          "9 November 2000",
+          "15 August 1947",
+          "26 January 1950"
+        ],
+        "correctOptionIndex": 1,
+        "explanation": "Uttarakhand came into existence on 9 November 2000 as Uttaranchal; the name was changed to Uttarakhand with effect from 1 January 2007.",
+        "difficulty": "standard",
+        "isPublished": true,
+        "createdBy": "imported-by-admin",
+        "createdAt": {
+          "seconds": 1795219200,
+          "nanoseconds": 0
+        },
+        "updatedAt": {
+          "seconds": 1795219200,
+          "nanoseconds": 0
+        }
+      },
+      {
+        "id": "ukprep-foundation02-mcq-22",
+        "topicId": "uk-polity-topic",
+        "chapterId": "uk-polity-chapter",
+        "subjectId": "uk-polity",
+        "examinationId": "ukpsc-pcs-foundation",
+        "questionType": "mcq",
+        "stem": "Which constitutional provision governs the formation of new states and alteration of areas, boundaries or names of existing states?",
+        "options": [
+          "Article 1",
+          "Article 3",
+          "Article 32",
+          "Article 368"
+        ],
+        "correctOptionIndex": 1,
+        "explanation": "Article 3 empowers Parliament to form new states and alter areas, boundaries or names of existing states, subject to the constitutional procedure.",
+        "difficulty": "standard",
+        "isPublished": true,
+        "createdBy": "imported-by-admin",
+        "createdAt": {
+          "seconds": 1795219200,
+          "nanoseconds": 0
+        },
+        "updatedAt": {
+          "seconds": 1795219200,
+          "nanoseconds": 0
+        }
+      },
+      {
+        "id": "ukprep-foundation02-mcq-23",
+        "topicId": "uk-polity-topic",
+        "chapterId": "uk-polity-chapter",
+        "subjectId": "uk-polity",
+        "examinationId": "ukpsc-pcs-foundation",
+        "questionType": "mcq",
+        "stem": "Who appoints the Governor of an Indian state?",
+        "options": [
+          "Chief Minister",
+          "President of India",
+          "Chief Justice of the High Court",
+          "Speaker of the Legislative Assembly"
+        ],
+        "correctOptionIndex": 1,
+        "explanation": "The Governor is appointed by the President under Article 155 of the Constitution.",
+        "difficulty": "standard",
+        "isPublished": true,
+        "createdBy": "imported-by-admin",
+        "createdAt": {
+          "seconds": 1795219200,
+          "nanoseconds": 0
+        },
+        "updatedAt": {
+          "seconds": 1795219200,
+          "nanoseconds": 0
+        }
+      },
+      {
+        "id": "ukprep-foundation02-mcq-24",
+        "topicId": "uk-polity-topic",
+        "chapterId": "uk-polity-chapter",
+        "subjectId": "uk-polity",
+        "examinationId": "ukpsc-pcs-foundation",
+        "questionType": "mcq",
+        "stem": "Gairsain (Bhararisain) was declared the summer capital of Uttarakhand in:",
+        "options": [
+          "2015",
+          "2018",
+          "2020",
+          "2022"
+        ],
+        "correctOptionIndex": 2,
+        "explanation": "The Uttarakhand government announced Gairsain (Bhararisain) as the summer capital in March 2020.",
+        "difficulty": "standard",
+        "isPublished": true,
+        "createdBy": "imported-by-admin",
+        "createdAt": {
+          "seconds": 1795219200,
+          "nanoseconds": 0
+        },
+        "updatedAt": {
+          "seconds": 1795219200,
+          "nanoseconds": 0
+        }
+      },
+      {
+        "id": "ukprep-foundation02-mcq-25",
+        "topicId": "uk-polity-topic",
+        "chapterId": "uk-polity-chapter",
+        "subjectId": "uk-polity",
+        "examinationId": "ukpsc-pcs-foundation",
+        "questionType": "mcq",
+        "stem": "The Uttarakhand Legislative Assembly is:",
+        "options": [
+          "Bicameral",
+          "Unicameral",
+          "A nominated council only",
+          "A federal parliament"
+        ],
+        "correctOptionIndex": 1,
+        "explanation": "Uttarakhand has a unicameral legislature consisting of the Legislative Assembly.",
+        "difficulty": "standard",
+        "isPublished": true,
+        "createdBy": "imported-by-admin",
+        "createdAt": {
+          "seconds": 1795219200,
+          "nanoseconds": 0
+        },
+        "updatedAt": {
+          "seconds": 1795219200,
+          "nanoseconds": 0
+        }
+      },
+      {
+        "id": "ukprep-foundation02-mcq-26",
+        "topicId": "in-polity-topic",
+        "chapterId": "in-polity-chapter",
+        "subjectId": "in-polity",
+        "examinationId": "ukpsc-pcs-foundation",
+        "questionType": "mcq",
+        "stem": "The Constitution of India was adopted by the Constituent Assembly on:",
+        "options": [
+          "15 August 1947",
+          "26 November 1949",
+          "26 January 1950",
+          "2 October 1950"
+        ],
+        "correctOptionIndex": 1,
+        "explanation": "The Constituent Assembly adopted the Constitution on 26 November 1949; it came into force on 26 January 1950.",
+        "difficulty": "standard",
+        "isPublished": true,
+        "createdBy": "imported-by-admin",
+        "createdAt": {
+          "seconds": 1795219200,
+          "nanoseconds": 0
+        },
+        "updatedAt": {
+          "seconds": 1795219200,
+          "nanoseconds": 0
+        }
+      },
+      {
+        "id": "ukprep-foundation02-mcq-27",
+        "topicId": "in-polity-topic",
+        "chapterId": "in-polity-chapter",
+        "subjectId": "in-polity",
+        "examinationId": "ukpsc-pcs-foundation",
+        "questionType": "mcq",
+        "stem": "Fundamental Rights are contained in which Part of the Constitution?",
+        "options": [
+          "Part II",
+          "Part III",
+          "Part IV",
+          "Part IVA"
+        ],
+        "correctOptionIndex": 1,
+        "explanation": "Part III, Articles 12–35, contains the Fundamental Rights.",
+        "difficulty": "standard",
+        "isPublished": true,
+        "createdBy": "imported-by-admin",
+        "createdAt": {
+          "seconds": 1795219200,
+          "nanoseconds": 0
+        },
+        "updatedAt": {
+          "seconds": 1795219200,
+          "nanoseconds": 0
+        }
+      },
+      {
+        "id": "ukprep-foundation02-mcq-28",
+        "topicId": "in-polity-topic",
+        "chapterId": "in-polity-chapter",
+        "subjectId": "in-polity",
+        "examinationId": "ukpsc-pcs-foundation",
+        "questionType": "mcq",
+        "stem": "Which Article guarantees equality before the law and equal protection of the laws?",
+        "options": [
+          "Article 14",
+          "Article 19",
+          "Article 21A",
+          "Article 32"
+        ],
+        "correctOptionIndex": 0,
+        "explanation": "Article 14 guarantees equality before the law and equal protection of the laws within the territory of India.",
+        "difficulty": "standard",
+        "isPublished": true,
+        "createdBy": "imported-by-admin",
+        "createdAt": {
+          "seconds": 1795219200,
+          "nanoseconds": 0
+        },
+        "updatedAt": {
+          "seconds": 1795219200,
+          "nanoseconds": 0
+        }
+      },
+      {
+        "id": "ukprep-foundation02-mcq-29",
+        "topicId": "in-polity-topic",
+        "chapterId": "in-polity-chapter",
+        "subjectId": "in-polity",
+        "examinationId": "ukpsc-pcs-foundation",
+        "questionType": "mcq",
+        "stem": "The words 'Socialist' and 'Secular' were added to the Preamble by which amendment?",
+        "options": [
+          "24th Amendment",
+          "42nd Amendment",
+          "44th Amendment",
+          "52nd Amendment"
+        ],
+        "correctOptionIndex": 1,
+        "explanation": "The 42nd Constitutional Amendment Act, 1976 added the words Socialist, Secular and Integrity to the Preamble.",
+        "difficulty": "standard",
+        "isPublished": true,
+        "createdBy": "imported-by-admin",
+        "createdAt": {
+          "seconds": 1795219200,
+          "nanoseconds": 0
+        },
+        "updatedAt": {
+          "seconds": 1795219200,
+          "nanoseconds": 0
+        }
+      },
+      {
+        "id": "ukprep-foundation02-mcq-30",
+        "topicId": "in-polity-topic",
+        "chapterId": "in-polity-chapter",
+        "subjectId": "in-polity",
+        "examinationId": "ukpsc-pcs-foundation",
+        "questionType": "mcq",
+        "stem": "Which Article is commonly described as the constitutional remedy for enforcement of Fundamental Rights?",
+        "options": [
+          "Article 17",
+          "Article 21",
+          "Article 32",
+          "Article 51A"
+        ],
+        "correctOptionIndex": 2,
+        "explanation": "Article 32 allows individuals to move the Supreme Court for enforcement of Fundamental Rights.",
+        "difficulty": "standard",
+        "isPublished": true,
+        "createdBy": "imported-by-admin",
+        "createdAt": {
+          "seconds": 1795219200,
+          "nanoseconds": 0
+        },
+        "updatedAt": {
+          "seconds": 1795219200,
+          "nanoseconds": 0
+        }
+      }
+    ]
+  }
+}
