@@ -20,6 +20,7 @@ export function AdminCoursesPage() {
   const [notice, setNotice] = useState<string | null>(null);
   const [courses, setCourses] = useState<Course[]>([]);
   const [exams, setExams] = useState<Examination[]>([]);
+  const [selectedExamId, setSelectedExamId] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
 
   const [form, setForm] = useState({
@@ -45,6 +46,9 @@ export function AdminCoursesPage() {
       setExams(exms);
       if (exms.length > 0 && !form.examinationId) {
         setForm((p) => ({ ...p, examinationId: exms[0].id }));
+        setSelectedExamId(exms[0].id);
+      } else if (form.examinationId && !selectedExamId) {
+        setSelectedExamId(form.examinationId);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unable to load courses.');
@@ -52,6 +56,8 @@ export function AdminCoursesPage() {
       setLoading(false);
     }
   };
+
+  const visibleCourses = courses.filter((course) => course.examinationId === selectedExamId);
 
   useEffect(() => {
     void loadData();
@@ -125,7 +131,11 @@ export function AdminCoursesPage() {
                   id="crs-exam"
                   required
                   value={form.examinationId}
-                  onChange={(e) => setForm((p) => ({ ...p, examinationId: e.target.value }))}
+                  onChange={(e) => {
+                    const nextId = e.target.value;
+                    setSelectedExamId(nextId);
+                    setForm((p) => ({ ...p, examinationId: nextId }));
+                  }}
                   className="w-full px-3 py-2 text-sm rounded-lg border border-edge-strong bg-field text-ink focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent"
                 >
                   {exams.map((ex) => (
@@ -238,16 +248,23 @@ export function AdminCoursesPage() {
           {notice && <SuccessBanner message={notice} />}
           {error && <ErrorState message={error} onRetry={() => void loadData()} />}
 
+          <div className="bg-panel border border-edge rounded-xl p-4">
+            <label htmlFor="course-exam-filter" className="block text-xs font-medium text-ink-muted mb-1">Show courses for examination body</label>
+            <select id="course-exam-filter" value={selectedExamId} onChange={(e) => setSelectedExamId(e.target.value)} className="w-full px-3 py-2 text-sm rounded-lg border border-edge-strong bg-field text-ink">
+              <option value="">Choose examination body...</option>
+              {exams.map((exam) => <option key={exam.id} value={exam.id}>{exam.code} — {exam.title}</option>)}
+            </select>
+          </div>
           {loading ? (
             <LoadingState label="Loading courses..." />
-          ) : courses.length === 0 ? (
+          ) : visibleCourses.length === 0 ? (
             <EmptyState
-              title="No courses created yet"
-              description="Create courses linked to an Examination category to organize subjects and study materials."
+              title="No courses for this examination body"
+              description="Create a course for the selected examination body using the form."
             />
           ) : (
             <div className="bg-panel border border-edge rounded-xl shadow-sm divide-y divide-edge">
-              {courses.map((c) => {
+              {visibleCourses.map((c) => {
                 const ex = exams.find((e) => e.id === c.examinationId);
                 return (
                   <div key={c.id} className="p-4 flex items-start justify-between gap-4">
