@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { CheckCircle2, FileText, BookOpen } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
 import { AppShell } from '../../components/ui/AppShell';
 import { EmptyState, ErrorState, LoadingState, SuccessBanner } from '../../components/ui/StateBlocks';
 import { STUDENT_NAV_ITEMS } from '../../config/navigation';
@@ -26,6 +27,7 @@ export function stripEditorialFooter(content: string): string {
 
 export function StudyMaterialsPage() {
   const { firebaseUser } = useAuth();
+  const [searchParams] = useSearchParams();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [questionError, setQuestionError] = useState<string | null>(null);
@@ -40,7 +42,7 @@ export function StudyMaterialsPage() {
   const [feedback, setFeedback] = useState<Record<string, Feedback>>({});
   const [checkingId, setCheckingId] = useState<string | null>(null);
   const [questionReload, setQuestionReload] = useState(0);
-  const [subjectFilter, setSubjectFilter] = useState('all');
+  const [subjectFilter, setSubjectFilter] = useState(() => searchParams.get('subjectId') || 'all');
   const [search, setSearch] = useState('');
   const [activeTopicId, setActiveTopicId] = useState('');
   const [contentTab, setContentTab] = useState<'notes' | 'mcq' | 'pyq' | 'resources'>('notes');
