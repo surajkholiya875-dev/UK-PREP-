@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 
 import { AppShell } from '../../components/ui/AppShell';
-import { EmptyState, ErrorState, LoadingState, SuccessBanner } from '../../components/ui/StateBlocks';
+import { EmptyState, ErrorState, LoadingState } from '../../components/ui/StateBlocks';
 import { STUDENT_NAV_ITEMS } from '../../config/navigation';
 import { useAuth } from '../../context/AuthContext';
 import {
@@ -19,7 +19,6 @@ export function SyllabusNavigatorPage() {
   const { firebaseUser } = useAuth();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [notice, setNotice] = useState<string | null>(null);
 
   const [courses, setCourses] = useState<Course[]>([]);
   const [subjects, setSubjects] = useState<Subject[]>([]);
@@ -86,11 +85,10 @@ export function SyllabusNavigatorPage() {
       ) : courses.length === 0 ? (
         <EmptyState
           title="No published syllabus available"
-          description="Once administrators publish courses, subjects, units, chapters, and topics, you can browse the complete academic tree and mark completion status here."
+          description="Published course syllabi and their subject-wise units, chapters, and topics will appear here."
         />
       ) : (
         <div className="space-y-6">
-          {notice && <SuccessBanner message={notice} />}
 
           <div className="bg-panel border border-edge rounded-xl p-4 grid grid-cols-1 md:grid-cols-2 gap-4 shadow-sm">
             <div>
@@ -187,33 +185,14 @@ export function SyllabusNavigatorPage() {
                                 </p>
                               ) : (
                                 <div className="divide-y divide-edge">
-                                  {chapTopics.map((topic) => {
-                                    const currentStatus =
-                                      progress.find((p) => p.topicId === topic.id)?.completionStatus ||
-                                      'not_started';
-                                    const isSaved = bookmarks.some(
-                                      (b) => b.targetType === 'topic' && b.targetId === topic.id
-                                    );
-                                    return (
-                                      <div
-                                        key={topic.id}
-                                        className="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
-                                      >
-                                        <div>
-                                          <div className="text-sm font-medium text-ink">
-                                            {topic.title}
-                                          </div>
-                                          {topic.syllabusNotes && (
-                                            <div className="text-xs text-ink-muted mt-0.5">
-                                              {topic.syllabusNotes}
-                                            </div>
-                                          )}
-                                        </div>
-
-
-                                      </div>
-                                    );
-                                  })}
+                                  {chapTopics.map((topic) => (
+                                    <div key={topic.id} className="py-3">
+                                      <div className="text-sm font-medium text-ink">{topic.title}</div>
+                                      {topic.syllabusNotes && (
+                                        <div className="text-xs text-ink-muted mt-0.5">{topic.syllabusNotes}</div>
+                                      )}
+                                    </div>
+                                  ))}
                                 </div>
                               )}
                             </div>
