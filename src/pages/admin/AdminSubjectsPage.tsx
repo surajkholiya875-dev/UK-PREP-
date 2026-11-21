@@ -127,7 +127,7 @@ export function AdminSubjectsPage() {
           .filter((subject) => subject.courseId === parentCourse.id)
           .map((subject) => subject.title.trim().toLowerCase())
       );
-      const missing = taxonomySuggestions.filter(
+      const missing = GENERAL_SUBJECT_TAXONOMY.filter(
         (title) => !existingTitles.has(title.trim().toLowerCase())
       );
 
@@ -142,7 +142,7 @@ export function AdminSubjectsPage() {
             courseId: parentCourse.id,
             examinationId: parentCourse.examinationId,
             title,
-            scope: form.scope,
+            scope: 'general',
             description: `${title} syllabus area for ${parentCourse.title}. Add verified units, chapters, topics and topic-wise resources before publishing.`,
             sortOrder: subjects.length + index + 1,
             isPublished: true,
@@ -154,8 +154,8 @@ export function AdminSubjectsPage() {
 
       setNotice(
         missing.length
-          ? `Added and published ${missing.length} ${form.scope === 'uttarakhand' ? 'Uttarakhand' : 'General'} subject presets. Their syllabus sections will appear as you add units, chapters and topics.`
-          : 'All preset subjects for this scope already exist in the selected course.'
+          ? `Added and published ${missing.length} General Studies subject presets. Their syllabus sections will appear as you add units, chapters and topics.`
+          : 'All General Studies subject presets already exist in the selected course.'
       );
       await loadData();
     } catch (err) {
@@ -182,7 +182,7 @@ export function AdminSubjectsPage() {
             <div className="mb-5 rounded-xl border border-edge bg-subtle p-4 space-y-2">
               <div className="text-sm font-semibold text-ink">Build the subject catalogue</div>
               <p className="text-xs leading-relaxed text-ink-muted">
-                Add the standard {form.scope === 'uttarakhand' ? 'Uttarakhand' : 'General Studies'} subject presets to the selected course. They will appear in the student syllabus immediately. Add verified units, chapters and topics to fill each subject's syllabus.
+                Add General Studies subject presets to the selected course, including Indian History, Indian Economy, Environment, Indian Society and Ethics. They will appear in the student syllabus immediately. Add verified units, chapters and topics to fill each subject's syllabus.
               </p>
               <button type="button" disabled={seeding || !form.courseId} onClick={() => void handleAddPresetSubjects()} className="inline-flex items-center gap-2 rounded-lg bg-accent px-3 py-2 text-xs font-semibold text-accent-ink hover:bg-accent-hover disabled:opacity-60">
                 <BookPlus className="h-4 w-4" /> {seeding ? 'Adding subjects...' : `Add ${taxonomySuggestions.length} preset subjects`}
