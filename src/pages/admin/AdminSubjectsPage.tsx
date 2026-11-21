@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { BookPlus, Pencil, Plus, Trash2 } from 'lucide-react';
+import { Pencil, Plus, Trash2 } from 'lucide-react';
 import { AppShell } from '../../components/ui/AppShell';
 import { EmptyState, ErrorState, LoadingState, SuccessBanner } from '../../components/ui/StateBlocks';
 import { ADMIN_NAV_ITEMS } from '../../config/navigation';
@@ -14,7 +14,6 @@ import {
 import {
   Course,
   Examination,
-  GENERAL_SUBJECT_TAXONOMY,
   Subject,
   SubjectScope,
   UTTARAKHAND_SUBJECT_TAXONOMY,
@@ -30,7 +29,6 @@ export function AdminSubjectsPage() {
   const [examinations, setExaminations] = useState<Examination[]>([]);
   const [selectedExaminationId, setSelectedExaminationId] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [seeding, setSeeding] = useState(false);
   const [publishing, setPublishing] = useState(false);
 
   const [form, setForm] = useState({
@@ -137,60 +135,6 @@ export function AdminSubjectsPage() {
   const taxonomySuggestions =
     form.scope === 'uttarakhand' ? UTTARAKHAND_SUBJECT_TAXONOMY : GENERAL_SUBJECT_TAXONOMY;
 
-  const handleAddPresetSubjects = async () => {
-    if (!firebaseUser || !form.courseId) return;
-    const parentCourse = courses.find((course) => course.id === form.courseId);
-    if (!parentCourse) {
-      setError('Select a valid parent course first.');
-      return;
-    }
-
-    setSeeding(true);
-    setError(null);
-    setNotice(null);
-    try {
-      const existingTitles = new Set(
-        subjects
-          .filter((subject) => subject.courseId === parentCourse.id)
-          .map((subject) => subject.title.trim().toLowerCase())
-      );
-      const missing = GENERAL_SUBJECT_TAXONOMY.filter(
-        (title) => !existingTitles.has(title.trim().toLowerCase())
-      );
-
-      for (let index = 0; index < missing.length; index += 1) {
-        const title = missing[index];
-        const id = generateSafeId('subj');
-        await upsertAdminEntity<Subject>(
-          'subjects',
-          id,
-          {
-            id,
-            courseId: parentCourse.id,
-            examinationId: parentCourse.examinationId,
-            title,
-            scope: 'general',
-            description: `${title} syllabus area for ${parentCourse.title}. Add verified units, chapters, topics and topic-wise resources before publishing.`,
-            sortOrder: subjects.length + index + 1,
-            isPublished: true,
-            createdBy: firebaseUser.uid,
-          },
-          false
-        );
-      }
-
-      setNotice(
-        missing.length
-          ? `Added and published ${missing.length} General Studies subject presets. Their syllabus sections will appear as you add units, chapters and topics.`
-          : 'All General Studies subject presets already exist in the selected course.'
-      );
-      await loadData();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unable to add preset subjects.');
-    } finally {
-      setSeeding(false);
-    }
-  };
 
   return (
     <AppShell
@@ -205,17 +149,6 @@ export function AdminSubjectsPage() {
           <h2 className="text-base font-semibold text-ink mb-4">
             {editingId ? 'Edit Subject' : 'Create Subject'}
           </h2>
-          {!editingId && courses.length > 0 && (
-            <div className="mb-5 rounded-xl border border-edge bg-subtle p-4 space-y-2">
-              <div className="text-sm font-semibold text-ink">Build the subject catalogue</div>
-              <p className="text-xs leading-relaxed text-ink-muted">
-                Add General Studies subject presets to the selected course, including Indian History, Indian Economy, Environment, Indian Society and Ethics. They will appear in the student syllabus immediately. Add verified units, chapters and topics to fill each subject's syllabus.
-              </p>
-              <button type="button" disabled={seeding || !form.courseId} onClick={() => void handleAddPresetSubjects()} className="inline-flex items-center gap-2 rounded-lg bg-accent px-3 py-2 text-xs font-semibold text-accent-ink hover:bg-accent-hover disabled:opacity-60">
-                <BookPlus className="h-4 w-4" /> {seeding ? 'Adding subjects...' : `Add ${GENERAL_SUBJECT_TAXONOMY.length} General Studies subjects`}
-              </button>
-            </div>
-          )}
           {courses.length === 0 ? (
             <p className="text-xs text-accent-text">
               Create a Course first before adding Subjects.
