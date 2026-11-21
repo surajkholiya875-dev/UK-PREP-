@@ -45,7 +45,7 @@ export function CourseDetailPage() {
       const foundCourse = crs.find((c) => c.id === courseId) || null;
       setCourse(foundCourse);
       setExam(foundCourse ? exms.find((e) => e.id === foundCourse.examinationId) || null : null);
-      setSubjects(subjs.filter((s) => s.courseId === courseId).sort((a, b) => a.sortOrder - b.sortOrder));
+      setSubjects(subjs.sort((a, b) => a.sortOrder - b.sortOrder));
       setUnits(unts.filter((u) => u.courseId === courseId).sort((a, b) => a.sortOrder - b.sortOrder));
       setChapters(chaps.filter((c) => c.courseId === courseId).sort((a, b) => a.sortOrder - b.sortOrder));
       setTopics(tpcs.filter((t) => t.courseId === courseId).sort((a, b) => a.sortOrder - b.sortOrder));
