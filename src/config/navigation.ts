@@ -24,7 +24,6 @@ import { NavItem } from '../components/ui/AppShell';
 export const STUDENT_NAV_ITEMS: NavItem[] = [
   { label: 'Dashboard', to: '/student/dashboard', icon: LayoutDashboard, section: 'Overview' },
   { label: 'Courses', to: '/student/courses', icon: BookOpen, section: 'Overview' },
-  { label: 'Topic-wise Study', to: '/student/materials', icon: FileText, section: 'Learning' },
   { label: 'Tests & Mock Exams', to: '/student/tests', icon: ClipboardCheck, section: 'Assessment' },
   { label: 'Attempt History', to: '/student/attempts', icon: History, section: 'Assessment' },
   { label: 'Learning Progress', to: '/student/progress', icon: TrendingUp, section: 'Tracking' },
