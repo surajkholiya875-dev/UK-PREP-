@@ -46,8 +46,18 @@ export function SyllabusNavigatorPage() {
   }, [firebaseUser?.uid]);
 
   const courseTitle = (courseId: string) => courses.find(course => course.id === courseId)?.title || 'Course';
+  const excludedSubjectNames = new Set([
+    'world history',
+    'world geography',
+    'logical reasoning',
+    'data interpretation',
+    'quantitative aptitude',
+    'computer awareness',
+    'internal security',
+    'agriculture and rural development',
+  ]);
   const sortedSubjects = [...subjects]
-    .filter(subject => subject.title.trim().toLowerCase() !== 'world history')
+    .filter(subject => !excludedSubjectNames.has(subject.title.trim().toLowerCase()))
     .sort((a, b) => a.sortOrder - b.sortOrder || a.title.localeCompare(b.title));
 
   return (
