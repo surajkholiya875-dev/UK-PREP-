@@ -13,6 +13,7 @@ import {
 } from '../../services/firestoreService';
 import {
   Course,
+  Examination,
   GENERAL_SUBJECT_TAXONOMY,
   Subject,
   SubjectScope,
@@ -26,6 +27,8 @@ export function AdminSubjectsPage() {
   const [notice, setNotice] = useState<string | null>(null);
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [courses, setCourses] = useState<Course[]>([]);
+  const [examinations, setExaminations] = useState<Examination[]>([]);
+  const [selectedExaminationId, setSelectedExaminationId] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [seeding, setSeeding] = useState(false);
 
@@ -42,14 +45,17 @@ export function AdminSubjectsPage() {
     setLoading(true);
     setError(null);
     try {
-      const [subs, crs] = await Promise.all([
+      const [subs, crs, exs] = await Promise.all([
         fetchAllAdminCollection<Subject>('subjects'),
         fetchAllAdminCollection<Course>('courses'),
+        fetchAllAdminCollection<Examination>('examinations'),
       ]);
       setSubjects(subs.sort((a, b) => a.sortOrder - b.sortOrder));
       setCourses(crs);
+      setExaminations(exs);
       if (crs.length > 0 && !form.courseId) {
         setForm((p) => ({ ...p, courseId: crs[0].id }));
+        setSelectedExaminationId(crs[0].examinationId);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unable to load subjects.');
@@ -97,6 +103,9 @@ export function AdminSubjectsPage() {
       setError(err instanceof Error ? err.message : 'Failed to save subject.');
     }
   };
+
+  const examinationCourses = courses.filter((course) => course.examinationId === selectedExaminationId);
+  const visibleSubjects = subjects.filter((subject) => subject.examinationId === selectedExaminationId);
 
   const taxonomySuggestions =
     form.scope === 'uttarakhand' ? UTTARAKHAND_SUBJECT_TAXONOMY : GENERAL_SUBJECT_TAXONOMY;
@@ -187,6 +196,18 @@ export function AdminSubjectsPage() {
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
+                <label htmlFor="subj-examination" className="block text-xs font-medium text-ink-muted mb-1">Examination Body</label>
+                <select id="subj-examination" required value={selectedExaminationId} onChange={(e) => {
+                  const nextExamId = e.target.value;
+                  const nextCourse = courses.find((course) => course.examinationId === nextExamId);
+                  setSelectedExaminationId(nextExamId);
+                  setForm((p) => ({ ...p, courseId: nextCourse?.id || '' }));
+                }} className="w-full px-3 py-2 text-sm rounded-lg border border-edge-strong bg-field text-ink">
+                  <option value="">Choose examination body...</option>
+                  {examinations.filter((exam) => courses.some((course) => course.examinationId === exam.id)).map((exam) => <option key={exam.id} value={exam.id}>{exam.title} ({exam.category})</option>)}
+                </select>
+              </div>
+              <div>
                 <label htmlFor="subj-course" className="block text-xs font-medium text-ink-muted mb-1">
                   Parent Course
                 </label>
@@ -197,7 +218,7 @@ export function AdminSubjectsPage() {
                   onChange={(e) => setForm((p) => ({ ...p, courseId: e.target.value }))}
                   className="w-full px-3 py-2 text-sm rounded-lg border border-edge-strong bg-field text-ink focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent"
                 >
-                  {courses.map((c) => (
+                  {examinationCourses.map((c) => (
                     <option key={c.id} value={c.id}>
                       {c.title}
                     </option>
@@ -309,14 +330,14 @@ export function AdminSubjectsPage() {
 
           {loading ? (
             <LoadingState label="Loading subjects..." />
-          ) : subjects.length === 0 ? (
+          ) : visibleSubjects.length === 0 ? (
             <EmptyState
               title="No subjects created"
-              description="Add Uttarakhand-specific and General competitive subjects under your Courses."
+              description="No subjects exist for the selected examination body yet. Choose its course and add subjects."
             />
           ) : (
             <div className="bg-panel border border-edge rounded-xl shadow-sm divide-y divide-edge">
-              {subjects.map((s) => {
+              {visibleSubjects.map((s) => {
                 const crs = courses.find((c) => c.id === s.courseId);
                 return (
                   <div key={s.id} className="p-4 flex items-start justify-between gap-4">
