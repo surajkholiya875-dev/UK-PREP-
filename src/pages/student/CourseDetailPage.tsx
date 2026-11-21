@@ -143,86 +143,52 @@ export function CourseDetailPage() {
             </div>
           </div>
 
-          {subjects.length === 0 ? (
-            <EmptyState
-              title="No subjects published in this course yet"
-              description="Administrators can add Uttarakhand-specific and General competitive subjects under this course from the Admin Workspace."
-            />
-          ) : (
-            <div className="space-y-4">
-              {subjects.map((subject) => {
-                const subUnits = units.filter((u) => u.subjectId === subject.id);
-                return (
-                  <div
-                    key={subject.id}
-                    className="bg-panel border border-edge rounded-xl p-6 shadow-sm"
-                  >
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-edge">
-                      <div>
-                        <div className="text-xs font-mono text-accent-text">
-                          {subject.scope === 'uttarakhand' ? 'Uttarakhand Subject' : 'General Subject'}
-                        </div>
-                        <h3 className="text-lg font-semibold text-ink">
-                          {subject.title}
-                        </h3>
-                      </div>
-                      <Link
-                        to="/student/syllabus"
-                        className="inline-flex items-center gap-1 text-xs font-medium text-accent-text hover:text-accent-hover hover:underline"
-                      >
-                        <span>Open in Syllabus Navigator</span>
-                        <ChevronRight className="w-3.5 h-3.5" />
-                      </Link>
-                    </div>
-
-                    {subUnits.length === 0 ? (
-                      <p className="mt-4 text-sm text-ink-muted">
-                        No units published under this subject yet.
-                      </p>
-                    ) : (
-                      <div className="mt-4 space-y-4">
-                        {subUnits.map((unit) => {
-                          const unitChapters = chapters.filter((c) => c.unitId === unit.id);
-                          return (
-                            <div key={unit.id} className="pl-2 space-y-2">
-                              <h4 className="text-sm font-semibold text-ink">
-                                {unit.title}
-                              </h4>
-                              {unitChapters.map((chap) => {
-                                const chapTopics = topics.filter((t) => t.chapterId === chap.id);
-                                return (
-                                  <div
-                                    key={chap.id}
-                                    className="ml-3 pl-4 border-l border-edge-strong py-1 space-y-1"
-                                  >
-                                    <div className="text-sm font-medium text-ink">
-                                      {chap.title}
-                                    </div>
-                                    {chapTopics.length > 0 && (
-                                      <ul className="space-y-1 pl-3">
-                                        {chapTopics.map((topic) => (
-                                          <li
-                                            key={topic.id}
-                                            className="text-xs text-ink-muted"
-                                          >
-                                            · {topic.title}
-                                          </li>
-                                        ))}
-                                      </ul>
-                                    )}
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
+          <Link
+            to="/student/syllabus"
+            className="group block rounded-xl border-2 border-amber-400 bg-gradient-to-r from-slate-900 to-slate-800 p-6 shadow-sm transition hover:border-amber-300 focus:outline-none focus:ring-2 focus:ring-amber-400"
+          >
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <div className="text-xs font-bold uppercase tracking-[0.16em] text-amber-300">Start here</div>
+                <h3 className="mt-2 text-xl font-bold text-white">UKPSC Syllabus</h3>
+                <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-200">View the exam syllabus and use it as your roadmap before opening subject-wise topics and study material.</p>
+              </div>
+              <span className="inline-flex shrink-0 items-center gap-2 rounded-lg bg-amber-400 px-4 py-2.5 text-sm font-bold text-slate-950 group-hover:bg-amber-300">Open syllabus <ChevronRight className="h-4 w-4" /></span>
             </div>
-          )}
+          </Link>
+
+          <div>
+            <h3 className="mb-4 text-lg font-bold text-ink">Subjects</h3>
+            {subjects.length === 0 ? (
+              <EmptyState
+                title="No subjects published in this course yet"
+                description="Add General Studies and Uttarakhand subjects from Admin Workspace → Subject Management."
+              />
+            ) : (
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                {subjects.map((subject) => {
+                  const subjectTopics = topics.filter((topic) => topic.subjectId === subject.id);
+                  return (
+                    <Link
+                      key={subject.id}
+                      to={`/student/materials?subjectId=${encodeURIComponent(subject.id)}`}
+                      className="group rounded-xl border border-edge bg-panel p-5 shadow-sm transition hover:border-amber-400 hover:bg-subtle focus:outline-none focus:ring-2 focus:ring-amber-400"
+                    >
+                      <div className="text-xs font-mono text-accent-text">
+                        {subject.scope === 'uttarakhand' ? 'Uttarakhand Subject' : 'General Studies'}
+                      </div>
+                      <h4 className="mt-2 text-lg font-semibold text-ink group-hover:text-amber-600">{subject.title}</h4>
+                      {subject.description && <p className="mt-2 line-clamp-3 text-sm leading-5 text-ink-muted">{subject.description}</p>}
+                      <div className="mt-4 flex items-center justify-between border-t border-edge pt-3 text-xs">
+                        <span className="text-ink-muted">{subjectTopics.length} topics</span>
+                        <span className="inline-flex items-center gap-1 font-semibold text-amber-600">Open subject <ChevronRight className="h-3.5 w-3.5" /></span>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
+          </div>
         </div>
       )}
     </AppShell>
