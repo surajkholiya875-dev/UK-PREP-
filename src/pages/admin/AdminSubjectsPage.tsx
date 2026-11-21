@@ -31,6 +31,7 @@ export function AdminSubjectsPage() {
   const [selectedExaminationId, setSelectedExaminationId] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [seeding, setSeeding] = useState(false);
+  const [publishing, setPublishing] = useState(false);
 
   const [form, setForm] = useState({
     courseId: '',
@@ -101,6 +102,32 @@ export function AdminSubjectsPage() {
       await loadData();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save subject.');
+    }
+  };
+
+  const handlePublishAllDrafts = async () => {
+    if (!firebaseUser || !selectedExaminationId) return;
+    const drafts = subjects.filter((subject) => subject.examinationId === selectedExaminationId && !subject.isPublished);
+    if (drafts.length === 0) {
+      setNotice('There are no draft subjects in this examination.');
+      return;
+    }
+    setPublishing(true);
+    setError(null);
+    setNotice(null);
+    try {
+      for (const subject of drafts) {
+        await upsertAdminEntity<Subject>('subjects', subject.id, {
+          ...subject,
+          isPublished: true,
+        }, true);
+      }
+      setNotice(`Published ${drafts.length} subjects for students.`);
+      await loadData();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unable to publish draft subjects.');
+    } finally {
+      setPublishing(false);
     }
   };
 
@@ -326,6 +353,14 @@ export function AdminSubjectsPage() {
 
         <div className="lg:col-span-7 space-y-4">
           {notice && <SuccessBanner message={notice} />}
+          {!loading && visibleSubjects.some((subject) => !subject.isPublished) && (
+            <div className="flex items-center justify-between gap-3 rounded-xl border border-edge bg-subtle p-4">
+              <p className="text-sm text-ink-muted">{visibleSubjects.filter((subject) => !subject.isPublished).length} draft subjects are hidden from students.</p>
+              <button type="button" disabled={publishing} onClick={() => void handlePublishAllDrafts()} className="shrink-0 rounded-lg bg-accent px-3 py-2 text-xs font-semibold text-accent-ink disabled:opacity-60">
+                {publishing ? 'Publishing…' : 'Publish all drafts'}
+              </button>
+            </div>
+          )}
           {error && <ErrorState message={error} onRetry={() => void loadData()} />}
 
           {loading ? (
