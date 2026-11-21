@@ -143,35 +143,52 @@ export function CourseDetailPage() {
             </div>
           </div>
 
-          {subjects.length === 0 ? (
-            <EmptyState
-              title="No subjects published in this course yet"
-              description="Administrators can add General Studies and Uttarakhand subjects from the Admin Workspace."
-            />
-          ) : (
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-              {subjects.map((subject) => {
-                const subjectTopics = topics.filter((topic) => topic.subjectId === subject.id);
-                return (
-                  <Link
-                    key={subject.id}
-                    to={`/student/materials?subjectId=${encodeURIComponent(subject.id)}`}
-                    className="group rounded-xl border border-edge bg-panel p-5 shadow-sm transition hover:border-amber-400 hover:bg-subtle focus:outline-none focus:ring-2 focus:ring-amber-400"
-                  >
-                    <div className="text-xs font-mono text-accent-text">
-                      {subject.scope === 'uttarakhand' ? 'Uttarakhand Subject' : 'General Studies'}
-                    </div>
-                    <h3 className="mt-2 text-lg font-semibold text-ink group-hover:text-amber-600">{subject.title}</h3>
-                    {subject.description && <p className="mt-2 line-clamp-3 text-sm leading-5 text-ink-muted">{subject.description}</p>}
-                    <div className="mt-4 flex items-center justify-between border-t border-edge pt-3 text-xs">
-                      <span className="text-ink-muted">{subjectTopics.length} topics</span>
-                      <span className="inline-flex items-center gap-1 font-semibold text-amber-600">Open subject <ChevronRight className="h-3.5 w-3.5" /></span>
-                    </div>
-                  </Link>
-                );
-              })}
+          <Link
+            to="/student/syllabus"
+            className="group block rounded-xl border-2 border-amber-400 bg-gradient-to-r from-slate-900 to-slate-800 p-6 shadow-sm transition hover:border-amber-300 focus:outline-none focus:ring-2 focus:ring-amber-400"
+          >
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <div className="text-xs font-bold uppercase tracking-[0.16em] text-amber-300">Start here</div>
+                <h3 className="mt-2 text-xl font-bold text-white">UKPSC Syllabus</h3>
+                <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-200">View the exam syllabus and use it as your roadmap before opening subject-wise topics and study material.</p>
+              </div>
+              <span className="inline-flex shrink-0 items-center gap-2 rounded-lg bg-amber-400 px-4 py-2.5 text-sm font-bold text-slate-950 group-hover:bg-amber-300">Open syllabus <ChevronRight className="h-4 w-4" /></span>
             </div>
-          )}
+          </Link>
+
+          <div>
+            <h3 className="mb-4 text-lg font-bold text-ink">Subjects</h3>
+            {subjects.length === 0 ? (
+              <EmptyState
+                title="No subjects published in this course yet"
+                description="Add General Studies and Uttarakhand subjects from Admin Workspace → Subject Management."
+              />
+            ) : (
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                {subjects.map((subject) => {
+                  const subjectTopics = topics.filter((topic) => topic.subjectId === subject.id);
+                  return (
+                    <Link
+                      key={subject.id}
+                      to={`/student/materials?subjectId=${encodeURIComponent(subject.id)}`}
+                      className="group rounded-xl border border-edge bg-panel p-5 shadow-sm transition hover:border-amber-400 hover:bg-subtle focus:outline-none focus:ring-2 focus:ring-amber-400"
+                    >
+                      <div className="text-xs font-mono text-accent-text">
+                        {subject.scope === 'uttarakhand' ? 'Uttarakhand Subject' : 'General Studies'}
+                      </div>
+                      <h4 className="mt-2 text-lg font-semibold text-ink group-hover:text-amber-600">{subject.title}</h4>
+                      {subject.description && <p className="mt-2 line-clamp-3 text-sm leading-5 text-ink-muted">{subject.description}</p>}
+                      <div className="mt-4 flex items-center justify-between border-t border-edge pt-3 text-xs">
+                        <span className="text-ink-muted">{subjectTopics.length} topics</span>
+                        <span className="inline-flex items-center gap-1 font-semibold text-amber-600">Open subject <ChevronRight className="h-3.5 w-3.5" /></span>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
+          </div>
         </div>
       )}
     </AppShell>
