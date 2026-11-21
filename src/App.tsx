@@ -20,6 +20,7 @@ import { MyCoursesPage } from './pages/student/MyCoursesPage';
 import { StudentDashboardPage } from './pages/student/StudentDashboardPage';
 import { StudentProfilePage } from './pages/student/StudentProfilePage';
 import { SyllabusNavigatorPage } from './pages/student/SyllabusNavigatorPage';
+import { StudentTopicsPage } from './pages/student/StudentTopicsPage';
 import { TestRunnerPage } from './pages/student/TestRunnerPage';
 import { TestsListPage } from './pages/student/TestsListPage';
 
@@ -59,6 +60,7 @@ export default function App() {
               <Route path="/student/catalogue" element={<Navigate to="/student/courses" replace />} />
               <Route path="/student/courses/:courseId" element={<StudentRoute><CourseDetailPage /></StudentRoute>} />
               <Route path="/student/syllabus" element={<StudentRoute><SyllabusNavigatorPage /></StudentRoute>} />
+              <Route path="/student/topics" element={<StudentRoute><StudentTopicsPage /></StudentRoute>} />
               <Route path="/student/materials" element={<Navigate to="/student/syllabus" replace />} />
               <Route path="/student/practice" element={<Navigate to="/student/materials" replace />} />
               <Route path="/student/tests" element={<StudentRoute><TestsListPage /></StudentRoute>} />
