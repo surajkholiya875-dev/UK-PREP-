@@ -42,7 +42,6 @@ export const GENERAL_SUBJECT_TAXONOMY = [
   'Medieval Indian History',
   'Modern Indian History',
   'Indian Constitution and Polity',
-  'World History',
   'World Geography',
   'Indian Geography',
   'Indian Economy',
