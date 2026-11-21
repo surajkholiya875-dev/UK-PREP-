@@ -19,6 +19,7 @@ import { LearningProgressPage } from './pages/student/LearningProgressPage';
 import { MyCoursesPage } from './pages/student/MyCoursesPage';
 import { StudentDashboardPage } from './pages/student/StudentDashboardPage';
 import { StudentProfilePage } from './pages/student/StudentProfilePage';
+import { SyllabusNavigatorPage } from './pages/student/SyllabusNavigatorPage';
 import { TestRunnerPage } from './pages/student/TestRunnerPage';
 import { TestsListPage } from './pages/student/TestsListPage';
 
