@@ -1,21 +1,15 @@
 import { useEffect, useState } from 'react';
-import { Bookmark as BookmarkIcon, CheckCircle2 } from 'lucide-react';
+
 import { AppShell } from '../../components/ui/AppShell';
 import { EmptyState, ErrorState, LoadingState, SuccessBanner } from '../../components/ui/StateBlocks';
 import { STUDENT_NAV_ITEMS } from '../../config/navigation';
 import { useAuth } from '../../context/AuthContext';
 import {
   fetchPublishedCollection,
-  fetchStudentOwned,
-  saveTopicProgress,
-  toggleBookmark,
 } from '../../services/firestoreService';
 import {
-  Bookmark,
   Chapter,
-  CompletionStatus,
   Course,
-  LearningProgress,
   Subject,
   Topic,
   Unit,
@@ -32,8 +26,6 @@ export function SyllabusNavigatorPage() {
   const [units, setUnits] = useState<Unit[]>([]);
   const [chapters, setChapters] = useState<Chapter[]>([]);
   const [topics, setTopics] = useState<Topic[]>([]);
-  const [progress, setProgress] = useState<LearningProgress[]>([]);
-  const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
 
   const [selectedCourseId, setSelectedCourseId] = useState('');
   const [selectedSubjectId, setSelectedSubjectId] = useState('');
@@ -43,22 +35,18 @@ export function SyllabusNavigatorPage() {
     setLoading(true);
     setError(null);
     try {
-      const [crs, sub, unt, chp, tpc, prog, bm] = await Promise.all([
+      const [crs, sub, unt, chp, tpc] = await Promise.all([
         fetchPublishedCollection<Course>('courses'),
         fetchPublishedCollection<Subject>('subjects'),
         fetchPublishedCollection<Unit>('units'),
         fetchPublishedCollection<Chapter>('chapters'),
         fetchPublishedCollection<Topic>('topics'),
-        fetchStudentOwned<LearningProgress>('learningProgress', firebaseUser.uid),
-        fetchStudentOwned<Bookmark>('bookmarks', firebaseUser.uid),
       ]);
       setCourses(crs);
       setSubjects(sub);
       setUnits(unt);
       setChapters(chp);
       setTopics(tpc);
-      setProgress(prog);
-      setBookmarks(bm);
       if (crs.length > 0 && !selectedCourseId) {
         setSelectedCourseId(crs[0].id);
       }
@@ -84,51 +72,12 @@ export function SyllabusNavigatorPage() {
     .filter((u) => u.subjectId === activeSubjectId)
     .sort((a, b) => a.sortOrder - b.sortOrder);
 
-  const handleStatusChange = async (topic: Topic, status: CompletionStatus) => {
-    if (!firebaseUser) return;
-    setNotice(null);
-    try {
-      await saveTopicProgress({
-        userId: firebaseUser.uid,
-        courseId: topic.courseId,
-        subjectId: topic.subjectId,
-        chapterId: topic.chapterId,
-        topicId: topic.id,
-        completionStatus: status,
-      });
-      setNotice(`Updated topic "${topic.title}" to ${status.replace('_', ' ')}.`);
-      const updated = await fetchStudentOwned<LearningProgress>('learningProgress', firebaseUser.uid);
-      setProgress(updated);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unable to save topic progress.');
-    }
-  };
-
-  const handleToggleBookmark = async (topic: Topic) => {
-    if (!firebaseUser) return;
-    const subj = subjects.find((s) => s.id === topic.subjectId);
-    try {
-      const res = await toggleBookmark(
-        firebaseUser.uid,
-        'topic',
-        topic.id,
-        topic.title,
-        subj?.title || ''
-      );
-      setNotice(res.saved ? `Bookmarked "${topic.title}".` : `Removed bookmark for "${topic.title}".`);
-      const updated = await fetchStudentOwned<Bookmark>('bookmarks', firebaseUser.uid);
-      setBookmarks(updated);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unable to update bookmark.');
-    }
-  };
-
   return (
     <AppShell
       workspaceTitle="Student LMS"
       navItems={STUDENT_NAV_ITEMS}
-      pageTitle="Subject & Chapter Navigator"
-      breadcrumb="UK Prep / Student / Syllabus Navigator"
+      pageTitle="Syllabus"
+      breadcrumb="UK Prep / Student / Syllabus"
     >
       {loading ? (
         <LoadingState label="Loading syllabus hierarchy..." />
@@ -261,43 +210,7 @@ export function SyllabusNavigatorPage() {
                                           )}
                                         </div>
 
-                                        <div className="flex items-center gap-2 shrink-0">
-                                          <select
-                                            aria-label={`Progress status for ${topic.title}`}
-                                            value={currentStatus}
-                                            onChange={(e) =>
-                                              void handleStatusChange(
-                                                topic,
-                                                e.target.value as CompletionStatus
-                                              )
-                                            }
-                                            className="px-2.5 py-1.5 text-xs rounded-md border border-edge-strong bg-field text-ink focus:outline-none focus:ring-2 focus:ring-accent"
-                                          >
-                                            <option value="not_started">Not Started</option>
-                                            <option value="in_progress">In Progress</option>
-                                            <option value="completed">Completed</option>
-                                          </select>
 
-                                          {currentStatus === 'completed' && (
-                                            <CheckCircle2
-                                              className="w-4 h-4 text-emerald-600 dark:text-emerald-400"
-                                              aria-label="Completed"
-                                            />
-                                          )}
-
-                                          <button
-                                            type="button"
-                                            onClick={() => void handleToggleBookmark(topic)}
-                                            aria-label={`Bookmark ${topic.title}`}
-                                            className={`p-1.5 rounded-md border transition-colors ${
-                                              isSaved
-                                                ? 'border-accent bg-accent/15 text-accent-text'
-                                                : 'border-edge-strong text-ink-muted hover:text-ink'
-                                            }`}
-                                          >
-                                            <BookmarkIcon className="w-3.5 h-3.5" />
-                                          </button>
-                                        </div>
                                       </div>
                                     );
                                   })}
