@@ -46,7 +46,9 @@ export function SyllabusNavigatorPage() {
   }, [firebaseUser?.uid]);
 
   const courseTitle = (courseId: string) => courses.find(course => course.id === courseId)?.title || 'Course';
-  const sortedSubjects = [...subjects].sort((a, b) => a.sortOrder - b.sortOrder || a.title.localeCompare(b.title));
+  const sortedSubjects = [...subjects]
+    .filter(subject => subject.title.trim().toLowerCase() !== 'world history')
+    .sort((a, b) => a.sortOrder - b.sortOrder || a.title.localeCompare(b.title));
 
   return (
     <AppShell workspaceTitle="Student LMS" navItems={STUDENT_NAV_ITEMS} pageTitle="Syllabus" breadcrumb="UK Prep / Student / Syllabus">
@@ -56,10 +58,6 @@ export function SyllabusNavigatorPage() {
         <EmptyState title="No published subjects available" description="Published subjects from all courses will appear here once they are published in Admin." />
       ) : (
         <div className="space-y-6">
-          <header className="rounded-xl border border-edge bg-panel p-5">
-            <h1 className="text-xl font-bold text-ink">All Subjects</h1>
-            <p className="mt-1 text-sm text-ink-muted">Showing {sortedSubjects.length} published subjects across all published courses. Subjects remain listed even when their units or topics have not been added yet.</p>
-          </header>
           {sortedSubjects.map(subject => {
             const subjectUnits = units.filter(unit => unit.subjectId === subject.id).sort((a, b) => a.sortOrder - b.sortOrder);
             return (
