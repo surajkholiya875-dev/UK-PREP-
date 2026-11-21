@@ -39,7 +39,7 @@ export const ADMIN_NAV_ITEMS: NavItem[] = [
   { label: 'Data Import / Export', to: '/admin/import-export', icon: Database, section: 'Workspace' },
   { label: 'Examinations', to: '/admin/examinations', icon: Award, section: 'Academic Hierarchy' },
   { label: 'Course Catalogue', to: '/admin/courses', icon: Library, section: 'Academic Hierarchy' },
-  { label: 'Subjects', to: '/admin/subjects', icon: BookOpen, section: 'Academic Hierarchy' },
+  { label: 'Subject Management', to: '/admin/subjects', icon: BookOpen, section: 'Academic Hierarchy' },
   { label: 'Units & Chapters', to: '/admin/units-chapters', icon: Layers, section: 'Academic Hierarchy' },
   { label: 'Topics', to: '/admin/topics', icon: FolderTree, section: 'Academic Hierarchy' },
   { label: 'Study Materials', to: '/admin/materials', icon: FileText, section: 'Content & Assessment' },
