@@ -1,0 +1,148 @@
+{
+  "exportedAt": "2026-11-20T00:00:00.000Z",
+  "platform": "UK Prep",
+  "collections": {
+    "questions": [
+      {
+        "id": "ukprep-polity-topic-mcq-01",
+        "topicId": "in-polity-topic",
+        "chapterId": "in-polity-chapter",
+        "subjectId": "in-polity",
+        "examinationId": "ukpsc-pcs-foundation",
+        "questionType": "mcq",
+        "stem": "Which Article prohibits discrimination by the State on grounds of religion, race, caste, sex or place of birth?",
+        "options": [
+          "Article 14",
+          "Article 15",
+          "Article 16",
+          "Article 17"
+        ],
+        "correctOptionIndex": 1,
+        "explanation": "Article 15(1) prohibits the State from discriminating against citizens on the specified grounds.",
+        "difficulty": "standard",
+        "isPublished": true,
+        "createdBy": "imported-by-admin",
+        "createdAt": {
+          "seconds": 1795219200,
+          "nanoseconds": 0
+        },
+        "updatedAt": {
+          "seconds": 1795219200,
+          "nanoseconds": 0
+        }
+      },
+      {
+        "id": "ukprep-polity-topic-mcq-02",
+        "topicId": "in-polity-topic",
+        "chapterId": "in-polity-chapter",
+        "subjectId": "in-polity",
+        "examinationId": "ukpsc-pcs-foundation",
+        "questionType": "mcq",
+        "stem": "Equality of opportunity in matters of public employment is guaranteed under which Article?",
+        "options": [
+          "Article 14",
+          "Article 15",
+          "Article 16",
+          "Article 18"
+        ],
+        "correctOptionIndex": 2,
+        "explanation": "Article 16 guarantees equality of opportunity for all citizens in matters relating to employment or appointment to any office under the State.",
+        "difficulty": "standard",
+        "isPublished": true,
+        "createdBy": "imported-by-admin",
+        "createdAt": {
+          "seconds": 1795219200,
+          "nanoseconds": 0
+        },
+        "updatedAt": {
+          "seconds": 1795219200,
+          "nanoseconds": 0
+        }
+      },
+      {
+        "id": "ukprep-polity-topic-mcq-03",
+        "topicId": "in-polity-topic",
+        "chapterId": "in-polity-chapter",
+        "subjectId": "in-polity",
+        "examinationId": "ukpsc-pcs-foundation",
+        "questionType": "mcq",
+        "stem": "Which Article abolishes untouchability and forbids its practice in any form?",
+        "options": [
+          "Article 15",
+          "Article 16",
+          "Article 17",
+          "Article 18"
+        ],
+        "correctOptionIndex": 2,
+        "explanation": "Article 17 abolishes untouchability and makes its practice in any form an offence punishable in accordance with law.",
+        "difficulty": "standard",
+        "isPublished": true,
+        "createdBy": "imported-by-admin",
+        "createdAt": {
+          "seconds": 1795219200,
+          "nanoseconds": 0
+        },
+        "updatedAt": {
+          "seconds": 1795219200,
+          "nanoseconds": 0
+        }
+      },
+      {
+        "id": "ukprep-polity-topic-mcq-04",
+        "topicId": "in-polity-topic",
+        "chapterId": "in-polity-chapter",
+        "subjectId": "in-polity",
+        "examinationId": "ukpsc-pcs-foundation",
+        "questionType": "mcq",
+        "stem": "After the 44th Constitutional Amendment, which of the following is no longer a Fundamental Right?",
+        "options": [
+          "Right to Freedom of Religion",
+          "Right to Property",
+          "Right to Constitutional Remedies",
+          "Right against Exploitation"
+        ],
+        "correctOptionIndex": 1,
+        "explanation": "The 44th Amendment Act, 1978 removed the Right to Property from Part III; it is now a constitutional/legal right under Article 300A.",
+        "difficulty": "standard",
+        "isPublished": true,
+        "createdBy": "imported-by-admin",
+        "createdAt": {
+          "seconds": 1795219200,
+          "nanoseconds": 0
+        },
+        "updatedAt": {
+          "seconds": 1795219200,
+          "nanoseconds": 0
+        }
+      },
+      {
+        "id": "ukprep-polity-topic-mcq-05",
+        "topicId": "in-polity-topic",
+        "chapterId": "in-polity-chapter",
+        "subjectId": "in-polity",
+        "examinationId": "ukpsc-pcs-foundation",
+        "questionType": "mcq",
+        "stem": "Which Article protects the right to life and personal liberty?",
+        "options": [
+          "Article 19",
+          "Article 20",
+          "Article 21",
+          "Article 22"
+        ],
+        "correctOptionIndex": 2,
+        "explanation": "Article 21 provides that no person shall be deprived of life or personal liberty except according to procedure established by law.",
+        "difficulty": "standard",
+        "isPublished": true,
+        "createdBy": "imported-by-admin",
+        "createdAt": {
+          "seconds": 1795219200,
+          "nanoseconds": 0
+        },
+        "updatedAt": {
+          "seconds": 1795219200,
+          "nanoseconds": 0
+        }
+      }
+    ]
+  }
+}

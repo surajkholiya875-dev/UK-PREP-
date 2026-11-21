@@ -76,6 +76,18 @@ export function StudyMaterialsPage() {
       }).sort((a,b) => a.sortOrder - b.sortOrder);
   }, [topics, subjectFilter, search, subjects, chapters]);
 
+  // Some imported question batches may contain repeated records. Keep one visible copy per normalized stem/options.
+  const uniqueQuestions = useMemo(() => {
+    const seen = new Set<string>();
+    return questions.filter((question) => {
+      const normalize = (value: string) => value.normalize('NFKC').toLowerCase().replace(/[’‘]/g, "'").replace(/[^\\p{L}\\p{N}]+/gu, ' ').trim();
+      const key = normalize(question.stem) + '|' + question.options.map(normalize).sort().join('|');
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }, [questions]);
+
   const activeTopic = visibleTopics.find(t => t.id === activeTopicId) || null;
   const topicMaterials = activeTopic ? materials.filter(m => m.topicId === activeTopic.id) : [];
   const notes = topicMaterials.filter(m => m.materialType === 'notes');
@@ -239,7 +251,7 @@ export function StudyMaterialsPage() {
             ))}
 
             {(contentTab === 'mcq' || contentTab === 'pyq') && (questionError ? <ErrorState message={questionError} onRetry={() => setQuestionReload(value => value + 1)}/> : questions.length === 0 ? <EmptyState title={contentTab === 'mcq' ? 'No MCQs for this topic yet' : 'No PYQs for this topic yet'} description={contentTab === 'mcq' ? 'MCQs assigned to this exact topic will appear here after they are published.' : 'Previous-year questions assigned to this exact topic will appear here after they are published.'}/> : (
-              <div className="space-y-4">{questions.map((q,index) => { const answer = feedback[q.id]; return <article key={q.id} className="rounded-2xl border border-edge bg-panel p-5 space-y-4">
+              <div className="space-y-4">{uniqueQuestions.map((q,index) => { const answer = feedback[q.id]; return <article key={q.id} className="rounded-2xl border border-edge bg-panel p-5 space-y-4">
                 <div className="text-xs font-semibold text-amber-600 dark:text-amber-300">{contentTab === 'mcq' ? 'MCQ' : 'Previous Year Question'} {index+1}{q.examYear ? ' · '+q.examYear : ''} · {q.difficulty}</div>
                 <h3 className="font-semibold leading-7 text-ink">{q.stem}</h3>
                 <div className="grid gap-2 sm:grid-cols-2">{q.options.map((option,i) => <button key={i} disabled={Boolean(answer) || checkingId === q.id} onClick={() => void answerQuestion(q,i)} className={'rounded-lg border p-3 text-left text-sm ' + (answer?.correctOptionIndex === i ? 'border-emerald-500 bg-emerald-500/10 text-ink' : answer?.selectedIndex === i ? 'border-red-500 bg-red-500/10 text-ink' : 'border-edge-strong bg-field text-ink')}>{String.fromCharCode(65+i)}. {option}</button>)}</div>
