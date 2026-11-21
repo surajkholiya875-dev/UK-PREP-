@@ -185,7 +185,7 @@ export function AdminSubjectsPage() {
                 Add General Studies subject presets to the selected course, including Indian History, Indian Economy, Environment, Indian Society and Ethics. They will appear in the student syllabus immediately. Add verified units, chapters and topics to fill each subject's syllabus.
               </p>
               <button type="button" disabled={seeding || !form.courseId} onClick={() => void handleAddPresetSubjects()} className="inline-flex items-center gap-2 rounded-lg bg-accent px-3 py-2 text-xs font-semibold text-accent-ink hover:bg-accent-hover disabled:opacity-60">
-                <BookPlus className="h-4 w-4" /> {seeding ? 'Adding subjects...' : `Add ${taxonomySuggestions.length} preset subjects`}
+                <BookPlus className="h-4 w-4" /> {seeding ? 'Adding subjects...' : `Add ${GENERAL_SUBJECT_TAXONOMY.length} General Studies subjects`}
               </button>
             </div>
           )}
