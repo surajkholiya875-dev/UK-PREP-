@@ -4,35 +4,21 @@ import { EmptyState, ErrorState, LoadingState } from '../../components/ui/StateB
 import { STUDENT_NAV_ITEMS } from '../../config/navigation';
 import { useAuth } from '../../context/AuthContext';
 import { fetchPublishedCollection } from '../../services/firestoreService';
-import { Chapter, Course, Subject, Topic, Unit } from '../../types/academic';
+import { Subject } from '../../types/academic';
 
 export function SyllabusNavigatorPage() {
   const { firebaseUser } = useAuth();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [courses, setCourses] = useState<Course[]>([]);
   const [subjects, setSubjects] = useState<Subject[]>([]);
-  const [units, setUnits] = useState<Unit[]>([]);
-  const [chapters, setChapters] = useState<Chapter[]>([]);
-  const [topics, setTopics] = useState<Topic[]>([]);
 
   const loadSyllabus = async () => {
     if (!firebaseUser) return;
     setLoading(true);
     setError(null);
     try {
-      const [crs, sub, unt, chp, tpc] = await Promise.all([
-        fetchPublishedCollection<Course>('courses'),
-        fetchPublishedCollection<Subject>('subjects'),
-        fetchPublishedCollection<Unit>('units'),
-        fetchPublishedCollection<Chapter>('chapters'),
-        fetchPublishedCollection<Topic>('topics'),
-      ]);
-      setCourses(crs);
-      setSubjects(sub);
-      setUnits(unt);
-      setChapters(chp);
-      setTopics(tpc);
+      const publishedSubjects = await fetchPublishedCollection<Subject>('subjects');
+      setSubjects(publishedSubjects);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load syllabus.');
     } finally {
