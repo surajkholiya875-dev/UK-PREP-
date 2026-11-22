@@ -45,7 +45,6 @@ export function SyllabusNavigatorPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [firebaseUser?.uid]);
 
-  const courseTitle = (courseId: string) => courses.find(course => course.id === courseId)?.title || 'Course';
   const excludedSubjectNames = new Set([
     'world history',
     'world geography',
@@ -67,49 +66,12 @@ export function SyllabusNavigatorPage() {
       ) : sortedSubjects.length === 0 ? (
         <EmptyState title="No published subjects available" description="Published subjects from all courses will appear here once they are published in Admin." />
       ) : (
-        <div className="space-y-6">
-          {sortedSubjects.map(subject => {
-            const subjectUnits = units.filter(unit => unit.subjectId === subject.id).sort((a, b) => a.sortOrder - b.sortOrder);
-            return (
-              <section key={subject.id} className="rounded-xl border border-edge bg-panel p-5 space-y-4">
-                <div className="border-b border-edge pb-3">
-                  <div className="text-xs text-ink-muted">{courseTitle(subject.courseId)} · {subject.scope === 'uttarakhand' ? 'Uttarakhand' : 'General'}</div>
-                  <h2 className="mt-1 text-lg font-bold text-ink">{subject.title}</h2>
-                  {subject.description && <p className="mt-1 text-sm text-ink-muted">{subject.description}</p>}
-                </div>
-                {subjectUnits.length === 0 ? <p className="text-sm text-ink-muted">Units, chapters and topics have not been added yet.</p> : (
-                  <div className="space-y-4">
-                    {subjectUnits.map(unit => {
-                      const unitChapters = chapters.filter(chapter => chapter.unitId === unit.id).sort((a, b) => a.sortOrder - b.sortOrder);
-                      return (
-                        <div key={unit.id} className="rounded-lg border border-edge bg-subtle p-4">
-                          <div className="text-xs text-ink-muted">Unit {unit.sortOrder}</div>
-                          <h3 className="font-semibold text-ink">{unit.title}</h3>
-                          {unitChapters.length === 0 ? <p className="mt-2 text-sm text-ink-muted">No chapters added yet.</p> : (
-                            <div className="mt-3 space-y-3">
-                              {unitChapters.map(chapter => {
-                                const chapterTopics = topics.filter(topic => topic.chapterId === chapter.id).sort((a, b) => a.sortOrder - b.sortOrder);
-                                return (
-                                  <div key={chapter.id} className="border-l-2 border-edge-strong pl-3">
-                                    <h4 className="text-sm font-medium text-ink">{chapter.title}</h4>
-                                    {chapterTopics.length === 0 ? <p className="mt-1 text-xs text-ink-muted">No topics added yet.</p> : (
-                                      <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-ink-muted">
-                                        {chapterTopics.map(topic => <li key={topic.id}>{topic.title}{topic.syllabusNotes ? <span> — {topic.syllabusNotes}</span> : null}</li>)}
-                                      </ul>
-                                    )}
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </section>
-            );
-          })}
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {sortedSubjects.map(subject => (
+            <div key={subject.id} className="rounded-xl border border-edge bg-panel p-5">
+              <h2 className="font-semibold text-ink">{subject.title}</h2>
+            </div>
+          ))}
         </div>
       )}
     </AppShell>
