@@ -6,6 +6,10 @@ import { EmptyState, ErrorState, LoadingState, SuccessBanner } from '../../compo
 import { STUDENT_NAV_ITEMS } from '../../config/navigation';
 import { useAuth } from '../../context/AuthContext';
 import {
+  buildCanonicalSubjectGroups,
+  resolveOrderedTopicsForSubjectIds,
+} from '../../lib/syllabusHierarchy';
+import {
   enrollInCourse,
   fetchPublishedCollection,
   fetchStudentOwned,
@@ -159,35 +163,59 @@ export function CourseDetailPage() {
 
           <div>
             <h3 className="mb-4 text-lg font-bold text-ink">Subjects</h3>
-            {subjects.length === 0 ? (
-              <EmptyState
-                title="No subjects published in this course yet"
-                description="Add General Studies and Uttarakhand subjects from Admin Workspace → Subject Management."
-              />
-            ) : (
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                {subjects.map((subject) => {
-                  const subjectTopics = topics.filter((topic) => topic.subjectId === subject.id);
-                  return (
-                    <Link
-                      key={subject.id}
-                      to={`/student/materials?subjectId=${encodeURIComponent(subject.id)}`}
-                      className="group rounded-xl border border-edge bg-panel p-5 shadow-sm transition hover:border-amber-400 hover:bg-subtle focus:outline-none focus:ring-2 focus:ring-amber-400"
-                    >
-                      <div className="text-xs font-mono text-accent-text">
-                        {subject.scope === 'uttarakhand' ? 'Uttarakhand Subject' : 'General Studies'}
-                      </div>
-                      <h4 className="mt-2 text-lg font-semibold text-ink group-hover:text-amber-600">{subject.title}</h4>
-                      {subject.description && <p className="mt-2 line-clamp-3 text-sm leading-5 text-ink-muted">{subject.description}</p>}
-                      <div className="mt-4 flex items-center justify-between border-t border-edge pt-3 text-xs">
-                        <span className="text-ink-muted">{subjectTopics.length} topics</span>
-                        <span className="inline-flex items-center gap-1 font-semibold text-amber-600">Open subject <ChevronRight className="h-3.5 w-3.5" /></span>
-                      </div>
-                    </Link>
-                  );
-                })}
-              </div>
-            )}
+            {(() => {
+              const courseSubjects = subjects.filter((subject) => subject.courseId === course.id);
+              const displaySubjects = courseSubjects.length > 0 ? courseSubjects : subjects;
+              const canonicalGroups = buildCanonicalSubjectGroups(displaySubjects);
+              if (canonicalGroups.length === 0) {
+                return (
+                  <EmptyState
+                    title="No subjects published in this course yet"
+                    description="Add subjects from Admin Workspace → Subject Management."
+                  />
+                );
+              }
+              return (
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                  {canonicalGroups.map((group) => {
+                    const subjectIds = new Set(group.memberSubjects.map((item) => item.id));
+                    const subjectTopics = resolveOrderedTopicsForSubjectIds({
+                      subjectIds,
+                      allUnits: units,
+                      allChapters: chapters,
+                      allTopics: topics,
+                    });
+                    return (
+                      <Link
+                        key={group.routeKey}
+                        to={`/student/syllabus/${encodeURIComponent(group.routeKey)}`}
+                        className="group rounded-xl border border-edge bg-panel p-5 shadow-sm transition hover:border-amber-400 hover:bg-subtle focus:outline-none focus:ring-2 focus:ring-amber-400"
+                      >
+                        <div className="text-xs font-mono text-accent-text">
+                          {group.primarySubject.scope === 'uttarakhand'
+                            ? 'Uttarakhand Subject'
+                            : 'General Studies'}
+                        </div>
+                        <h4 className="mt-2 text-lg font-semibold text-ink group-hover:text-amber-600">
+                          {group.title}
+                        </h4>
+                        {group.primarySubject.description && (
+                          <p className="mt-2 line-clamp-3 text-sm leading-5 text-ink-muted">
+                            {group.primarySubject.description}
+                          </p>
+                        )}
+                        <div className="mt-4 flex items-center justify-between border-t border-edge pt-3 text-xs">
+                          <span className="text-ink-muted">{subjectTopics.length} topics</span>
+                          <span className="inline-flex items-center gap-1 font-semibold text-amber-600">
+                            Open subject <ChevronRight className="h-3.5 w-3.5" />
+                          </span>
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
+              );
+            })()}
           </div>
         </div>
       )}

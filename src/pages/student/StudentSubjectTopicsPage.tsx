@@ -1,33 +1,27 @@
 import { useCallback, useEffect, useState } from 'react';
+import { ChevronRight } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
 import { AppShell } from '../../components/ui/AppShell';
 import { EmptyState, ErrorState, LoadingState } from '../../components/ui/StateBlocks';
 import { STUDENT_NAV_ITEMS } from '../../config/navigation';
 import { useAuth } from '../../context/AuthContext';
+import {
+  findSubjectGroupByParam,
+  OrderedTopicEntry,
+  resolveOrderedTopicsForSubjectIds,
+} from '../../lib/syllabusHierarchy';
 import { fetchPublishedCollection } from '../../services/firestoreService';
-import { Chapter, Subject, Topic, Unit } from '../../types/academic';
-
-function safeSortOrder(value: unknown): number {
-  return typeof value === 'number' && Number.isFinite(value) ? value : Number.MAX_SAFE_INTEGER;
-}
-
-function compareText(a?: string, b?: string): number {
-  return (a ?? '').localeCompare(b ?? '', undefined, { numeric: true, sensitivity: 'base' });
-}
-
-interface OrderedTopicItem {
-  topic: Topic;
-  unit?: Unit;
-  chapter?: Chapter;
-}
+import { Chapter, StudyMaterial, Subject, Topic, Unit } from '../../types/academic';
 
 export function StudentSubjectTopicsPage() {
   const { subjectId } = useParams<{ subjectId: string }>();
   const { firebaseUser } = useAuth();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [subject, setSubject] = useState<Subject | null>(null);
-  const [orderedTopics, setOrderedTopics] = useState<OrderedTopicItem[]>([]);
+  const [subjectTitle, setSubjectTitle] = useState<string | null>(null);
+  const [routeKey, setRouteKey] = useState<string>('');
+  const [orderedTopics, setOrderedTopics] = useState<OrderedTopicEntry[]>([]);
+  const [materialCountByTopic, setMaterialCountByTopic] = useState<Record<string, number>>({});
 
   const loadSubjectTopics = useCallback(async () => {
     if (!firebaseUser || !subjectId) {
@@ -37,79 +31,39 @@ export function StudentSubjectTopicsPage() {
     setLoading(true);
     setError(null);
     try {
-      const [allSubjects, allUnits, allChapters, allTopics] = await Promise.all([
+      const [allSubjects, allUnits, allChapters, allTopics, allMaterials] = await Promise.all([
         fetchPublishedCollection<Subject>('subjects'),
         fetchPublishedCollection<Unit>('units'),
         fetchPublishedCollection<Chapter>('chapters'),
         fetchPublishedCollection<Topic>('topics'),
+        fetchPublishedCollection<StudyMaterial>('studyMaterials'),
       ]);
 
-      const foundSubject = allSubjects.find((item) => item.id === subjectId) ?? null;
-      setSubject(foundSubject);
-
-      if (!foundSubject) {
+      const matchedGroup = findSubjectGroupByParam(allSubjects, subjectId);
+      if (!matchedGroup) {
+        setSubjectTitle(null);
+        setRouteKey(subjectId);
         setOrderedTopics([]);
+        setMaterialCountByTopic({});
         return;
       }
 
-      const unitById = new Map(allUnits.map((unit) => [unit.id, unit]));
-      const chapterById = new Map(allChapters.map((chapter) => [chapter.id, chapter]));
+      setSubjectTitle(matchedGroup.title);
+      setRouteKey(matchedGroup.routeKey);
 
-      const subjectUnitIds = new Set(
-        allUnits.filter((unit) => unit.subjectId === subjectId).map((unit) => unit.id)
-      );
-
-      const subjectChapterIds = new Set(
-        allChapters
-          .filter(
-            (chapter) =>
-              chapter.subjectId === subjectId ||
-              (Boolean(chapter.unitId) && subjectUnitIds.has(chapter.unitId))
-          )
-          .map((chapter) => chapter.id)
-      );
-
-      const subjectTopics = allTopics.filter((topic) => {
-        if (topic.subjectId === subjectId) return true;
-        if (topic.unitId && subjectUnitIds.has(topic.unitId)) return true;
-        if (topic.chapterId && subjectChapterIds.has(topic.chapterId)) return true;
-        const parentChapter = topic.chapterId ? chapterById.get(topic.chapterId) : undefined;
-        if (parentChapter) {
-          if (parentChapter.subjectId === subjectId) return true;
-          if (parentChapter.unitId && subjectUnitIds.has(parentChapter.unitId)) return true;
-        }
-        return false;
+      const subjectIds = new Set(matchedGroup.memberSubjects.map((item) => item.id));
+      const resolved = resolveOrderedTopicsForSubjectIds({
+        subjectIds,
+        allUnits,
+        allChapters,
+        allTopics,
       });
 
-      const resolved: OrderedTopicItem[] = subjectTopics
-        .map((topic) => {
-          const chapter = topic.chapterId ? chapterById.get(topic.chapterId) : undefined;
-          const resolvedUnitId = topic.unitId || chapter?.unitId || '';
-          const unit = resolvedUnitId ? unitById.get(resolvedUnitId) : undefined;
-          return { topic, unit, chapter };
-        })
-        .sort((a, b) => {
-          const unitOrderDiff =
-            safeSortOrder(a.unit?.sortOrder) - safeSortOrder(b.unit?.sortOrder);
-          if (unitOrderDiff !== 0) return unitOrderDiff;
-
-          const unitTitleDiff = compareText(a.unit?.title, b.unit?.title);
-          if (unitTitleDiff !== 0) return unitTitleDiff;
-
-          const chapterOrderDiff =
-            safeSortOrder(a.chapter?.sortOrder) - safeSortOrder(b.chapter?.sortOrder);
-          if (chapterOrderDiff !== 0) return chapterOrderDiff;
-
-          const chapterTitleDiff = compareText(a.chapter?.title, b.chapter?.title);
-          if (chapterTitleDiff !== 0) return chapterTitleDiff;
-
-          const topicOrderDiff =
-            safeSortOrder(a.topic.sortOrder) - safeSortOrder(b.topic.sortOrder);
-          if (topicOrderDiff !== 0) return topicOrderDiff;
-
-          return compareText(a.topic.title, b.topic.title);
-        });
-
+      const counts: Record<string, number> = {};
+      for (const material of allMaterials) {
+        counts[material.topicId] = (counts[material.topicId] ?? 0) + 1;
+      }
+      setMaterialCountByTopic(counts);
       setOrderedTopics(resolved);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unable to load this subject.');
@@ -122,11 +76,13 @@ export function StudentSubjectTopicsPage() {
     void loadSubjectTopics();
   }, [loadSubjectTopics]);
 
+  const effectiveRouteKey = routeKey || subjectId || '';
+
   return (
     <AppShell
       workspaceTitle="Student LMS"
       navItems={STUDENT_NAV_ITEMS}
-      pageTitle={subject?.title || 'Subject Topics'}
+      pageTitle={subjectTitle || 'Subject Topics'}
       breadcrumb="UK Prep / Student / Subjects"
     >
       <div className="mb-4">
@@ -138,7 +94,7 @@ export function StudentSubjectTopicsPage() {
         <LoadingState label="Loading all topics for this subject..." />
       ) : error ? (
         <ErrorState message={error} onRetry={() => void loadSubjectTopics()} />
-      ) : !subject ? (
+      ) : !subjectTitle ? (
         <EmptyState
           title="Subject not found"
           description="This subject may not be published or may no longer be available."
@@ -150,24 +106,45 @@ export function StudentSubjectTopicsPage() {
         />
       ) : (
         <div className="space-y-3">
-          <h2 className="text-lg font-semibold text-ink">{subject.title}</h2>
+          <h2 className="text-lg font-semibold text-ink">{subjectTitle}</h2>
           <p className="text-sm text-ink-muted">
             {orderedTopics.length} published topic{orderedTopics.length === 1 ? '' : 's'}
           </p>
           <ol className="space-y-2">
-            {orderedTopics.map(({ topic, unit, chapter }, index) => (
-              <li key={topic.id} className="rounded-xl border border-edge bg-panel p-4">
-                <div className="text-xs text-ink-muted">
-                  Topic {index + 1}
-                  {unit?.title ? ` · ${unit.title}` : ''}
-                  {chapter?.title ? ` · ${chapter.title}` : ''}
-                </div>
-                <h3 className="mt-1 font-medium text-ink">{topic.title}</h3>
-                {topic.syllabusNotes && (
-                  <p className="mt-1 text-sm text-ink-muted">{topic.syllabusNotes}</p>
-                )}
-              </li>
-            ))}
+            {orderedTopics.map(({ topic, chapter }, index) => {
+              const showChapterTitle =
+                Boolean(chapter?.title) &&
+                chapter!.title.trim().toLowerCase() !== topic.title.trim().toLowerCase();
+              const materialCount = materialCountByTopic[topic.id] ?? 0;
+
+              return (
+                <li key={topic.id}>
+                  <Link
+                    to={`/student/syllabus/${encodeURIComponent(effectiveRouteKey)}/topics/${encodeURIComponent(topic.id)}`}
+                    className="group flex items-center justify-between gap-4 rounded-xl border border-edge bg-panel p-4 transition hover:border-accent hover:bg-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                  >
+                    <div className="min-w-0">
+                      <div className="text-xs text-ink-muted">
+                        Topic {index + 1}
+                        {showChapterTitle ? ` · ${chapter!.title}` : ''}
+                        {materialCount > 0
+                          ? ` · ${materialCount} study item${materialCount === 1 ? '' : 's'}`
+                          : ''}
+                      </div>
+                      <h3 className="mt-1 font-medium text-ink group-hover:text-accent-text transition-colors">
+                        {topic.title}
+                      </h3>
+                      {topic.syllabusNotes && (
+                        <p className="mt-1 text-sm text-ink-muted line-clamp-2">
+                          {topic.syllabusNotes}
+                        </p>
+                      )}
+                    </div>
+                    <ChevronRight className="h-4 w-4 shrink-0 text-ink-faint group-hover:text-accent-text transition-colors" />
+                  </Link>
+                </li>
+              );
+            })}
           </ol>
         </div>
       )}

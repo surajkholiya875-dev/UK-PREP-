@@ -21,6 +21,7 @@ import { StudentDashboardPage } from './pages/student/StudentDashboardPage';
 import { StudentProfilePage } from './pages/student/StudentProfilePage';
 import { SyllabusNavigatorPage } from './pages/student/SyllabusNavigatorPage';
 import { StudentSubjectTopicsPage } from './pages/student/StudentSubjectTopicsPage';
+import { StudentTopicDetailPage } from './pages/student/StudentTopicDetailPage';
 import { StudentTopicsPage } from './pages/student/StudentTopicsPage';
 import { TestRunnerPage } from './pages/student/TestRunnerPage';
 import { TestsListPage } from './pages/student/TestsListPage';
@@ -62,7 +63,9 @@ export default function App() {
               <Route path="/student/courses/:courseId" element={<StudentRoute><CourseDetailPage /></StudentRoute>} />
               <Route path="/student/syllabus" element={<StudentRoute><SyllabusNavigatorPage /></StudentRoute>} />
               <Route path="/student/syllabus/:subjectId" element={<StudentRoute><StudentSubjectTopicsPage /></StudentRoute>} />
+              <Route path="/student/syllabus/:subjectId/topics/:topicId" element={<StudentRoute><StudentTopicDetailPage /></StudentRoute>} />
               <Route path="/student/topics" element={<StudentRoute><StudentTopicsPage /></StudentRoute>} />
+              <Route path="/student/topics/:topicId" element={<StudentRoute><StudentTopicDetailPage /></StudentRoute>} />
               <Route path="/student/materials" element={<Navigate to="/student/syllabus" replace />} />
               <Route path="/student/practice" element={<Navigate to="/student/materials" replace />} />
               <Route path="/student/tests" element={<StudentRoute><TestsListPage /></StudentRoute>} />

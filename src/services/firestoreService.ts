@@ -284,6 +284,7 @@ export async function upsertAdminEntity<T extends { id: string }>(
       const updatePayload = { ...payload } as Record<string, unknown>;
       delete updatePayload.id;
       delete updatePayload.createdBy;
+      delete updatePayload.createdAt;
       updatePayload.updatedAt = serverTimestamp();
       await updateDoc(ref, updatePayload);
     } else {
