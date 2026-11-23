@@ -5,7 +5,7 @@ import { EmptyState, ErrorState, LoadingState } from '../../components/ui/StateB
 import { STUDENT_NAV_ITEMS } from '../../config/navigation';
 import { useAuth } from '../../context/AuthContext';
 import { fetchPublishedCollection } from '../../services/firestoreService';
-import { Chapter, Subject, Topic } from '../../types/academic';
+import { Subject } from '../../types/academic';
 
 export function SyllabusNavigatorPage() {
   const { firebaseUser } = useAuth();
