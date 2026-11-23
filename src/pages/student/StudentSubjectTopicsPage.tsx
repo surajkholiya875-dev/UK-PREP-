@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ChevronRight } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
 import { AppShell } from '../../components/ui/AppShell';
@@ -12,6 +12,16 @@ import {
 } from '../../lib/syllabusHierarchy';
 import { fetchPublishedCollection } from '../../services/firestoreService';
 import { Chapter, StudyMaterial, Subject, Topic, Unit } from '../../types/academic';
+
+interface ChapterGroup {
+  key: string;
+  chapterTitle: string | null;
+  chapterSummary?: string;
+  items: Array<{
+    entry: OrderedTopicEntry;
+    topicNumber: number;
+  }>;
+}
 
 export function StudentSubjectTopicsPage() {
   const { subjectId } = useParams<{ subjectId: string }>();
@@ -76,6 +86,30 @@ export function StudentSubjectTopicsPage() {
     void loadSubjectTopics();
   }, [loadSubjectTopics]);
 
+  const chapterGroups = useMemo<ChapterGroup[]>(() => {
+    const groups: ChapterGroup[] = [];
+    const byKey = new Map<string, ChapterGroup>();
+
+    orderedTopics.forEach((entry, index) => {
+      const chapter = entry.chapter;
+      const key = chapter?.id || `unassigned:${entry.topic.chapterId || 'none'}`;
+      let group = byKey.get(key);
+      if (!group) {
+        group = {
+          key,
+          chapterTitle: chapter?.title ?? null,
+          chapterSummary: chapter?.summary,
+          items: [],
+        };
+        byKey.set(key, group);
+        groups.push(group);
+      }
+      group.items.push({ entry, topicNumber: index + 1 });
+    });
+
+    return groups;
+  }, [orderedTopics]);
+
   const effectiveRouteKey = routeKey || subjectId || '';
 
   return (
@@ -105,47 +139,70 @@ export function StudentSubjectTopicsPage() {
           description="Published topics for this subject will appear here once available."
         />
       ) : (
-        <div className="space-y-3">
-          <h2 className="text-lg font-semibold text-ink">{subjectTitle}</h2>
-          <p className="text-sm text-ink-muted">
-            {orderedTopics.length} published topic{orderedTopics.length === 1 ? '' : 's'}
-          </p>
-          <ol className="space-y-2">
-            {orderedTopics.map(({ topic, chapter }, index) => {
-              const showChapterTitle =
-                Boolean(chapter?.title) &&
-                chapter!.title.trim().toLowerCase() !== topic.title.trim().toLowerCase();
-              const materialCount = materialCountByTopic[topic.id] ?? 0;
+        <div className="space-y-6">
+          <div>
+            <h2 className="text-lg font-semibold text-ink">{subjectTitle}</h2>
+            <p className="text-sm text-ink-muted">
+              {chapterGroups.filter((g) => g.chapterTitle).length > 0
+                ? `${chapterGroups.filter((g) => g.chapterTitle).length} chapters · `
+                : ''}
+              {orderedTopics.length} published topic{orderedTopics.length === 1 ? '' : 's'}
+            </p>
+          </div>
 
-              return (
-                <li key={topic.id}>
-                  <Link
-                    to={`/student/syllabus/${encodeURIComponent(effectiveRouteKey)}/topics/${encodeURIComponent(topic.id)}`}
-                    className="group flex items-center justify-between gap-4 rounded-xl border border-edge bg-panel p-4 transition hover:border-accent hover:bg-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
-                  >
-                    <div className="min-w-0">
-                      <div className="text-xs text-ink-muted">
-                        Topic {index + 1}
-                        {showChapterTitle ? ` · ${chapter!.title}` : ''}
-                        {materialCount > 0
-                          ? ` · ${materialCount} study item${materialCount === 1 ? '' : 's'}`
-                          : ''}
-                      </div>
-                      <h3 className="mt-1 font-medium text-ink group-hover:text-accent-text transition-colors">
-                        {topic.title}
-                      </h3>
-                      {topic.syllabusNotes && (
-                        <p className="mt-1 text-sm text-ink-muted line-clamp-2">
-                          {topic.syllabusNotes}
-                        </p>
-                      )}
-                    </div>
-                    <ChevronRight className="h-4 w-4 shrink-0 text-ink-faint group-hover:text-accent-text transition-colors" />
-                  </Link>
-                </li>
-              );
-            })}
-          </ol>
+          <div className="space-y-5">
+            {chapterGroups.map((group) => (
+              <section key={group.key} className="space-y-2.5">
+                {group.chapterTitle && (
+                  <div className="border-b border-edge pb-2">
+                    <h3 className="text-sm font-semibold text-accent-text">
+                      {group.chapterTitle}
+                    </h3>
+                    {group.chapterSummary && (
+                      <p className="mt-0.5 text-xs text-ink-muted">{group.chapterSummary}</p>
+                    )}
+                  </div>
+                )}
+
+                <ol className="space-y-2">
+                  {group.items.map(({ entry: { topic, chapter }, topicNumber }) => {
+                    const showChapterTitle =
+                      Boolean(chapter?.title) &&
+                      chapter!.title.trim().toLowerCase() !== topic.title.trim().toLowerCase();
+                    const materialCount = materialCountByTopic[topic.id] ?? 0;
+
+                    return (
+                      <li key={topic.id}>
+                        <Link
+                          to={`/student/syllabus/${encodeURIComponent(effectiveRouteKey)}/topics/${encodeURIComponent(topic.id)}`}
+                          className="group flex items-center justify-between gap-4 rounded-xl border border-edge bg-panel p-4 transition hover:border-accent hover:bg-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                        >
+                          <div className="min-w-0">
+                            <div className="text-xs text-ink-muted">
+                              Topic {topicNumber}
+                              {showChapterTitle ? ` · ${chapter!.title}` : ''}
+                              {materialCount > 0
+                                ? ` · ${materialCount} study item${materialCount === 1 ? '' : 's'}`
+                                : ''}
+                            </div>
+                            <h4 className="mt-1 font-medium text-ink group-hover:text-accent-text transition-colors">
+                              {topic.title}
+                            </h4>
+                            {topic.syllabusNotes && (
+                              <p className="mt-1 text-sm text-ink-muted line-clamp-2">
+                                {topic.syllabusNotes}
+                              </p>
+                            )}
+                          </div>
+                          <ChevronRight className="h-4 w-4 shrink-0 text-ink-faint group-hover:text-accent-text transition-colors" />
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </ol>
+              </section>
+            ))}
+          </div>
         </div>
       )}
     </AppShell>
