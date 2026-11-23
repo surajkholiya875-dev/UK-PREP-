@@ -45,6 +45,17 @@ export function clampString(value: string, maxLen: number): string {
   return value.trim().slice(0, maxLen);
 }
 
+function mapSnapshotDocs<T>(
+  docs: Array<{ id: string; data: () => unknown }>
+): T[] {
+  return docs.map((d) => {
+    const data = (d.data() ?? {}) as Record<string, unknown>;
+    const resolvedId =
+      typeof data.id === 'string' && data.id.trim().length > 0 ? data.id : d.id;
+    return { ...data, id: resolvedId } as T;
+  });
+}
+
 // ---------------------------------------------------------------------------
 // Published Academic Read Queries (Student / Authenticated)
 // ---------------------------------------------------------------------------
@@ -58,15 +69,14 @@ export async function fetchPublishedCollection<T>(
       ? query(colRef, where('isPublished', '==', true), orderBy(orderField, 'asc'))
       : query(colRef, where('isPublished', '==', true));
     const snap = await getDocs(q);
-    return snap.docs.map((d) => d.data() as T);
+    return mapSnapshotDocs<T>(snap.docs);
   } catch (error) {
     // Fallback without orderBy if composite index isn't created yet
     try {
       const colRef = collection(db, collectionName);
       const q = query(colRef, where('isPublished', '==', true));
       const snap = await getDocs(q);
-      const rows = snap.docs.map((d) => d.data() as T);
-      return rows;
+      return mapSnapshotDocs<T>(snap.docs);
     } catch (innerError) {
       handleFirestoreError(innerError, OperationType.LIST, collectionName);
     }
@@ -79,7 +89,7 @@ export async function fetchPublishedCollection<T>(
 export async function fetchAllAdminCollection<T>(collectionName: string): Promise<T[]> {
   try {
     const snap = await getDocs(collection(db, collectionName));
-    return snap.docs.map((d) => d.data() as T);
+    return mapSnapshotDocs<T>(snap.docs);
   } catch (error) {
     handleFirestoreError(error, OperationType.LIST, collectionName);
   }
@@ -92,7 +102,7 @@ export async function fetchStudentOwned<T>(collectionName: string, userId: strin
   try {
     const q = query(collection(db, collectionName), where('userId', '==', userId));
     const snap = await getDocs(q);
-    return snap.docs.map((d) => d.data() as T);
+    return mapSnapshotDocs<T>(snap.docs);
   } catch (error) {
     handleFirestoreError(error, OperationType.LIST, collectionName);
   }

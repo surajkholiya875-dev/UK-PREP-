@@ -14,6 +14,7 @@ import {
 import {
   Course,
   Examination,
+  GENERAL_SUBJECT_TAXONOMY,
   Subject,
   SubjectScope,
   UTTARAKHAND_SUBJECT_TAXONOMY,
