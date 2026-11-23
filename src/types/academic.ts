@@ -7,7 +7,7 @@ export type SubjectScope = 'uttarakhand' | 'general';
 export type MaterialType = 'notes' | 'summary' | 'pyq_analysis' | 'current_affairs' | 'reference';
 export type QuestionType = 'mcq' | 'pyq' | 'current_affairs';
 export type QuestionDifficulty = 'foundation' | 'standard' | 'advanced';
-export type TestType = 'mock' | 'sectional' | 'pyq' | 'current_affairs';
+export type TestType = 'mock' | 'sectional' | 'topic' | 'pyq' | 'current_affairs';
 export type CompletionStatus = 'not_started' | 'in_progress' | 'completed';
 export type BookmarkTargetType = 'material' | 'question' | 'topic' | 'course';
 export type AnnouncementCategory = 'exam_notice' | 'syllabus' | 'platform' | 'current_affairs';
@@ -228,6 +228,7 @@ export interface Question {
   correctOptionIndex: number;
   explanation?: string;
   difficulty: QuestionDifficulty;
+  examName?: string;
   examYear?: number;
   isPublished: boolean;
   createdBy: string;
@@ -240,6 +241,7 @@ export interface TestPaper {
   examinationId: string;
   courseId?: string;
   subjectId?: string;
+  topicId?: string;
   title: string;
   testType: TestType;
   durationMinutes: number;
@@ -263,10 +265,21 @@ export interface Enrollment {
   updatedAt: unknown;
 }
 
+export interface TestAttemptReviewItem {
+  questionId: string;
+  stem: string;
+  options: string[];
+  selectedIndex: number | null;
+  correctOptionIndex: number;
+  isCorrect: boolean;
+  explanation?: string;
+}
+
 export interface TestAttempt {
   id: string;
   userId: string;
   testId: string;
+  topicId?: string;
   testTitle: string;
   status: 'in_progress' | 'submitted';
   score: number;
@@ -275,6 +288,9 @@ export interface TestAttempt {
   incorrectCount: number;
   unansweredCount: number;
   durationSeconds: number;
+  durationLimitSeconds?: number;
+  expired?: boolean;
+  review?: TestAttemptReviewItem[];
   startedAt: unknown;
   submittedAt?: unknown;
   updatedAt: unknown;

@@ -222,7 +222,7 @@ service cloud.firestore {
 
     function isValidQuestion(data, questionId) {
       return data.keys().hasAll(['id', 'topicId', 'chapterId', 'subjectId', 'examinationId', 'questionType', 'stem', 'options', 'correctOptionIndex', 'difficulty', 'isPublished', 'createdBy', 'createdAt', 'updatedAt'])
-        && data.keys().hasOnly(['id', 'topicId', 'chapterId', 'subjectId', 'examinationId', 'questionType', 'stem', 'options', 'correctOptionIndex', 'explanation', 'difficulty', 'examYear', 'isPublished', 'createdBy', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['id', 'topicId', 'chapterId', 'subjectId', 'examinationId', 'questionType', 'stem', 'options', 'correctOptionIndex', 'explanation', 'difficulty', 'examName', 'examYear', 'isPublished', 'createdBy', 'createdAt', 'updatedAt'])
         && data.id == questionId
         && isValidId(data.id)
         && isValidId(data.topicId)
@@ -235,6 +235,7 @@ service cloud.firestore {
         && isValidNumber(data.correctOptionIndex, 0, 4)
         && (!('explanation' in data) || isValidString(data.explanation, 0, 3000))
         && data.difficulty in ['foundation', 'standard', 'advanced']
+        && (!('examName' in data) || isValidString(data.examName, 0, 120))
         && (!('examYear' in data) || isValidNumber(data.examYear, 1990, 2100))
         && data.isPublished is bool
         && isValidId(data.createdBy)
@@ -244,14 +245,15 @@ service cloud.firestore {
 
     function isValidTestPaper(data, testId) {
       return data.keys().hasAll(['id', 'examinationId', 'title', 'testType', 'durationMinutes', 'totalMarks', 'negativeMarking', 'questionCount', 'questionIds', 'isPublished', 'createdBy', 'createdAt', 'updatedAt'])
-        && data.keys().hasOnly(['id', 'examinationId', 'courseId', 'subjectId', 'title', 'testType', 'durationMinutes', 'totalMarks', 'negativeMarking', 'questionCount', 'questionIds', 'isPublished', 'createdBy', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['id', 'examinationId', 'courseId', 'subjectId', 'topicId', 'title', 'testType', 'durationMinutes', 'totalMarks', 'negativeMarking', 'questionCount', 'questionIds', 'isPublished', 'createdBy', 'createdAt', 'updatedAt'])
         && data.id == testId
         && isValidId(data.id)
         && isValidId(data.examinationId)
         && (!('courseId' in data) || isValidString(data.courseId, 0, 128))
         && (!('subjectId' in data) || isValidString(data.subjectId, 0, 128))
+        && (!('topicId' in data) || isValidString(data.topicId, 0, 128))
         && isValidString(data.title, 2, 200)
-        && data.testType in ['mock', 'sectional', 'pyq', 'current_affairs']
+        && data.testType in ['mock', 'sectional', 'topic', 'pyq', 'current_affairs']
         && isValidNumber(data.durationMinutes, 1, 360)
         && isValidNumber(data.totalMarks, 1, 1000)
         && isValidNumber(data.negativeMarking, 0, 5)
@@ -278,11 +280,12 @@ service cloud.firestore {
 
     function isValidTestAttempt(data, attemptId) {
       return data.keys().hasAll(['id', 'userId', 'testId', 'testTitle', 'status', 'score', 'totalMarks', 'correctCount', 'incorrectCount', 'unansweredCount', 'durationSeconds', 'startedAt', 'updatedAt'])
-        && data.keys().hasOnly(['id', 'userId', 'testId', 'testTitle', 'status', 'score', 'totalMarks', 'correctCount', 'incorrectCount', 'unansweredCount', 'durationSeconds', 'startedAt', 'submittedAt', 'updatedAt'])
+        && data.keys().hasOnly(['id', 'userId', 'testId', 'topicId', 'testTitle', 'status', 'score', 'totalMarks', 'correctCount', 'incorrectCount', 'unansweredCount', 'durationSeconds', 'durationLimitSeconds', 'expired', 'review', 'startedAt', 'submittedAt', 'updatedAt'])
         && data.id == attemptId
         && isValidId(data.id)
         && isValidId(data.userId)
         && isValidId(data.testId)
+        && (!('topicId' in data) || isValidString(data.topicId, 0, 128))
         && isValidString(data.testTitle, 2, 200)
         && data.status in ['in_progress', 'submitted']
         && isValidNumber(data.score, -500, 1000)
@@ -291,6 +294,9 @@ service cloud.firestore {
         && isValidNumber(data.incorrectCount, 0, 200)
         && isValidNumber(data.unansweredCount, 0, 200)
         && isValidNumber(data.durationSeconds, 0, 36000)
+        && (!('durationLimitSeconds' in data) || isValidNumber(data.durationLimitSeconds, 0, 36000))
+        && (!('expired' in data) || data.expired is bool)
+        && (!('review' in data) || (data.review is list && data.review.size() <= 200))
         && data.startedAt is timestamp
         && (!('submittedAt' in data) || data.submittedAt is timestamp)
         && data.updatedAt is timestamp;
@@ -646,7 +652,7 @@ service cloud.firestore {
         && incoming().createdBy == existing().createdBy
         && incoming().createdAt == existing().createdAt
         && incoming().updatedAt == request.time
-        && incoming().diff(existing()).affectedKeys().hasOnly(['topicId', 'chapterId', 'subjectId', 'examinationId', 'questionType', 'stem', 'options', 'correctOptionIndex', 'explanation', 'difficulty', 'examYear', 'isPublished', 'updatedAt']);
+        && incoming().diff(existing()).affectedKeys().hasOnly(['topicId', 'chapterId', 'subjectId', 'examinationId', 'questionType', 'stem', 'options', 'correctOptionIndex', 'explanation', 'difficulty', 'examName', 'examYear', 'isPublished', 'updatedAt']);
       allow delete: if isValidId(questionId) && isAdmin();
     }
 
@@ -667,7 +673,7 @@ service cloud.firestore {
         && incoming().createdBy == existing().createdBy
         && incoming().createdAt == existing().createdAt
         && incoming().updatedAt == request.time
-        && incoming().diff(existing()).affectedKeys().hasOnly(['examinationId', 'courseId', 'subjectId', 'title', 'testType', 'durationMinutes', 'totalMarks', 'negativeMarking', 'questionCount', 'questionIds', 'isPublished', 'updatedAt']);
+        && incoming().diff(existing()).affectedKeys().hasOnly(['examinationId', 'courseId', 'subjectId', 'topicId', 'title', 'testType', 'durationMinutes', 'totalMarks', 'negativeMarking', 'questionCount', 'questionIds', 'isPublished', 'updatedAt']);
       allow delete: if isValidId(testId) && isAdmin();
     }
 

@@ -177,13 +177,13 @@ async function createServer() {
         return res.status(400).json({ error: 'Invalid question type filter.' });
       }
 
-      const snapshot = await db.collection('questions')
-        .where('isPublished', '==', true)
-        .limit(500)
-        .get();
+      const snapshot = requestedTopicId
+        ? await db.collection('questions').where('topicId', '==', requestedTopicId).limit(500).get()
+        : await db.collection('questions').where('isPublished', '==', true).limit(500).get();
       const questions = snapshot.docs
         .map((document) => ({ id: document.id, ...document.data() }))
         .filter((question: any) =>
+          question.isPublished === true &&
           (!requestedTopicId || question.topicId === requestedTopicId) &&
           (!requestedType || question.questionType === requestedType)
         )
@@ -198,6 +198,9 @@ async function createServer() {
           stem: question.stem,
           options: question.options,
           difficulty: question.difficulty,
+          ...(typeof question.examName === 'string' && question.examName.trim()
+            ? { examName: question.examName.trim() }
+            : {}),
           ...(Number.isInteger(question.examYear) ? { examYear: question.examYear } : {}),
         }));
 
@@ -303,14 +306,17 @@ async function createServer() {
       }
       const attemptId = randomUUID().replace(/-/g, '');
       const startedAt = FieldValue.serverTimestamp();
+      const topicId = typeof test.topicId === 'string' ? test.topicId : '';
       await db.collection('testAttempts').doc(attemptId).create({
-        id: attemptId, userId: req.authUser!.uid, testId, testTitle: String(test.title ?? 'Test').slice(0, 200),
+        id: attemptId, userId: req.authUser!.uid, testId,
+        ...(topicId ? { topicId } : {}),
+        testTitle: String(test.title ?? 'Test').slice(0, 200),
         status: 'in_progress', score: 0, totalMarks, correctCount: 0,
         incorrectCount: 0, unansweredCount: ids.length, durationSeconds: 0, durationLimitSeconds: durationMinutes * 60,
         startedAt, updatedAt: startedAt,
       });
       const questions = questionDocs.map((q: any, index: number) => ({ id: ids[index], stem: q.stem, options: q.options }));
-      return res.status(200).json({ attemptId, startedAt: Date.now(), test: { id: testId, title: test.title, durationMinutes, totalMarks, negativeMarking, questionCount: ids.length }, questions });
+      return res.status(200).json({ attemptId, startedAt: Date.now(), test: { id: testId, topicId, testType: test.testType, title: test.title, durationMinutes, totalMarks, negativeMarking, questionCount: ids.length }, questions });
     } catch (error) {
       console.error('Unable to start test:', error);
       return res.status(500).json({ error: 'Unable to start test attempt.' });
@@ -360,18 +366,37 @@ async function createServer() {
         incorrect = 0;
         unanswered = ids.length;
       }
+      const review = questionDocs.map((snap, index) => {
+        const q = snap.data()!;
+        const qId = ids[index];
+        const rawSelected = answers[qId];
+        const selectedIndex =
+          !expired && Number.isInteger(rawSelected) && rawSelected >= 0 && rawSelected < q.options.length
+            ? rawSelected
+            : null;
+        const isCorrect = !expired && selectedIndex !== null && selectedIndex === q.correctOptionIndex;
+        return {
+          questionId: qId,
+          stem: String(q.stem || ''),
+          options: Array.isArray(q.options) ? q.options.map((item: unknown) => String(item)) : [],
+          selectedIndex,
+          correctOptionIndex: q.correctOptionIndex,
+          isCorrect,
+          explanation: typeof q.explanation === 'string' ? q.explanation : '',
+        };
+      });
       const durationSeconds = Math.min(elapsed, durationLimit);
       const perQuestionMarks = ids.length ? Number(test.totalMarks) / ids.length : 0;
       const score = Math.round((correct * perQuestionMarks - incorrect * Number(test.negativeMarking || 0)) * 100) / 100;
       const result = { status: 'submitted', score, correctCount: correct, incorrectCount: incorrect, unansweredCount: unanswered,
-        durationSeconds, expired, submittedAt: FieldValue.serverTimestamp(), updatedAt: FieldValue.serverTimestamp() };
+        durationSeconds, expired, review, submittedAt: FieldValue.serverTimestamp(), updatedAt: FieldValue.serverTimestamp() };
       await db.runTransaction(async (transaction) => {
         const fresh = await transaction.get(attemptRef);
         if (!fresh.exists || fresh.data()?.userId !== req.authUser!.uid) throw new Error('Attempt not found or not owned by this user.');
         if (fresh.data()?.status !== 'in_progress') throw new Error('This attempt has already been submitted.');
         transaction.update(attemptRef, result);
       });
-      return res.status(200).json({ score, correct, incorrect, unanswered, totalMarks: Number(test.totalMarks), expired, durationSeconds });
+      return res.status(200).json({ score, correct, incorrect, unanswered, totalMarks: Number(test.totalMarks), expired, durationSeconds, review });
     } catch (error) {
       const message = error instanceof Error ? error.message : '';
       if (message.includes('already been submitted')) return res.status(409).json({ error: message });

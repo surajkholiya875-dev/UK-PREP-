@@ -51,6 +51,7 @@ export function TestsListPage() {
               { id: 'all', label: 'All Tests' },
               { id: 'mock', label: 'Full Mock' },
               { id: 'sectional', label: 'Sectional' },
+              { id: 'topic', label: 'Topic Practice' },
               { id: 'pyq', label: 'PYQ Papers' },
               { id: 'current_affairs', label: 'Current Affairs' },
             ] as const

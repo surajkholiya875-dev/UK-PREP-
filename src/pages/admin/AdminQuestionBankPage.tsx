@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from 'react';
-import { Plus, Trash2 } from 'lucide-react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Pencil, Plus, Trash2, X } from 'lucide-react';
 import { AppShell } from '../../components/ui/AppShell';
 import { EmptyState, ErrorState, LoadingState, SuccessBanner } from '../../components/ui/StateBlocks';
 import { ADMIN_NAV_ITEMS } from '../../config/navigation';
 import { useAuth } from '../../context/AuthContext';
+import { compareNaturalText, safeSortOrder } from '../../lib/syllabusHierarchy';
 import {
   clampString,
   deleteAdminEntity,
@@ -11,7 +12,16 @@ import {
   generateSafeId,
   upsertAdminEntity,
 } from '../../services/firestoreService';
-import { Chapter, Course, Examination, Question, QuestionDifficulty, QuestionType, Subject, Topic } from '../../types/academic';
+import {
+  Chapter,
+  Course,
+  Examination,
+  Question,
+  QuestionDifficulty,
+  QuestionType,
+  Subject,
+  Topic,
+} from '../../types/academic';
 
 export function AdminQuestionBankPage({ defaultType = 'mcq' }: { defaultType?: QuestionType }) {
   const { firebaseUser } = useAuth();
@@ -25,6 +35,10 @@ export function AdminQuestionBankPage({ defaultType = 'mcq' }: { defaultType?: Q
   const [courses, setCourses] = useState<Course[]>([]);
   const [exams, setExams] = useState<Examination[]>([]);
 
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [subjectFilter, setSubjectFilter] = useState('');
+  const [topicFilter, setTopicFilter] = useState('');
+
   const [form, setForm] = useState({
     examinationId: '',
     topicId: '',
@@ -37,9 +51,14 @@ export function AdminQuestionBankPage({ defaultType = 'mcq' }: { defaultType?: Q
     correctOptionIndex: 0,
     explanation: '',
     difficulty: 'standard' as QuestionDifficulty,
+    examName: '',
     examYear: 2024,
     isPublished: true,
   });
+
+  useEffect(() => {
+    setForm((prev) => (editingId ? prev : { ...prev, questionType: defaultType }));
+  }, [defaultType, editingId]);
 
   const loadData = async () => {
     setLoading(true);
@@ -53,14 +72,30 @@ export function AdminQuestionBankPage({ defaultType = 'mcq' }: { defaultType?: Q
         fetchAllAdminCollection<Chapter>('chapters'),
         fetchAllAdminCollection<Subject>('subjects'),
       ]);
+      const subjectMap = new Map(subjs.map((s) => [s.id, s]));
+      const sortedSubjs = [...subjs].sort(
+        (a, b) => safeSortOrder(a.sortOrder) - safeSortOrder(b.sortOrder) || compareNaturalText(a.title, b.title)
+      );
+      const sortedTopics = [...tpcs].sort((a, b) => {
+        const sA = subjectMap.get(a.subjectId);
+        const sB = subjectMap.get(b.subjectId);
+        return (
+          safeSortOrder(sA?.sortOrder) - safeSortOrder(sB?.sortOrder) ||
+          compareNaturalText(sA?.title, sB?.title) ||
+          safeSortOrder(a.sortOrder) - safeSortOrder(b.sortOrder) ||
+          compareNaturalText(a.title, b.title)
+        );
+      });
+
       setQuestions(qs);
-      setTopics(tpcs);
+      setTopics(sortedTopics);
       setExams(exms);
       setCourses(crs);
       setChapters(chps);
-      setSubjects(subjs);
+      setSubjects(sortedSubjs);
+
       const initialExamId = form.examinationId || exms[0]?.id || '';
-      const firstTopicForExam = tpcs.find((topic) =>
+      const firstTopicForExam = sortedTopics.find((topic) =>
         crs.some((course) => course.id === topic.courseId && course.examinationId === initialExamId)
       );
       if (!form.examinationId || !form.topicId) {
@@ -82,6 +117,26 @@ export function AdminQuestionBankPage({ defaultType = 'mcq' }: { defaultType?: Q
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const resetForm = (preserveExamAndTopic = true) => {
+    setEditingId(null);
+    setForm((p) => ({
+      examinationId: preserveExamAndTopic ? p.examinationId : exams[0]?.id || '',
+      topicId: preserveExamAndTopic ? p.topicId : topics[0]?.id || '',
+      questionType: defaultType,
+      stem: '',
+      optA: '',
+      optB: '',
+      optC: '',
+      optD: '',
+      correctOptionIndex: 0,
+      explanation: '',
+      difficulty: 'standard',
+      examName: '',
+      examYear: 2024,
+      isPublished: true,
+    }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!firebaseUser || !form.topicId || !form.examinationId) return;
@@ -100,8 +155,17 @@ export function AdminQuestionBankPage({ defaultType = 'mcq' }: { defaultType?: Q
       return;
     }
 
-    const id = generateSafeId('q');
+    if (form.questionType === 'pyq' && !form.examName.trim()) {
+      setError('For a verified PYQ, provide the official Examination Name (e.g., UKPSC Upper PCS Prelims).');
+      return;
+    }
+
+    const isEdit = Boolean(editingId);
+    const id = editingId ?? generateSafeId('q');
+    const existingQuestion = isEdit ? questions.find((q) => q.id === editingId) : undefined;
+
     try {
+      setError(null);
       await upsertAdminEntity<Question>(
         'questions',
         id,
@@ -117,23 +181,57 @@ export function AdminQuestionBankPage({ defaultType = 'mcq' }: { defaultType?: Q
           correctOptionIndex: Math.min(form.correctOptionIndex, options.length - 1),
           explanation: clampString(form.explanation, 3000),
           difficulty: form.difficulty,
-          ...(form.questionType === 'pyq' ? { examYear: Number(form.examYear) || 2024 } : {}),
+          ...(form.questionType === 'pyq'
+            ? {
+                examName: clampString(form.examName, 120),
+                examYear: Number(form.examYear) || 2024,
+              }
+            : {}),
           isPublished: form.isPublished,
-          createdBy: firebaseUser.uid,
+          createdBy: existingQuestion?.createdBy ?? firebaseUser.uid,
         },
-        false
+        isEdit
       );
-      setNotice('Question added to bank.');
-      setForm((p) => ({ ...p, stem: '', optA: '', optB: '', optC: '', optD: '', explanation: '' }));
+      setNotice(isEdit ? 'Question updated.' : 'Question added to bank.');
+      resetForm(true);
       await loadData();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save question.');
     }
   };
 
-  const displayed = questions.filter((q) => q.questionType === (defaultType === 'pyq' ? 'pyq' : 'mcq'));
+  const togglePublish = async (q: Question) => {
+    try {
+      await upsertAdminEntity<Question>(
+        'questions',
+        q.id,
+        { ...q, isPublished: !q.isPublished },
+        true
+      );
+      setNotice(`Question "${q.stem.slice(0, 48)}..." ${q.isPublished ? 'unpublished' : 'published'}.`);
+      await loadData();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update publication status.');
+    }
+  };
 
-  const topicsForSelectedExam = topics.filter((topic) => courses.some((course) => course.id === topic.courseId && course.examinationId === form.examinationId));
+  const displayed = useMemo(() => {
+    return questions.filter((q) => {
+      const typeMatch = q.questionType === (defaultType === 'pyq' ? 'pyq' : 'mcq');
+      const subjectMatch = !subjectFilter || q.subjectId === subjectFilter;
+      const topicMatch = !topicFilter || q.topicId === topicFilter;
+      return typeMatch && subjectMatch && topicMatch;
+    });
+  }, [questions, defaultType, subjectFilter, topicFilter]);
+
+  const topicsForSelectedExam = topics.filter((topic) =>
+    courses.some((course) => course.id === topic.courseId && course.examinationId === form.examinationId)
+  );
+
+  const filterTopics = useMemo(
+    () => (subjectFilter ? topics.filter((t) => t.subjectId === subjectFilter) : topics),
+    [topics, subjectFilter]
+  );
 
   return (
     <AppShell
@@ -145,9 +243,24 @@ export function AdminQuestionBankPage({ defaultType = 'mcq' }: { defaultType?: Q
     >
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         <div className="lg:col-span-5 bg-panel border border-edge rounded-xl p-6 shadow-sm h-fit">
-          <h2 className="text-base font-semibold text-ink mb-4">
-            {defaultType === 'pyq' ? 'Add Previous Year Question' : 'Add Question'}
-          </h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-base font-semibold text-ink">
+              {editingId
+                ? 'Edit Question'
+                : defaultType === 'pyq'
+                  ? 'Add Verified Previous Year Question'
+                  : 'Add Question'}
+            </h2>
+            {editingId && (
+              <button
+                type="button"
+                onClick={() => resetForm(true)}
+                className="text-xs text-ink-muted hover:text-ink inline-flex items-center gap-1"
+              >
+                <X className="w-3.5 h-3.5" /> Cancel
+              </button>
+            )}
+          </div>
           {topics.length === 0 || exams.length === 0 || courses.length === 0 ? (
             <p className="text-xs text-accent-text">
               Create at least one Examination and Topic before adding questions.
@@ -156,24 +269,32 @@ export function AdminQuestionBankPage({ defaultType = 'mcq' }: { defaultType?: Q
             <form onSubmit={handleSubmit} className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label htmlFor="q-exam" className="block text-xs font-medium text-ink-muted mb-1">Examination</label>
+                  <label htmlFor="q-exam" className="block text-xs font-medium text-ink-muted mb-1">
+                    Examination
+                  </label>
                   <select
                     id="q-exam"
                     value={form.examinationId}
                     onChange={(e) => {
                       const examinationId = e.target.value;
-                      const firstTopic = topics.find((topic) => courses.some((course) => course.id === topic.courseId && course.examinationId === examinationId));
+                      const firstTopic = topics.find((topic) =>
+                        courses.some((course) => course.id === topic.courseId && course.examinationId === examinationId)
+                      );
                       setForm((p) => ({ ...p, examinationId, topicId: firstTopic?.id || '' }));
                     }}
                     className="w-full px-3 py-2 text-xs rounded-lg border border-edge-strong bg-field text-ink focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent"
                   >
                     {exams.map((ex) => (
-                      <option key={ex.id} value={ex.id}>{ex.code}</option>
+                      <option key={ex.id} value={ex.id}>
+                        {ex.code}
+                      </option>
                     ))}
                   </select>
                 </div>
                 <div>
-                  <label htmlFor="q-topic" className="block text-xs font-medium text-ink-muted mb-1">Topic</label>
+                  <label htmlFor="q-topic" className="block text-xs font-medium text-ink-muted mb-1">
+                    Topic
+                  </label>
                   <select
                     id="q-topic"
                     value={form.topicId}
@@ -184,7 +305,11 @@ export function AdminQuestionBankPage({ defaultType = 'mcq' }: { defaultType?: Q
                     {topicsForSelectedExam.map((t) => {
                       const chapter = chapters.find((item) => item.id === t.chapterId);
                       const subject = subjects.find((item) => item.id === t.subjectId);
-                      return <option key={t.id} value={t.id}>{subject?.title || 'Subject'} / {chapter?.title || 'Chapter'} / {t.title}</option>;
+                      return (
+                        <option key={t.id} value={t.id}>
+                          {subject?.title || 'Subject'} / {chapter?.title || 'Chapter'} / {t.title}
+                        </option>
+                      );
                     })}
                   </select>
                 </div>
@@ -192,7 +317,9 @@ export function AdminQuestionBankPage({ defaultType = 'mcq' }: { defaultType?: Q
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label htmlFor="q-type" className="block text-xs font-medium text-ink-muted mb-1">Question Type</label>
+                  <label htmlFor="q-type" className="block text-xs font-medium text-ink-muted mb-1">
+                    Question Type
+                  </label>
                   <select
                     id="q-type"
                     value={form.questionType}
@@ -205,7 +332,9 @@ export function AdminQuestionBankPage({ defaultType = 'mcq' }: { defaultType?: Q
                   </select>
                 </div>
                 <div>
-                  <label htmlFor="q-diff" className="block text-xs font-medium text-ink-muted mb-1">Difficulty</label>
+                  <label htmlFor="q-diff" className="block text-xs font-medium text-ink-muted mb-1">
+                    Difficulty
+                  </label>
                   <select
                     id="q-diff"
                     value={form.difficulty}
@@ -220,22 +349,43 @@ export function AdminQuestionBankPage({ defaultType = 'mcq' }: { defaultType?: Q
               </div>
 
               {form.questionType === 'pyq' && (
-                <div>
-                  <label htmlFor="q-year" className="block text-xs font-medium text-ink-muted mb-1">Exam Year</label>
-                  <input
-                    id="q-year"
-                    type="number"
-                    min={1990}
-                    max={2100}
-                    value={form.examYear}
-                    onChange={(e) => setForm((p) => ({ ...p, examYear: Number(e.target.value) }))}
-                    className="w-full px-3 py-2 text-sm rounded-lg border border-edge-strong bg-field text-ink focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent font-mono"
-                  />
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label htmlFor="q-exam-name" className="block text-xs font-medium text-ink-muted mb-1">
+                      Official Exam Name
+                    </label>
+                    <input
+                      id="q-exam-name"
+                      type="text"
+                      required
+                      maxLength={120}
+                      placeholder="e.g., UKPSC Upper PCS Prelims"
+                      value={form.examName}
+                      onChange={(e) => setForm((p) => ({ ...p, examName: e.target.value }))}
+                      className="w-full px-3 py-2 text-xs rounded-lg border border-edge-strong bg-field text-ink focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="q-year" className="block text-xs font-medium text-ink-muted mb-1">
+                      Exam Year
+                    </label>
+                    <input
+                      id="q-year"
+                      type="number"
+                      min={1990}
+                      max={2100}
+                      value={form.examYear}
+                      onChange={(e) => setForm((p) => ({ ...p, examYear: Number(e.target.value) }))}
+                      className="w-full px-3 py-2 text-xs rounded-lg border border-edge-strong bg-field text-ink focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent font-mono"
+                    />
+                  </div>
                 </div>
               )}
 
               <div>
-                <label htmlFor="q-stem" className="block text-xs font-medium text-ink-muted mb-1">Question Stem</label>
+                <label htmlFor="q-stem" className="block text-xs font-medium text-ink-muted mb-1">
+                  Question Stem
+                </label>
                 <textarea
                   id="q-stem"
                   required
@@ -255,7 +405,9 @@ export function AdminQuestionBankPage({ defaultType = 'mcq' }: { defaultType?: Q
               </div>
 
               <div>
-                <label htmlFor="q-correct" className="block text-xs font-medium text-ink-muted mb-1">Correct Option</label>
+                <label htmlFor="q-correct" className="block text-xs font-medium text-ink-muted mb-1">
+                  Correct Option
+                </label>
                 <select
                   id="q-correct"
                   value={form.correctOptionIndex}
@@ -270,7 +422,9 @@ export function AdminQuestionBankPage({ defaultType = 'mcq' }: { defaultType?: Q
               </div>
 
               <div>
-                <label htmlFor="q-exp" className="block text-xs font-medium text-ink-muted mb-1">Explanation</label>
+                <label htmlFor="q-exp" className="block text-xs font-medium text-ink-muted mb-1">
+                  Explanation
+                </label>
                 <textarea
                   id="q-exp"
                   rows={2}
@@ -280,45 +434,146 @@ export function AdminQuestionBankPage({ defaultType = 'mcq' }: { defaultType?: Q
                 />
               </div>
 
-              <button type="submit" className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold rounded-lg bg-accent text-accent-ink hover:bg-accent-hover transition-colors">
-                <Plus className="w-3.5 h-3.5" />
-                <span>Add Question</span>
+              <label className="flex items-center gap-2 text-xs font-medium text-ink">
+                <input
+                  type="checkbox"
+                  checked={form.isPublished}
+                  onChange={(e) => setForm((p) => ({ ...p, isPublished: e.target.checked }))}
+                  className="accent-accent"
+                />
+                <span>Published to Students</span>
+              </label>
+
+              <button
+                type="submit"
+                className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold rounded-lg bg-accent text-accent-ink hover:bg-accent-hover transition-colors"
+              >
+                {editingId ? <Pencil className="w-3.5 h-3.5" /> : <Plus className="w-3.5 h-3.5" />}
+                <span>{editingId ? 'Update Question' : 'Add Question'}</span>
               </button>
             </form>
           )}
         </div>
 
         <div className="lg:col-span-7 space-y-4">
+          <div className="bg-panel border border-edge rounded-xl px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="text-xs font-semibold text-ink">
+              Showing {displayed.length} {defaultType === 'pyq' ? 'PYQ' : 'MCQ'}
+              {displayed.length === 1 ? '' : 's'}
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <select
+                aria-label="Filter by subject"
+                value={subjectFilter}
+                onChange={(e) => {
+                  setSubjectFilter(e.target.value);
+                  setTopicFilter('');
+                }}
+                className="px-2.5 py-1.5 text-xs rounded-lg border border-edge-strong bg-field text-ink focus:outline-none focus:ring-2 focus:ring-accent"
+              >
+                <option value="">All Subjects</option>
+                {subjects.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.title}
+                  </option>
+                ))}
+              </select>
+              <select
+                aria-label="Filter by topic"
+                value={topicFilter}
+                onChange={(e) => setTopicFilter(e.target.value)}
+                className="max-w-[220px] px-2.5 py-1.5 text-xs rounded-lg border border-edge-strong bg-field text-ink focus:outline-none focus:ring-2 focus:ring-accent"
+              >
+                <option value="">All Topics</option>
+                {filterTopics.map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.title}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
           {notice && <SuccessBanner message={notice} />}
           {error && <ErrorState message={error} onRetry={() => void loadData()} />}
           {loading ? (
             <LoadingState label="Loading questions..." />
           ) : displayed.length === 0 ? (
-            <EmptyState title="No questions in bank" description="Add MCQs, previous-year questions, and current affairs questions linked to syllabus topics." />
+            <EmptyState
+              title="No questions in bank"
+              description="Add MCQs, verified previous-year questions, and current affairs questions linked to syllabus topics."
+            />
           ) : (
             <div className="bg-panel border border-edge rounded-xl shadow-sm divide-y divide-edge">
-              {displayed.map((q) => (
-                <div key={q.id} className="p-4 flex items-start justify-between gap-4">
-                  <div>
-                    <div className="text-xs font-mono text-accent-text">
-                      {q.questionType.toUpperCase()} · {q.difficulty}
-                      {q.examYear ? ` · ${q.examYear}` : ''}
+              {displayed.map((q) => {
+                const topic = topics.find((t) => t.id === q.topicId);
+                const subject = subjects.find((s) => s.id === q.subjectId);
+                return (
+                  <div key={q.id} className="p-4 flex items-start justify-between gap-4">
+                    <div className="min-w-0">
+                      <div className="text-xs font-mono text-accent-text">
+                        {q.questionType.toUpperCase()} · {q.difficulty}
+                        {q.examName ? ` · ${q.examName}` : ''}
+                        {q.examYear ? ` (${q.examYear})` : ''} · {q.isPublished ? 'Published' : 'Draft'}
+                      </div>
+                      <div className="mt-1 text-sm font-medium text-ink">{q.stem}</div>
+                      <div className="mt-1 text-[11px] text-ink-faint">
+                        {subject?.title || 'Subject'} / {topic?.title || 'Topic'}
+                      </div>
                     </div>
-                    <div className="mt-1 text-sm font-medium text-ink">{q.stem}</div>
+                    <div className="flex items-center gap-1 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => void togglePublish(q)}
+                        className="px-2 py-1 text-[11px] font-medium rounded border border-edge-strong bg-field text-ink-muted hover:text-ink"
+                      >
+                        {q.isPublished ? 'Unpublish' : 'Publish'}
+                      </button>
+                      <button
+                        type="button"
+                        aria-label={`Edit question`}
+                        onClick={() => {
+                          setEditingId(q.id);
+                          setForm({
+                            examinationId: q.examinationId,
+                            topicId: q.topicId,
+                            questionType: q.questionType,
+                            stem: q.stem,
+                            optA: q.options[0] ?? '',
+                            optB: q.options[1] ?? '',
+                            optC: q.options[2] ?? '',
+                            optD: q.options[3] ?? '',
+                            correctOptionIndex: q.correctOptionIndex,
+                            explanation: q.explanation ?? '',
+                            difficulty: q.difficulty,
+                            examName: q.examName ?? '',
+                            examYear: q.examYear ?? 2024,
+                            isPublished: q.isPublished,
+                          });
+                          setNotice(null);
+                          setError(null);
+                        }}
+                        className="p-2 rounded-lg text-ink-muted hover:text-accent-text hover:bg-accent/10 transition-colors"
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </button>
+                      <button
+                        type="button"
+                        aria-label="Delete question"
+                        onClick={async () => {
+                          await deleteAdminEntity('questions', q.id);
+                          setNotice('Question removed.');
+                          if (editingId === q.id) resetForm(true);
+                          await loadData();
+                        }}
+                        className="p-2 rounded-lg text-ink-muted hover:text-red-500 hover:bg-red-500/10 transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      await deleteAdminEntity('questions', q.id);
-                      setNotice('Question removed.');
-                      await loadData();
-                    }}
-                    className="p-2 rounded-lg text-ink-muted hover:text-red-500 hover:bg-red-500/10 transition-colors shrink-0"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>

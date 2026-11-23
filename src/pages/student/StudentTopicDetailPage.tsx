@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { BookOpen, CheckCircle2, FileText } from 'lucide-react';
+import { BookOpen, CheckCircle2, ClipboardCheck, Clock, FileText, RotateCcw } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
 import { AppShell } from '../../components/ui/AppShell';
+import { MarkdownContent } from '../../components/ui/MarkdownContent';
 import { EmptyState, ErrorState, LoadingState, SuccessBanner } from '../../components/ui/StateBlocks';
+import { TestReviewSection } from '../../components/ui/TestReviewSection';
 import { STUDENT_NAV_ITEMS } from '../../config/navigation';
 import { useAuth } from '../../context/AuthContext';
 import { findSubjectGroupByParam, resolveCanonicalSubjectDefinition } from '../../lib/syllabusHierarchy';
@@ -18,6 +20,9 @@ import {
   LearningProgress,
   StudyMaterial,
   Subject,
+  TestAttempt,
+  TestAttemptReviewItem,
+  TestPaper,
   Topic,
   Unit,
 } from '../../types/academic';
@@ -30,6 +35,7 @@ interface PracticeQuestion {
   stem: string;
   options: string[];
   difficulty: string;
+  examName?: string;
   examYear?: number;
 }
 
@@ -38,6 +44,24 @@ interface AnswerFeedback {
   correctOptionIndex: number;
   correct: boolean;
   explanation: string;
+}
+
+interface SafeAssessmentQuestion {
+  id: string;
+  stem: string;
+  options: string[];
+}
+
+interface SubmittedAssessmentResult {
+  testTitle: string;
+  totalMarks: number;
+  score: number;
+  correct: number;
+  incorrect: number;
+  unanswered: number;
+  expired?: boolean;
+  durationSeconds: number;
+  review: TestAttemptReviewItem[];
 }
 
 const MATERIAL_LABELS: Record<string, string> = {
@@ -64,6 +88,11 @@ function stripEditorialFooter(content: string): string {
   return positions.length ? content.slice(0, Math.min(...positions)).trimEnd() : content.trimEnd();
 }
 
+function isSafeHttpUrl(url: string | undefined): url is string {
+  if (!url) return false;
+  return /^https?:\/\//i.test(url.trim());
+}
+
 export function StudentTopicDetailPage() {
   const { subjectId, topicId } = useParams<{ subjectId?: string; topicId: string }>();
   const { firebaseUser } = useAuth();
@@ -77,15 +106,31 @@ export function StudentTopicDetailPage() {
   const [subjectTitle, setSubjectTitle] = useState<string>('Subject');
   const [resolvedSubject, setResolvedSubject] = useState<Subject | null>(null);
   const [materials, setMaterials] = useState<StudyMaterial[]>([]);
+  const [topicTests, setTopicTests] = useState<TestPaper[]>([]);
+  const [pastAttempts, setPastAttempts] = useState<TestAttempt[]>([]);
   const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
   const [progress, setProgress] = useState<LearningProgress | null>(null);
 
-  const [activeTab, setActiveTab] = useState<'content' | 'mcq' | 'pyq'>('content');
+  const [activeTab, setActiveTab] = useState<'content' | 'mcq' | 'pyq' | 'assessment'>('content');
   const [questions, setQuestions] = useState<PracticeQuestion[]>([]);
+  const [questionLoading, setQuestionLoading] = useState(false);
   const [questionError, setQuestionError] = useState<string | null>(null);
   const [questionReload, setQuestionReload] = useState(0);
   const [feedback, setFeedback] = useState<Record<string, AnswerFeedback>>({});
+  const [questionFilter, setQuestionFilter] = useState<'all' | 'incorrect'>('all');
   const [checkingId, setCheckingId] = useState<string | null>(null);
+
+  // Inline Practice Assessment runner state
+  const [activeAssessment, setActiveAssessment] = useState<TestPaper | null>(null);
+  const [assessmentAttemptId, setAssessmentAttemptId] = useState<string | null>(null);
+  const [assessmentQuestions, setAssessmentQuestions] = useState<SafeAssessmentQuestion[]>([]);
+  const [assessmentAnswers, setAssessmentAnswers] = useState<Record<string, number>>({});
+  const [assessmentElapsed, setAssessmentElapsed] = useState(0);
+  const [assessmentStarting, setAssessmentStarting] = useState(false);
+  const [assessmentSubmitting, setAssessmentSubmitting] = useState(false);
+  const [assessmentError, setAssessmentError] = useState<string | null>(null);
+  const [assessmentResult, setAssessmentResult] = useState<SubmittedAssessmentResult | null>(null);
+  const [expandedPastAttemptId, setExpandedPastAttemptId] = useState<string | null>(null);
 
   const loadTopicData = useCallback(async () => {
     if (!firebaseUser || !topicId) {
@@ -95,16 +140,27 @@ export function StudentTopicDetailPage() {
     setLoading(true);
     setError(null);
     try {
-      const [allTopics, allChapters, allUnits, allSubjects, allMaterials, savedBookmarks, userProgress] =
-        await Promise.all([
-          fetchPublishedCollection<Topic>('topics'),
-          fetchPublishedCollection<Chapter>('chapters'),
-          fetchPublishedCollection<Unit>('units'),
-          fetchPublishedCollection<Subject>('subjects'),
-          fetchPublishedCollection<StudyMaterial>('studyMaterials'),
-          fetchStudentOwned<Bookmark>('bookmarks', firebaseUser.uid),
-          fetchStudentOwned<LearningProgress>('learningProgress', firebaseUser.uid),
-        ]);
+      const [
+        allTopics,
+        allChapters,
+        allUnits,
+        allSubjects,
+        allMaterials,
+        allTests,
+        userAttempts,
+        savedBookmarks,
+        userProgress,
+      ] = await Promise.all([
+        fetchPublishedCollection<Topic>('topics'),
+        fetchPublishedCollection<Chapter>('chapters'),
+        fetchPublishedCollection<Unit>('units'),
+        fetchPublishedCollection<Subject>('subjects'),
+        fetchPublishedCollection<StudyMaterial>('studyMaterials'),
+        fetchPublishedCollection<TestPaper>('tests'),
+        fetchStudentOwned<TestAttempt>('testAttempts', firebaseUser.uid),
+        fetchStudentOwned<Bookmark>('bookmarks', firebaseUser.uid),
+        fetchStudentOwned<LearningProgress>('learningProgress', firebaseUser.uid),
+      ]);
 
       const foundTopic = allTopics.find((item) => item.id === topicId) ?? null;
       setTopic(foundTopic);
@@ -113,6 +169,8 @@ export function StudentTopicDetailPage() {
         setChapter(null);
         setResolvedSubject(null);
         setMaterials([]);
+        setTopicTests([]);
+        setPastAttempts([]);
         return;
       }
 
@@ -150,6 +208,16 @@ export function StudentTopicDetailPage() {
             a.title.localeCompare(b.title)
         );
       setMaterials(topicMaterials);
+
+      const linkedTests = allTests.filter((item) => item.topicId === foundTopic.id);
+      setTopicTests(linkedTests);
+      const linkedTestIds = new Set(linkedTests.map((t) => t.id));
+      setPastAttempts(
+        userAttempts.filter(
+          (att) => att.status === 'submitted' && (att.topicId === foundTopic.id || linkedTestIds.has(att.testId))
+        )
+      );
+
       setBookmarks(savedBookmarks);
       setProgress(userProgress.find((item) => item.topicId === foundTopic.id) ?? null);
     } catch (err) {
@@ -161,6 +229,10 @@ export function StudentTopicDetailPage() {
 
   useEffect(() => {
     void loadTopicData();
+    setActiveAssessment(null);
+    setAssessmentAttemptId(null);
+    setAssessmentResult(null);
+    setAssessmentError(null);
   }, [loadTopicData]);
 
   useEffect(() => {
@@ -168,10 +240,13 @@ export function StudentTopicDetailPage() {
     const loadQuestions = async () => {
       if (!firebaseUser || !topic || (activeTab !== 'mcq' && activeTab !== 'pyq')) {
         setQuestions([]);
+        setQuestionLoading(false);
         return;
       }
+      setQuestionLoading(true);
       setQuestionError(null);
       setFeedback({});
+      setQuestionFilter('all');
       try {
         const token = await firebaseUser.getIdToken();
         const response = await fetch(
@@ -188,6 +263,8 @@ export function StudentTopicDetailPage() {
           setQuestions([]);
           setQuestionError(err instanceof Error ? err.message : 'Topic questions could not be loaded.');
         }
+      } finally {
+        if (!cancelled) setQuestionLoading(false);
       }
     };
     void loadQuestions();
@@ -212,6 +289,27 @@ export function StudentTopicDetailPage() {
       return true;
     });
   }, [questions]);
+
+  const practiceStats = useMemo(() => {
+    let answered = 0;
+    let correct = 0;
+    let incorrect = 0;
+    for (const q of uniqueQuestions) {
+      const fb = feedback[q.id];
+      if (!fb) continue;
+      answered += 1;
+      if (fb.correct) correct += 1;
+      else incorrect += 1;
+    }
+    return { answered, correct, incorrect };
+  }, [uniqueQuestions, feedback]);
+
+  const displayedQuestions = useMemo(() => {
+    if (questionFilter === 'incorrect') {
+      return uniqueQuestions.filter((q) => feedback[q.id] && !feedback[q.id].correct);
+    }
+    return uniqueQuestions;
+  }, [uniqueQuestions, feedback, questionFilter]);
 
   const handleAnswer = async (question: PracticeQuestion, optionIndex: number) => {
     if (!firebaseUser || feedback[question.id]) return;
@@ -244,6 +342,112 @@ export function StudentTopicDetailPage() {
       setCheckingId(null);
     }
   };
+
+  // Practice Assessment handlers
+  const handleStartAssessment = async (testPaper: TestPaper) => {
+    if (!firebaseUser || assessmentStarting) return;
+    setAssessmentStarting(true);
+    setAssessmentError(null);
+    setAssessmentResult(null);
+    try {
+      const token = await firebaseUser.getIdToken();
+      const response = await fetch(`/api/student/tests/${encodeURIComponent(testPaper.id)}/start`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.error || 'Could not start practice assessment.');
+      setActiveAssessment(testPaper);
+      setAssessmentAttemptId(data.attemptId);
+      setAssessmentQuestions(Array.isArray(data.questions) ? data.questions : []);
+      setAssessmentAnswers({});
+      setAssessmentElapsed(0);
+    } catch (err) {
+      setAssessmentError(err instanceof Error ? err.message : 'Could not start practice assessment.');
+    } finally {
+      setAssessmentStarting(false);
+    }
+  };
+
+  const handleSubmitAssessment = useCallback(async () => {
+    if (!firebaseUser || !assessmentAttemptId || !activeAssessment || assessmentSubmitting) return;
+    setAssessmentSubmitting(true);
+    setAssessmentError(null);
+    try {
+      const token = await firebaseUser.getIdToken();
+      const response = await fetch(
+        `/api/student/tests/attempts/${encodeURIComponent(assessmentAttemptId)}/submit`,
+        {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ answers: assessmentAnswers }),
+        }
+      );
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.error || 'Failed to submit assessment.');
+      setAssessmentResult({
+        testTitle: activeAssessment.title,
+        totalMarks: Number(data.totalMarks) || activeAssessment.totalMarks,
+        score: Number(data.score) || 0,
+        correct: Number(data.correct) || 0,
+        incorrect: Number(data.incorrect) || 0,
+        unanswered: Number(data.unanswered) || 0,
+        expired: Boolean(data.expired),
+        durationSeconds: Number(data.durationSeconds) || assessmentElapsed,
+        review: Array.isArray(data.review) ? (data.review as TestAttemptReviewItem[]) : [],
+      });
+      setAssessmentAttemptId(null);
+      // Refresh private attempt history list silently
+      if (topic) {
+        const attempts = await fetchStudentOwned<TestAttempt>('testAttempts', firebaseUser.uid);
+        const linkedIds = new Set(topicTests.map((t) => t.id));
+        setPastAttempts(
+          attempts.filter(
+            (att) => att.status === 'submitted' && (att.topicId === topic.id || linkedIds.has(att.testId))
+          )
+        );
+      }
+    } catch (err) {
+      setAssessmentError(err instanceof Error ? err.message : 'Failed to submit assessment.');
+    } finally {
+      setAssessmentSubmitting(false);
+    }
+  }, [
+    firebaseUser,
+    assessmentAttemptId,
+    activeAssessment,
+    assessmentSubmitting,
+    assessmentAnswers,
+    assessmentElapsed,
+    topic,
+    topicTests,
+  ]);
+
+  const assessmentTimeLimitSeconds = Math.max(60, Number(activeAssessment?.durationMinutes || 1) * 60);
+
+  useEffect(() => {
+    if (!assessmentAttemptId || assessmentResult) return;
+    const timer = window.setInterval(() => setAssessmentElapsed((s) => s + 1), 1000);
+    return () => window.clearInterval(timer);
+  }, [assessmentAttemptId, assessmentResult]);
+
+  useEffect(() => {
+    if (
+      assessmentAttemptId &&
+      !assessmentResult &&
+      !assessmentSubmitting &&
+      assessmentElapsed >= assessmentTimeLimitSeconds
+    ) {
+      void handleSubmitAssessment();
+    }
+  }, [
+    assessmentAttemptId,
+    assessmentResult,
+    assessmentSubmitting,
+    assessmentElapsed,
+    assessmentTimeLimitSeconds,
+    handleSubmitAssessment,
+  ]);
 
   const handleBookmark = async () => {
     if (!firebaseUser || !topic) return;
@@ -316,6 +520,9 @@ export function StudentTopicDetailPage() {
     Boolean(chapter?.title) &&
     chapter!.title.trim().toLowerCase() !== (topic?.title ?? '').trim().toLowerCase();
 
+  const formatClock = (secs: number) =>
+    `${String(Math.floor(secs / 60)).padStart(2, '0')}:${String(secs % 60).padStart(2, '0')}`;
+
   return (
     <AppShell
       workspaceTitle="Student LMS"
@@ -381,8 +588,9 @@ export function StudentTopicDetailPage() {
               {(
                 [
                   { id: 'content', label: `Study Material (${materials.length})` },
-                  { id: 'mcq', label: 'Practice MCQs' },
-                  { id: 'pyq', label: 'Previous Year Questions' },
+                  { id: 'mcq', label: 'MCQs' },
+                  { id: 'pyq', label: 'PYQs' },
+                  { id: 'assessment', label: `Practice Assessment (${topicTests.length})` },
                 ] as const
               ).map((tab) => (
                 <button
@@ -424,15 +632,15 @@ export function StudentTopicDetailPage() {
                       </div>
                       <h2 className="mt-2 text-xl sm:text-2xl font-bold text-ink">{item.title}</h2>
                       {item.contentMarkdown ? (
-                        <div className="mt-4 max-w-none whitespace-pre-wrap break-words text-[15px] leading-8 text-ink">
-                          {stripEditorialFooter(item.contentMarkdown)}
+                        <div className="mt-4">
+                          <MarkdownContent content={stripEditorialFooter(item.contentMarkdown)} />
                         </div>
                       ) : (
                         <p className="mt-4 text-sm text-ink-muted">
                           No written notes body has been added to this item yet.
                         </p>
                       )}
-                      {item.resourceUrl && (
+                      {isSafeHttpUrl(item.resourceUrl) && (
                         <a
                           href={item.resourceUrl}
                           target="_blank"
@@ -448,7 +656,15 @@ export function StudentTopicDetailPage() {
               ))}
 
             {(activeTab === 'mcq' || activeTab === 'pyq') &&
-              (questionError ? (
+              (questionLoading ? (
+                <LoadingState
+                  label={
+                    activeTab === 'mcq'
+                      ? 'Loading topic practice MCQs...'
+                      : 'Checking verified previous-year questions...'
+                  }
+                />
+              ) : questionError ? (
                 <ErrorState
                   message={questionError}
                   onRetry={() => setQuestionReload((value) => value + 1)}
@@ -458,13 +674,62 @@ export function StudentTopicDetailPage() {
                   title={
                     activeTab === 'mcq'
                       ? 'No MCQs published for this topic yet'
-                      : 'No PYQs published for this topic yet'
+                      : 'Verified PYQs are not available for this topic yet'
                   }
-                  description="Published questions assigned to this topic will appear here."
+                  description={
+                    activeTab === 'mcq'
+                      ? 'Published practice MCQs assigned to this topic will appear here.'
+                      : 'Only previous-year questions whose exact question stem, exam name, and year are verified from official papers are published here.'
+                  }
                 />
               ) : (
                 <div className="space-y-4">
-                  {uniqueQuestions.map((question, index) => {
+                  <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-edge bg-panel px-4 py-3 text-xs">
+                    <div className="flex flex-wrap items-center gap-3 font-mono text-ink-muted">
+                      <span>Total: {uniqueQuestions.length}</span>
+                      <span>Answered: {practiceStats.answered}</span>
+                      <span className="text-emerald-600 dark:text-emerald-400">
+                        Correct: {practiceStats.correct}
+                      </span>
+                      <span className="text-red-600 dark:text-red-400">
+                        Incorrect: {practiceStats.incorrect}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {practiceStats.incorrect > 0 && (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setQuestionFilter((prev) => (prev === 'all' ? 'incorrect' : 'all'))
+                          }
+                          className={`rounded-lg border px-3 py-1.5 font-semibold transition-colors ${
+                            questionFilter === 'incorrect'
+                              ? 'border-accent bg-accent text-accent-ink'
+                              : 'border-edge-strong bg-field text-ink hover:border-accent'
+                          }`}
+                        >
+                          {questionFilter === 'incorrect'
+                            ? 'Show All'
+                            : `Review Incorrect (${practiceStats.incorrect})`}
+                        </button>
+                      )}
+                      {practiceStats.answered > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setFeedback({});
+                            setQuestionFilter('all');
+                          }}
+                          className="inline-flex items-center gap-1 rounded-lg border border-edge-strong bg-field px-3 py-1.5 font-semibold text-ink-muted hover:text-ink"
+                        >
+                          <RotateCcw className="w-3.5 h-3.5" />
+                          <span>Reset</span>
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {displayedQuestions.map((question, index) => {
                     const answer = feedback[question.id];
                     return (
                       <article
@@ -472,8 +737,9 @@ export function StudentTopicDetailPage() {
                         className="rounded-2xl border border-edge bg-panel p-5 space-y-4 shadow-sm"
                       >
                         <div className="text-xs font-semibold text-accent-text">
-                          {activeTab === 'mcq' ? 'MCQ' : 'Previous Year Question'} {index + 1}
-                          {question.examYear ? ` · ${question.examYear}` : ''} · {question.difficulty}
+                          {activeTab === 'mcq' ? 'MCQ' : 'Verified PYQ'} {index + 1}
+                          {question.examName ? ` · ${question.examName}` : ''}
+                          {question.examYear ? ` (${question.examYear})` : ''} · {question.difficulty}
                         </div>
                         <h3 className="font-semibold leading-7 text-ink">{question.stem}</h3>
                         <div className="grid gap-2 sm:grid-cols-2">
@@ -485,7 +751,7 @@ export function StudentTopicDetailPage() {
                               onClick={() => void handleAnswer(question, optionIndex)}
                               className={`rounded-lg border p-3 text-left text-sm transition-colors ${
                                 answer?.correctOptionIndex === optionIndex
-                                  ? 'border-emerald-500 bg-emerald-500/10 text-ink'
+                                  ? 'border-emerald-500 bg-emerald-500/10 text-ink font-medium'
                                   : answer?.selectedIndex === optionIndex
                                     ? 'border-red-500 bg-red-500/10 text-ink'
                                     : 'border-edge-strong bg-field text-ink hover:bg-subtle'
@@ -508,6 +774,233 @@ export function StudentTopicDetailPage() {
                   })}
                 </div>
               ))}
+
+            {activeTab === 'assessment' && (
+              <div className="space-y-6">
+                {assessmentError && <ErrorState message={assessmentError} />}
+
+                {assessmentResult ? (
+                  <div className="space-y-5">
+                    <SuccessBanner
+                      message={
+                        assessmentResult.expired
+                          ? 'Time expired. Your saved answers were submitted and recorded privately to your Attempt History.'
+                          : `${assessmentResult.testTitle} submitted and recorded privately to your Attempt History.`
+                      }
+                    />
+                    <div className="bg-panel border border-edge rounded-xl p-6 grid grid-cols-2 sm:grid-cols-4 gap-4 shadow-sm">
+                      <div>
+                        <div className="text-xs text-ink-faint">Score</div>
+                        <div className="text-2xl font-bold font-mono text-ink mt-1">
+                          {assessmentResult.score} / {assessmentResult.totalMarks}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-xs text-ink-faint">Correct</div>
+                        <div className="text-2xl font-bold text-emerald-600 mt-1">
+                          {assessmentResult.correct}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-xs text-ink-faint">Incorrect</div>
+                        <div className="text-2xl font-bold text-red-600 mt-1">
+                          {assessmentResult.incorrect}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-xs text-ink-faint">Skipped</div>
+                        <div className="text-2xl font-bold text-ink-muted mt-1">
+                          {assessmentResult.unanswered}
+                        </div>
+                      </div>
+                    </div>
+
+                    <TestReviewSection
+                      review={assessmentResult.review}
+                      initialFilter={assessmentResult.incorrect > 0 ? 'incorrect' : 'all'}
+                    />
+
+                    <div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setAssessmentResult(null);
+                          setActiveAssessment(null);
+                        }}
+                        className="px-4 py-2 text-xs font-semibold rounded-lg border border-edge-strong bg-panel text-ink hover:border-accent"
+                      >
+                        Back to Topic Assessments
+                      </button>
+                    </div>
+                  </div>
+                ) : assessmentAttemptId && activeAssessment ? (
+                  <div className="space-y-5">
+                    <div className="bg-panel border border-edge rounded-xl p-4 flex flex-wrap items-center justify-between gap-3 sticky top-16 z-20 shadow-sm">
+                      <div>
+                        <div className="text-xs font-semibold text-ink">{activeAssessment.title}</div>
+                        <div className="flex items-center gap-3 text-xs font-mono text-ink-muted mt-0.5">
+                          <span className="inline-flex items-center gap-1 text-accent-text">
+                            <Clock className="w-3.5 h-3.5" />
+                            {formatClock(Math.max(0, assessmentTimeLimitSeconds - assessmentElapsed))}
+                          </span>
+                          <span>
+                            Answered: {Object.keys(assessmentAnswers).length}/{assessmentQuestions.length}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setAssessmentAttemptId(null);
+                            setActiveAssessment(null);
+                          }}
+                          className="px-3 py-2 text-xs font-medium rounded-lg border border-edge-strong bg-field text-ink-muted hover:text-ink"
+                        >
+                          Exit
+                        </button>
+                        <button
+                          type="button"
+                          disabled={assessmentSubmitting}
+                          onClick={() => void handleSubmitAssessment()}
+                          className="px-4 py-2 text-xs font-semibold rounded-lg bg-accent text-accent-ink hover:bg-accent-hover disabled:opacity-60"
+                        >
+                          {assessmentSubmitting ? 'Submitting...' : 'Submit Assessment'}
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="space-y-4">
+                      {assessmentQuestions.map((q, idx) => (
+                        <div
+                          key={q.id}
+                          className="bg-panel border border-edge rounded-xl p-5 space-y-3 shadow-sm"
+                        >
+                          <div className="text-xs font-mono text-ink-faint">Question {idx + 1}</div>
+                          <p className="text-sm sm:text-base font-medium text-ink">{q.stem}</p>
+                          <div className="grid gap-2 sm:grid-cols-2">
+                            {q.options.map((opt, optIdx) => {
+                              const selected = assessmentAnswers[q.id] === optIdx;
+                              return (
+                                <button
+                                  key={optIdx}
+                                  type="button"
+                                  onClick={() =>
+                                    setAssessmentAnswers((prev) => ({ ...prev, [q.id]: optIdx }))
+                                  }
+                                  className={`text-left px-3.5 py-2.5 rounded-lg border text-xs sm:text-sm transition-colors ${
+                                    selected
+                                      ? 'border-accent bg-accent/15 text-ink font-medium'
+                                      : 'border-edge-strong bg-field text-ink hover:bg-subtle'
+                                  }`}
+                                >
+                                  <span className="font-mono text-xs mr-2 text-accent-text">
+                                    {String.fromCharCode(65 + optIdx)}.
+                                  </span>
+                                  {opt}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : topicTests.length === 0 ? (
+                  <EmptyState
+                    title="No practice assessment published for this topic yet"
+                    description="Topic-wise practice assessments with timed grading, explanations, and incorrect-answer review will appear here once published."
+                  />
+                ) : (
+                  <div className="space-y-6">
+                    <div className="grid gap-4 md:grid-cols-2">
+                      {topicTests.map((testPaper) => (
+                        <div
+                          key={testPaper.id}
+                          className="rounded-xl border border-edge bg-panel p-5 flex flex-col justify-between gap-4 shadow-sm"
+                        >
+                          <div>
+                            <div className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-accent-text">
+                              <ClipboardCheck className="w-3.5 h-3.5" />
+                              <span>{testPaper.testType.replace('_', ' ')} Assessment</span>
+                            </div>
+                            <h3 className="mt-1.5 text-base font-bold text-ink">{testPaper.title}</h3>
+                            <div className="mt-3 flex flex-wrap gap-3 text-xs font-mono text-ink-muted">
+                              <span>{testPaper.questionCount} Qs</span>
+                              <span>· {testPaper.totalMarks} Marks</span>
+                              <span>· {testPaper.durationMinutes} mins</span>
+                              <span>· -{testPaper.negativeMarking} neg</span>
+                            </div>
+                          </div>
+                          <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-edge">
+                            <button
+                              type="button"
+                              disabled={assessmentStarting}
+                              onClick={() => void handleStartAssessment(testPaper)}
+                              className="px-4 py-2 text-xs font-semibold rounded-lg bg-accent text-accent-ink hover:bg-accent-hover disabled:opacity-60"
+                            >
+                              {assessmentStarting ? 'Starting...' : 'Start Practice Assessment'}
+                            </button>
+                            <Link
+                              to={`/student/tests/${encodeURIComponent(testPaper.id)}`}
+                              className="px-3 py-2 text-xs font-medium rounded-lg border border-edge-strong bg-field text-ink hover:border-accent"
+                            >
+                              Open Full Screen
+                            </Link>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {pastAttempts.length > 0 && (
+                      <div className="rounded-xl border border-edge bg-panel p-5 space-y-3 shadow-sm">
+                        <h3 className="text-sm font-semibold text-ink">
+                          Your Recent Attempts on This Topic
+                        </h3>
+                        <div className="divide-y divide-edge">
+                          {pastAttempts.map((att) => {
+                            const hasReview = Array.isArray(att.review) && att.review.length > 0;
+                            const isExpanded = expandedPastAttemptId === att.id;
+                            return (
+                              <div key={att.id} className="py-3 space-y-3">
+                                <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
+                                  <div>
+                                    <span className="font-semibold text-ink">{att.testTitle}</span>
+                                    <span className="ml-3 font-mono text-accent-text">
+                                      Score: {att.score}/{att.totalMarks}
+                                    </span>
+                                    <span className="ml-3 font-mono text-ink-muted">
+                                      {att.correctCount}✓ / {att.incorrectCount}✗ / {att.unansweredCount} skipped
+                                    </span>
+                                  </div>
+                                  {hasReview && (
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        setExpandedPastAttemptId(isExpanded ? null : att.id)
+                                      }
+                                      className="rounded-md border border-edge-strong bg-field px-3 py-1 font-semibold text-ink hover:border-accent"
+                                    >
+                                      {isExpanded ? 'Hide Review' : 'Review Answers'}
+                                    </button>
+                                  )}
+                                </div>
+                                {isExpanded && hasReview && (
+                                  <TestReviewSection
+                                    review={att.review!}
+                                    initialFilter={att.incorrectCount > 0 ? 'incorrect' : 'all'}
+                                  />
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
           </>
         )}
       </div>
