@@ -126,7 +126,7 @@ export const INDIAN_HISTORY_ANCIENT_MEDIEVAL_PART_A: TopicContentPackage[] = [
         ],
         correctOptionIndex: 0,
         explanation: 'Paleoclimatic and river-channel studies show multi-causal ecological and economic transformation into Late Harappan rural cultures.',
-        difficulty: 'application',
+        difficulty: 'standard',
       },
       {
         stem: 'Which early Neolithic site in Balochistan (Pakistan) provides the earliest subcontinent evidence of mud-brick granaries, wheat/barley, and cotton?',
@@ -145,7 +145,7 @@ export const INDIAN_HISTORY_ANCIENT_MEDIEVAL_PART_A: TopicContentPackage[] = [
         ],
         correctOptionIndex: 0,
         explanation: 'Remarkable standardization of chert weights, seals, and 1:2:4 bricks points to strong civic/guild coordination across the Indus basin.',
-        difficulty: 'application',
+        difficulty: 'standard',
       },
       {
         stem: 'Which animal is conspicuously ABSENT from authentic Indus Valley steatite seals despite appearing widely in later Vedic and Mauryan art?',
@@ -283,7 +283,7 @@ Fought on the bank of the **Parushni (Ravi)** river between Bharata king **Sudas
         ],
         correctOptionIndex: 0,
         explanation: 'In settled territorial kingdoms, voluntary gifts (Bali) institutionalized into compulsory land/produce taxation.',
-        difficulty: 'application',
+        difficulty: 'standard',
       },
       {
         stem: 'Which philosophical Upanishad records the celebrated dialogue between young Nachiketa and Yama (Lord of Death) on the nature of the soul?',
@@ -302,7 +302,7 @@ Fought on the bank of the **Parushni (Ravi)** river between Bharata king **Sudas
         ],
         correctOptionIndex: 0,
         explanation: 'Later Vedic society curtailed women\'s assembly attendance and education rights while tightening hereditary Varna.',
-        difficulty: 'application',
+        difficulty: 'standard',
       },
       {
         stem: 'What was "Nishka" in Rigvedic and early Later Vedic exchange?',
@@ -464,7 +464,7 @@ Social rigidity of Varna, costly animal sacrifices (harming cattle needed for ir
         ],
         correctOptionIndex: 0,
         explanation: 'Ahimsa preserved agrarian cattle, Pali/Prakrit sermons engaged urban merchants directly, and ethical social equality bypassed rigid Varna disabilities.',
-        difficulty: 'application',
+        difficulty: 'standard',
       },
       {
         stem: 'In Buddhist iconography, what do the Lotus/Bull, Horse, Bodhi Tree, Wheel, and Stupa symbolize respectively?',
@@ -586,7 +586,7 @@ Listed in the Buddhist *Anguttara Nikaya* and Jain *Bhagavati Sutra*:
         ],
         correctOptionIndex: 0,
         explanation: 'Magadha uniquely combined metallurgy (iron weapons/tools), agricultural wealth, riverine logistics, and timber/elephants.',
-        difficulty: 'application',
+        difficulty: 'standard',
       },
       {
         stem: 'Which officials were specially appointed by Emperor Ashoka in his 14th regnal year (Major Rock Edict V) to propagate Dhamma and oversee prisoner/community welfare?',
@@ -631,7 +631,7 @@ Listed in the Buddhist *Anguttara Nikaya* and Jain *Bhagavati Sutra*:
         ],
         correctOptionIndex: 0,
         explanation: 'Greek chattel slavery lacked the contractual protections seen in India, and Megasthenes observed visible occupational divisions (philosophers, farmers, herdsmen, artisans, soldiers, overseers, councillors).',
-        difficulty: 'application',
+        difficulty: 'standard',
       },
       {
         stem: 'Which early ruler of the Nanda dynasty is credited in Hathigumpha and Puranic sources with building an irrigation canal in Kalinga and amassing a vast empire before the Mauryas?',
@@ -657,7 +657,7 @@ Listed in the Buddhist *Anguttara Nikaya* and Jain *Bhagavati Sutra*:
         ],
         correctOptionIndex: 0,
         explanation: 'While personally Buddhist, Ashoka framed public Dhamma as a universal moral glue across a diverse multi-religious empire.',
-        difficulty: 'application',
+        difficulty: 'standard',
       },
     ],
   },
@@ -770,7 +770,7 @@ Listed in the Buddhist *Anguttara Nikaya* and Jain *Bhagavati Sutra*:
         ],
         correctOptionIndex: 0,
         explanation: 'Control of Bactria–Tarim–Gandhara Silk Route links and thriving Indo-Roman bullion inflows sustained rich Kushan Dinars.',
-        difficulty: 'application',
+        difficulty: 'standard',
       },
       {
         stem: 'Who authored the classic Sangam-era Tamil epic *Silappadikaram* ("The Story of the Anklet") featuring Kannagi and Kovalan?',
@@ -910,7 +910,7 @@ Listed in the Buddhist *Anguttara Nikaya* and Jain *Bhagavati Sutra*:
         ],
         correctOptionIndex: 0,
         explanation: 'Balanced historiography highlights glittering elite classical arts alongside social stratification, urban contraction (R.S. Sharma), and growing feudalization.',
-        difficulty: 'application',
+        difficulty: 'standard',
       },
       {
         stem: 'Which Gupta ruler repulsed fierce Central Asian Huna invasions (under Toramana\'s predecessors) as celebrated in the Bhitari Pillar Inscription?',

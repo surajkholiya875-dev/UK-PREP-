@@ -157,7 +157,7 @@ Uttarakhand shares borders with **two sovereign nations** and **two Indian state
         options: ['Jammu & Kashmir', 'Punjab', 'Himachal Pradesh', 'Haryana'],
         correctOptionIndex: 2,
         explanation: 'Both Dehradun and Uttarkashi share Uttarakhand\'s northwestern boundary with Himachal Pradesh.',
-        difficulty: 'application',
+        difficulty: 'standard',
       },
       {
         stem: 'Why is the Lipulekh Pass in Pithoragarh considered geopolitically sensitive?',
@@ -339,7 +339,7 @@ Moving north to south across Uttarakhand, the highest relief comprises the **Tra
         ],
         correctOptionIndex: 1,
         explanation: 'Lying in the rain shadow north of the main Himadri crest, Trans-Himalayan valleys receive much less monsoon rain.',
-        difficulty: 'application',
+        difficulty: 'standard',
       },
       {
         stem: 'Arrange the following Uttarakhand peaks in descending order of elevation (highest to lowest):',
@@ -370,7 +370,7 @@ Moving north to south across Uttarakhand, the highest relief comprises the **Tra
         ],
         correctOptionIndex: 2,
         explanation: 'Moving north from the Lesser Himalaya near Joshimath into the Greater/Trans-Himalayan valleys crosses the Main Central Thrust (MCT).',
-        difficulty: 'application',
+        difficulty: 'standard',
       },
     ],
   },
@@ -492,7 +492,7 @@ South of the Main Central Thrust (MCT) lie two distinct, densely populated fold-
         ],
         correctOptionIndex: 1,
         explanation: 'Soft, poorly cemented Shivalik conglomerates and sandstones erode rapidly during intense monsoon rainfall, creating seasonal torrential channels called raos.',
-        difficulty: 'application',
+        difficulty: 'standard',
       },
       {
         stem: 'Which sequence correctly lists Uttarakhand\'s physiographic zones from NORTH to SOUTH?',
@@ -535,7 +535,7 @@ South of the Main Central Thrust (MCT) lie two distinct, densely populated fold-
         ],
         correctOptionIndex: 2,
         explanation: 'The descent from the Mussoorie ridge (Lesser Himalaya) into the Dehradun Dun valley crosses the Main Boundary Thrust (MBT).',
-        difficulty: 'application',
+        difficulty: 'standard',
       },
       {
         stem: 'Which three districts meet across the Dudhatoli forest-mountain massif?',
@@ -559,7 +559,7 @@ South of the Main Central Thrust (MCT) lie two distinct, densely populated fold-
         ],
         correctOptionIndex: 0,
         explanation: 'Moderate altitudes (1,500–2,500 m), fertile valley terraces, and temperate climates make the Lesser Himalaya Uttarakhand\'s primary hill settlement zone.',
-        difficulty: 'application',
+        difficulty: 'standard',
       },
     ],
   },
@@ -729,7 +729,7 @@ South of the Main Central Thrust (MCT) lie two distinct, densely populated fold-
         ],
         correctOptionIndex: 0,
         explanation: 'Tanakpur lies at the Bhabar exit with coarse permeable sediments, whereas Udham Singh Nagar occupies the low-lying Terai clay/spring zone.',
-        difficulty: 'application',
+        difficulty: 'standard',
       },
       {
         stem: 'Which Dun valley pair belongs to Pauri Garhwal district?',
@@ -908,7 +908,7 @@ At **Rishikesh** the Ganga reaches the foothills, receives **Song–Suswa** near
         options: ['Vishnuprayag', 'Nandprayag', 'Karnaprayag', 'Devprayag'],
         correctOptionIndex: 2,
         explanation: 'Pindar drains Bageshwar westward directly into the Alaknanda at Karnaprayag.',
-        difficulty: 'application',
+        difficulty: 'standard',
       },
       {
         stem: 'Which sacred confluence near Mana above Badrinath involves the Saraswati river meeting the Alaknanda?',
@@ -1062,7 +1062,7 @@ The Kali defines most of Uttarakhand's eastern border with Nepal before becoming
         options: ['Song', 'Suswa', 'Asan', 'Rispana'],
         correctOptionIndex: 2,
         explanation: 'The Asan river collects streams from western Dehradun valley and joins the Yamuna near Rampur Mandi.',
-        difficulty: 'application',
+        difficulty: 'standard',
       },
       {
         stem: 'Arrange these Kali tributaries in order from NORTH to SOUTH along its course:',
@@ -1170,7 +1170,7 @@ The Kali defines most of Uttarakhand's eastern border with Nepal before becoming
         ],
         correctOptionIndex: 1,
         explanation: 'Oak loss, forest fires, and erratic rain reduce spring aquifer recharge, lowering lean-season baseflow.',
-        difficulty: 'application',
+        difficulty: 'standard',
       },
       {
         stem: 'Which river flows directly through the Patli Dun valley inside Jim Corbett National Park?',
@@ -1220,7 +1220,7 @@ The Kali defines most of Uttarakhand's eastern border with Nepal before becoming
         ],
         correctOptionIndex: 1,
         explanation: 'Contour trenches and broad-leaved oak regeneration increase infiltration into hill aquifers.',
-        difficulty: 'application',
+        difficulty: 'standard',
       },
       {
         stem: 'Which river skirts the eastern edge of Jim Corbett National Park near Ramnagar while Western Ramganga flows through its core?',
@@ -1381,7 +1381,7 @@ The Kali defines most of Uttarakhand's eastern border with Nepal before becoming
         ],
         correctOptionIndex: 0,
         explanation: 'Glacier retreat forms unstable proglacial lakes (raising GLOF hazard) and diminishes long-term lean-season meltwater reserves.',
-        difficulty: 'application',
+        difficulty: 'standard',
       },
       {
         stem: 'Which pair of lakes lies in Rudraprayag district?',
@@ -1513,7 +1513,7 @@ Elevation spanning from <250 m (Terai) to 7,816 m (Nanda Devi) creates vertical 
         ],
         correctOptionIndex: 0,
         explanation: 'Aspect governs insolation: south-facing slopes are warmer and drier, while shaded north-facing slopes retain moister oak habitats.',
-        difficulty: 'application',
+        difficulty: 'standard',
       },
       {
         stem: 'Which season in Uttarakhand poses the highest risk of hailstorms damaging stone-fruit orchards (peach, plum, apple)?',
@@ -1525,7 +1525,7 @@ Elevation spanning from <250 m (Terai) to 7,816 m (Nanda Devi) creates vertical 
         ],
         correctOptionIndex: 1,
         explanation: 'Strong daytime heating in April–May triggers convective thunderstorms and hailstorms.',
-        difficulty: 'application',
+        difficulty: 'standard',
       },
       {
         stem: 'Why are deep interior valley towns like Srinagar (Garhwal) significantly hotter in May–June than surrounding ridges like Pauri?',
@@ -1537,7 +1537,7 @@ Elevation spanning from <250 m (Terai) to 7,816 m (Nanda Devi) creates vertical 
         ],
         correctOptionIndex: 0,
         explanation: 'Srinagar sits at a much lower valley elevation (~560 m) along the Alaknanda gorge, leading to much higher summer temperatures.',
-        difficulty: 'application',
+        difficulty: 'standard',
       },
       {
         stem: 'What agricultural and hydrological role do winter snowfalls from Western Disturbances play in Uttarakhand?',

@@ -654,7 +654,7 @@ To qualify as a Conservation International **Biodiversity Hotspot**, a region mu
 - **Biomedical Waste Rules, 2016:** **4-colour segregation** (**Yellow**: anatomical/chemical; **Red**: contaminated recyclable plastics/tubing; **White translucent**: sharps/needles; **Blue**: glassware/implants).
 
 ## 4. Key Revision Takeaways
-- India’s **8-pollutant AQI excludes $CO_2$ and Methane** (`PM10, PM2.5, NO2, SO2, CO, O3, NH3, Pb`).
+- India’s **8-pollutant AQI excludes $CO_2$ and Methane** (\`PM10, PM2.5, NO2, SO2, CO, O3, NH3, Pb\`).
 - **Higher BOD** = **Lower Dissolved Oxygen** = heavier organic sewage load; **COD >= BOD**.
 - **EPR (Extended Producer Responsibility)** places end-of-life collection/recycling obligations legally onto **producers/brand-owners** across Plastic, E-Waste, Battery, and Tyre rules.`,
     mcqs: [

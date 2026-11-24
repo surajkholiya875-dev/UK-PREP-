@@ -393,7 +393,7 @@ Returning from South Africa in January 1915, Gandhi spent a year touring India (
 - Presided over by **Jawaharlal Nehru** (December 1929, banks of River Ravi): declared **Purna Swaraj (Complete Independence)** as the Congress objective, authorized launching Civil Disobedience, and celebrated **26 January 1930** as the first **Independence Day** (pledge).
 
 ## 3. Civil Disobedience Movement (1930–1934)
-- **Dandi March (12 March – 6 April 1930):** Gandhi marched **~240 miles (385 km)** from **Sabarmati Ashram** to **Dandi** with **78 satyagrahis** (including three from Uttarakhand region / Almora-associated **Jyotiram Kandpal**, **Bhairav Dutt Joshi**, **Khadak Bahadur**—Wait: note **Jyotiram Kandpal**, **Bhairav Dutt Joshi**, and **Gorakhveer Khadak Bahadur** are widely cited in Uttarakhand history; let's stick strictly to well-verified facts: Gandhi led 78 satyagrahis and broke the Salt Law on **6 April 1930**).
+- **Dandi March (12 March – 6 April 1930):** Gandhi marched **~240 miles (385 km)** from **Sabarmati Ashram** to **Dandi** with **78 satyagrahis** (notably including **Jyotiram Kandpal**, **Bhairav Dutt Joshi**, and **Gorakhveer Khadak Bahadur** from the Uttarakhand region) and broke the Salt Law on **6 April 1930**.
 - **Regional Spread:**
   - *Tamil Nadu:* **C. Rajagopalachari** led Vedaranyam Salt March (Trichinopoly to Vedaranyam).
   - *Malabar:* **K. Kelappan** (Payyanur march).

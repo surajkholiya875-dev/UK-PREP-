@@ -316,7 +316,7 @@ Uttarakhand’s folk calendar follows solar *Sankranti* agricultural rhythms—h
           'Racing oxen through flooded paddies',
         ],
         correctOptionIndex: 1,
-        explanation: 'Wait in the hills during Chaitra for brothers bearing *Bhitoli* forms the emotional theme of famous folk songs (such as *Chaiti* tunes and Bhagu’s cuckoo legend).',
+        explanation: 'Waiting in the hills during Chaitra for brothers bearing *Bhitoli* forms the emotional theme of famous folk songs (such as *Chaiti* tunes and Bhagu’s cuckoo legend).',
         difficulty: 'standard',
       },
       {
@@ -352,7 +352,7 @@ Uttarakhand’s folk calendar follows solar *Sankranti* agricultural rhythms—h
           'Discovery of iron in Kumaon',
         ],
         correctOptionIndex: 0,
-        explanation: 'Wait-songs around *Chaiti* and Bhitoli reflect hill women’s deep nostalgia for their *Maika* (parental home) across steep ridges.',
+        explanation: 'Longing songs around *Chaiti* and Bhitoli reflect hill women’s deep nostalgia for their *Maika* (parental home) across steep ridges.',
         difficulty: 'standard',
       },
       {

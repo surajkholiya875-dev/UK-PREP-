@@ -668,7 +668,7 @@ export const DISTRICTS_PART_A: TopicContentPackage[] = [
         difficulty: 'standard',
       },
       {
-        stem: 'Wait—speaking of **Neelkanth Mahadev Temple** located ~32 km uphill from Rishikesh across the Ganga: in which district does it physically fall?',
+        stem: 'In which district of Uttarakhand does the sacred **Neelkanth Mahadev Temple** (~32 km uphill from Rishikesh across the Ganga) physically fall?',
         options: [
           'Haridwar district',
           'Dehradun district',

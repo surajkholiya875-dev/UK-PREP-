@@ -95,7 +95,7 @@ export const UTTARAKHAND_GEOGRAPHY_PART_B: TopicContentPackage[] = [
         ],
         correctOptionIndex: 0,
         explanation: 'Unmaintained terrace walls breach during cloudbursts, concentrating runoff into deep gullies and landslides.',
-        difficulty: 'application',
+        difficulty: 'standard',
       },
       {
         stem: 'Why are gabion retaining walls (wire cages filled with stones) preferred over solid concrete walls on many Himalayan slopes?',
@@ -152,7 +152,7 @@ export const UTTARAKHAND_GEOGRAPHY_PART_B: TopicContentPackage[] = [
         ],
         correctOptionIndex: 0,
         explanation: 'Cutting the toe of dipping Lesser Himalayan strata leaves rock masses unsupported during monsoon saturation.',
-        difficulty: 'application',
+        difficulty: 'standard',
       },
       {
         stem: 'Which soil horizon characteristic makes mountain brown-forest soils vulnerable to nutrient loss if forest canopy is cleared?',
@@ -318,7 +318,7 @@ export const UTTARAKHAND_GEOGRAPHY_PART_B: TopicContentPackage[] = [
         ],
         correctOptionIndex: 0,
         explanation: 'Short alpine growing seasons make fragile meadow turf extremely slow to recover from trampling and waste.',
-        difficulty: 'application',
+        difficulty: 'standard',
       },
       {
         stem: 'Arrange these dominant species in sequence as you climb from Haldwani (400 m) to Roopkund base (4,000 m):',
@@ -330,7 +330,7 @@ export const UTTARAKHAND_GEOGRAPHY_PART_B: TopicContentPackage[] = [
         ],
         correctOptionIndex: 0,
         explanation: 'Altitudinal succession progresses upward from Sal → Chir Pine → Oak/Deodar → Bhojpatra → Bugyals.',
-        difficulty: 'application',
+        difficulty: 'standard',
       },
       {
         stem: 'Which shift during colonial forest management in Kumaon and Garhwal contributed to modern summer fire intensity?',
@@ -498,7 +498,7 @@ The **1980s Doon Valley Limestone Quarrying Case (*RLEK vs State of UP*)** led t
         ],
         correctOptionIndex: 0,
         explanation: 'Open-cast hillside cutting for soapstone can destabilize agricultural terraces, crack houses, and sever spring channels.',
-        difficulty: 'application',
+        difficulty: 'standard',
       },
       {
         stem: 'Which pair of mineral and industrial output is correctly matched for Uttarakhand?',
@@ -522,7 +522,7 @@ The **1980s Doon Valley Limestone Quarrying Case (*RLEK vs State of UP*)** led t
         ],
         correctOptionIndex: 0,
         explanation: 'RBM stands for River Bed Material extracted under clearance to regulate aggradation and supply construction.',
-        difficulty: 'application',
+        difficulty: 'standard',
       },
       {
         stem: 'Where are minor Graphite occurrences reported in Uttarakhand?',
@@ -662,7 +662,7 @@ With steep mountain river gradients and perennial snowmelt, Uttarakhand holds ~2
         ],
         correctOptionIndex: 0,
         explanation: 'Clearing dry Pirul from forest floors lowers summer fire intensity and feeds rural biomass plants.',
-        difficulty: 'application',
+        difficulty: 'standard',
       },
       {
         stem: 'Why are "run-of-the-river" projects preferred over massive storage dams in upper valleys, yet still ecologically debated?',
@@ -819,7 +819,7 @@ With steep mountain river gradients and perennial snowmelt, Uttarakhand holds ~2
         ],
         correctOptionIndex: 0,
         explanation: 'Springs emerge where dipping fractures intersect slopes; protecting upslope recharge zones restores seepage.',
-        difficulty: 'application',
+        difficulty: 'standard',
       },
       {
         stem: 'Where is the Bhimgoda Barrage situated, serving as the headworks for the Upper and Eastern Ganga Canals?',
@@ -850,7 +850,7 @@ With steep mountain river gradients and perennial snowmelt, Uttarakhand holds ~2
         ],
         correctOptionIndex: 0,
         explanation: 'Low summer source sustainability, frost damage at altitude, and dispersed settlements complicate hill piped supply.',
-        difficulty: 'application',
+        difficulty: 'standard',
       },
       {
         stem: 'What is "Surya Dhar Lake", developed in the Doiwala/Thano area of Dehradun district?',
@@ -874,7 +874,7 @@ With steep mountain river gradients and perennial snowmelt, Uttarakhand holds ~2
         ],
         correctOptionIndex: 0,
         explanation: 'Micro-irrigation conserves scarce spring water and prevents slope erosion on terraced fields.',
-        difficulty: 'application',
+        difficulty: 'standard',
       },
       {
         stem: 'Historically, which Dehradun canal built in the 17th century (attributed in chronicles to Rani Karnavati\'s period) irrigated Doon Valley?',
@@ -999,7 +999,7 @@ With steep mountain river gradients and perennial snowmelt, Uttarakhand holds ~2
         ],
         correctOptionIndex: 0,
         explanation: 'Adult male out-migration for jobs raises the resident adult sex ratio while masking child sex ratio disparities.',
-        difficulty: 'application',
+        difficulty: 'standard',
       },
       {
         stem: 'Which district recorded the lowest overall literacy rate (73.10%) in Uttarakhand in Census 2011?',
@@ -1032,7 +1032,7 @@ With steep mountain river gradients and perennial snowmelt, Uttarakhand holds ~2
         ],
         correctOptionIndex: 0,
         explanation: 'Plains absorb migrants and industrial expansion while hills face service viability and delimitation debates.',
-        difficulty: 'application',
+        difficulty: 'standard',
       },
     ],
   },
@@ -1173,7 +1173,7 @@ With steep mountain river gradients and perennial snowmelt, Uttarakhand holds ~2
         ],
         correctOptionIndex: 0,
         explanation: 'Mid-slope sites avoid flash floods and valley-bottom frost pockets while staying near springs and terraces.',
-        difficulty: 'application',
+        difficulty: 'standard',
       },
       {
         stem: 'Roughly what percentage of Uttarakhand\'s total population did Scheduled Tribes constitute in Census 2011?',
@@ -1301,7 +1301,7 @@ With steep mountain river gradients and perennial snowmelt, Uttarakhand holds ~2
         ],
         correctOptionIndex: 0,
         explanation: 'Aggressive hill cutting and unscientific debris disposal can reactivate slope failures unless matched with bio-engineering.',
-        difficulty: 'application',
+        difficulty: 'standard',
       },
       {
         stem: 'Which five Garhwal districts are directly linked along the Rishikesh–Karnaprayag railway alignment?',
@@ -1325,7 +1325,7 @@ With steep mountain river gradients and perennial snowmelt, Uttarakhand holds ~2
         ],
         correctOptionIndex: 0,
         explanation: 'Aerial ropeways avoid carving long highway benches across steep fragile slopes while lowering traffic congestion.',
-        difficulty: 'application',
+        difficulty: 'standard',
       },
       {
         stem: 'Which airport serves as Uttarakhand\'s main commercial air gateway between Dehradun and Rishikesh?',
@@ -1356,7 +1356,7 @@ With steep mountain river gradients and perennial snowmelt, Uttarakhand holds ~2
         ],
         correctOptionIndex: 0,
         explanation: 'Permanent family migration abandons homes, schools, and agricultural terraces permanently.',
-        difficulty: 'application',
+        difficulty: 'standard',
       },
       {
         stem: 'Which agency constructs and clears strategic high-altitude frontier roads near the China border such as Joshimath–Malari–Niti?',

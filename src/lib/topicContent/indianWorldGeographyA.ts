@@ -173,7 +173,7 @@ India drifted northward across the Tethys Ocean and collided with Eurasia (~50 M
         ],
         correctOptionIndex: 0,
         explanation: 'Continued convergence stores elastic strain across Himalayan faults, explaining why Uttarakhand lies in Seismic Zones IV and V.',
-        difficulty: 'application',
+        difficulty: 'standard',
       },
       {
         stem: 'What separates the liquid Outer Core from the solid Inner Core?',
@@ -311,7 +311,7 @@ India drifted northward across the Tethys Ocean and collided with Eurasia (~50 M
         ],
         correctOptionIndex: 0,
         explanation: 'Differential glacial erosion leaves tributary valleys suspended high along the walls of deep trunk glacial troughs.',
-        difficulty: 'application',
+        difficulty: 'standard',
       },
       {
         stem: 'Which process is an example of MECHANICAL (physical) weathering rather than chemical weathering?',
@@ -373,7 +373,7 @@ India drifted northward across the Tethys Ocean and collided with Eurasia (~50 M
         options: ['Terminal moraine ridge', 'Yardang', 'Natural river levee', 'Polje rim'],
         correctOptionIndex: 0,
         explanation: 'Unconsolidated terminal/lateral moraine debris dams proglacial meltwater lakes like Chorabari Tal.',
-        difficulty: 'application',
+        difficulty: 'standard',
       },
     ],
   },
@@ -524,7 +524,7 @@ India drifted northward across the Tethys Ocean and collided with Eurasia (~50 M
         ],
         correctOptionIndex: 0,
         explanation: 'Flying above tropospheric storm clouds offers smooth flight and better fuel efficiency.',
-        difficulty: 'application',
+        difficulty: 'standard',
       },
       {
         stem: 'In Koppen\'s climate classification, what does the code "Cw" (like Cwg across parts of northern India / Gangetic plains) signify?',
@@ -560,7 +560,7 @@ India drifted northward across the Tethys Ocean and collided with Eurasia (~50 M
         ],
         correctOptionIndex: 0,
         explanation: 'Cutting off evaporation from warm sea surfaces starves the cyclone\'s heat engine while terrain friction slows inflow.',
-        difficulty: 'application',
+        difficulty: 'standard',
       },
       {
         stem: 'Which atmospheric layer reflects terrestrial medium- and short-wave radio transmissions back to Earth?',
@@ -723,7 +723,7 @@ India drifted northward across the Tethys Ocean and collided with Eurasia (~50 M
         ],
         correctOptionIndex: 0,
         explanation: 'Reef-building corals require clear, warm, normal-salinity marine water free of suffocating river silt.',
-        difficulty: 'application',
+        difficulty: 'standard',
       },
       {
         stem: 'During Spring Tides (highest tidal range), how are the Sun, Earth, and Moon aligned?',
@@ -890,7 +890,7 @@ Formed by Quaternary alluvial infilling of the Himalayan **foredeep**; divided n
         ],
         correctOptionIndex: 0,
         explanation: 'Lower latitude and abundant Bay of Bengal moisture give the eastern Himalayas lush forests and higher snowlines than drier northwestern ranges.',
-        difficulty: 'application',
+        difficulty: 'standard',
       },
       {
         stem: 'Which pass in Sikkim historically connects India with Tibet\'s Chumbi Valley?',
@@ -933,7 +933,7 @@ Formed by Quaternary alluvial infilling of the Himalayan **foredeep**; divided n
         ],
         correctOptionIndex: 0,
         explanation: 'Water-intensive paddy cultivation on semi-arid Bhangar tracts has caused steep water-table depletion.',
-        difficulty: 'application',
+        difficulty: 'standard',
       },
       {
         stem: 'Which statement contrasts the "Duars" of North Bengal/Assam with the "Duns" of Uttarakhand/Himachal?',
@@ -1105,7 +1105,7 @@ Part of ancient Gondwanaland, composed of Precambrian crystalline rocks, **Vindh
         ],
         correctOptionIndex: 0,
         explanation: 'Cretaceous–Cenozoic uplift tilted the Peninsular block eastward, so rivers rising near the western coast traverse the entire plateau to the Bay of Bengal.',
-        difficulty: 'application',
+        difficulty: 'standard',
       },
       {
         stem: 'Which coastal lagoon is the largest brackish-water lagoon in India, situated on the Odisha (Utkal) coast?',
@@ -1206,7 +1206,7 @@ Part of ancient Gondwanaland, composed of Precambrian crystalline rocks, **Vindh
         ],
         correctOptionIndex: 1,
         explanation: 'Dual monsoon replenishment (summer SW in upper basin, autumn NE in lower basin) keeps Kaveri more perennial than northern Deccan rivers.',
-        difficulty: 'application',
+        difficulty: 'standard',
       },
       {
         stem: 'Which tributary of the Ganga rises in the Amarkantak plateau and joins it from the south near Patna?',
@@ -1284,7 +1284,7 @@ Part of ancient Gondwanaland, composed of Precambrian crystalline rocks, **Vindh
         ],
         correctOptionIndex: 0,
         explanation: 'Lower sediment loads and resistant rocky valleys hold Peninsular channels steady compared to heavy-silt Himalayan alluvial rivers.',
-        difficulty: 'application',
+        difficulty: 'standard',
       },
     ],
   },

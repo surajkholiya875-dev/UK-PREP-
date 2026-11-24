@@ -565,7 +565,7 @@ Uttarakhand operates a classic multi-tier Secretariat-to-Village administrative 
         difficulty: 'foundation',
       },
       {
-        stem: 'Which three districts of Uttarakhand are completely shared between neither China nor Nepal, wait — which pair of districts below belongs exclusively to Kumaon Division?',
+        stem: 'Which pair of districts below belongs exclusively to Kumaon Division?',
         options: [
           'Rudraprayag and Chamoli',
           'Bageshwar and Champawat',

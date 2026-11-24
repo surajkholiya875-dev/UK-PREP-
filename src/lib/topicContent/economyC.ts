@@ -1079,7 +1079,7 @@ BoP systematically records all economic transactions between residents of a coun
 |---|---|
 | **Current Account** *(Flows not creating external financial assets/liabilities)* | 1. **Merchandise Trade (Visibles):** Goods exports minus goods imports (India typically runs a **Trade Deficit** due to crude oil, gold, electronics).<br>2. **Invisibles (Net):**<br>   - **Services:** IT/BPM, GCCs, travel, shipping (**India runs a strong Services Surplus!**).<br>   - **Primary Income:** Investment profits, dividends, interest.<br>   - **Secondary Income (Transfers):** **Workers' Remittances** (India is world's #1 recipient), grants. |
 | **Capital / Financial Account** *(Changes in external assets & liabilities)* | **FDI** (Foreign Direct Investment—long-term >=10% equity + control/technology), **FPI** (Foreign Portfolio Investment—volatile short-term equities/debt), **ECBs** (External Commercial Borrowings), **NRI Deposits**, Banking Capital. |
-| **Official Reserve Account (RBI)** | Surplus in `(Current + Capital)` builds **Forex Reserves**; deficit draws reserves down. |
+| **Official Reserve Account (RBI)** | Surplus in \`(Current + Capital)\` builds **Forex Reserves**; deficit draws reserves down. |
 
 ## 2. Exchange Rate Systems & Concepts
 - **Managed Floating Rate (India since 1993 LERMS):** Rupee value is market-determined by demand/supply, while **RBI intervenes** in spot/forward markets *not to defend a fixed rate*, but to **curb excessive volatility**.

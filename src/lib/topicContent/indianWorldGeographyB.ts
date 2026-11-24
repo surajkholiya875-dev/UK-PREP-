@@ -47,7 +47,7 @@ export const INDIAN_WORLD_GEOGRAPHY_PART_B: TopicContentPackage[] = [
         ],
         correctOptionIndex: 0,
         explanation: 'During break-monsoon conditions, the trough hugs the Himalayan foothills, reducing rain over central India while triggering heavy foothill/mountain downpours.',
-        difficulty: 'application',
+        difficulty: 'standard',
       },
       {
         stem: 'How does a "Positive Indian Ocean Dipole (IOD)" typically influence the Indian Southwest Monsoon?',
@@ -102,7 +102,7 @@ export const INDIAN_WORLD_GEOGRAPHY_PART_B: TopicContentPackage[] = [
         ],
         correctOptionIndex: 1,
         explanation: 'Orographic uplift triggers intense windward precipitation, leaving descending leeward air drier (rain-shadow effect).',
-        difficulty: 'application',
+        difficulty: 'standard',
       },
       {
         stem: 'Which wind system shifts northward across the Himalayas right before the sudden "Burst of Monsoon" over India?',
@@ -138,7 +138,7 @@ export const INDIAN_WORLD_GEOGRAPHY_PART_B: TopicContentPackage[] = [
         ],
         correctOptionIndex: 0,
         explanation: 'Mountains of Northeast India deflect the Bay of Bengal current westward along the Gangetic trough toward Uttarakhand, though occasional Arabian Sea currents also merge.',
-        difficulty: 'application',
+        difficulty: 'standard',
       },
       {
         stem: 'What are "Nor\'westers" (Kalbaisakhi) in eastern India during April–May?',
@@ -292,7 +292,7 @@ export const INDIAN_WORLD_GEOGRAPHY_PART_B: TopicContentPackage[] = [
         ],
         correctOptionIndex: 0,
         explanation: 'Capillary rise and evaporation concentrate white salt crusts (Reh/Usar) in the root zone when drainage is poor.',
-        difficulty: 'application',
+        difficulty: 'standard',
       },
       {
         stem: 'Which conservation method is most effective at halting Wind Erosion across desert margins in western Rajasthan?',
@@ -304,7 +304,7 @@ export const INDIAN_WORLD_GEOGRAPHY_PART_B: TopicContentPackage[] = [
         ],
         correctOptionIndex: 1,
         explanation: 'Multi-row tree/shrub shelterbelts reduce near-surface wind speed and anchor shifting sand.',
-        difficulty: 'application',
+        difficulty: 'standard',
       },
       {
         stem: 'Which basin in India faces the severest "Gully and Ravine" erosion, historically creating thousands of hectares of badlands?',
@@ -359,7 +359,7 @@ export const INDIAN_WORLD_GEOGRAPHY_PART_B: TopicContentPackage[] = [
         ],
         correctOptionIndex: 0,
         explanation: 'Biological nitrogen fixation by leguminous crops reduces synthetic urea dependence and improves soil structure.',
-        difficulty: 'application',
+        difficulty: 'standard',
       },
       {
         stem: 'Which Indian state holds the largest expanse of Black Cotton (Regur) Soil?',
@@ -528,7 +528,7 @@ export const INDIAN_WORLD_GEOGRAPHY_PART_B: TopicContentPackage[] = [
         ],
         correctOptionIndex: 0,
         explanation: 'Canopy percentage alone hides biodiversity loss when multi-storey natural ecosystems are replaced by single-species plantations.',
-        difficulty: 'application',
+        difficulty: 'standard',
       },
       {
         stem: 'Which coastal state ranks second in mangrove cover in India after West Bengal, hosting the famous Bhitarkanika mangroves?',
@@ -547,7 +547,7 @@ export const INDIAN_WORLD_GEOGRAPHY_PART_B: TopicContentPackage[] = [
         ],
         correctOptionIndex: 0,
         explanation: 'Unlike pure stands of Sal or Pine, rainforest species grow intermixed with dense lianas and hard, dense wood.',
-        difficulty: 'application',
+        difficulty: 'standard',
       },
     ],
   },
@@ -695,7 +695,7 @@ India was divided into **15 Agro-Climatic Zones** (1988–89) based on physiogra
         ],
         correctOptionIndex: 0,
         explanation: 'Localized root-zone application raises water-use efficiency to 80–90% while preventing hill erosion and nutrient leaching.',
-        difficulty: 'application',
+        difficulty: 'standard',
       },
       {
         stem: 'Which soil–crop pairing is traditionally matched in India?',
@@ -719,7 +719,7 @@ India was divided into **15 Agro-Climatic Zones** (1988–89) based on physiogra
         ],
         correctOptionIndex: 0,
         explanation: 'Natural and organic systems emphasize soil microbiome health, mulching, and local bio-preparations—aligned well with Uttarakhand\'s traditional low-chemical hill farms.',
-        difficulty: 'application',
+        difficulty: 'standard',
       },
       {
         stem: 'Which state is India\'s leading producer of Sugarcane historically, while Maharashtra often competes closely in sugar output?',
@@ -738,7 +738,7 @@ India was divided into **15 Agro-Climatic Zones** (1988–89) based on physiogra
         ],
         correctOptionIndex: 0,
         explanation: 'Millets tolerate erratic rainfall and warm temperatures while delivering superior nutritional density compared to polished rice/wheat.',
-        difficulty: 'application',
+        difficulty: 'standard',
       },
     ],
   },
@@ -847,7 +847,7 @@ India was divided into **15 Agro-Climatic Zones** (1988–89) based on physiogra
         ],
         correctOptionIndex: 0,
         explanation: 'Following Alfred Weber\'s industrial location logic, bulky weight-losing minerals (coal, iron ore, limestone) pull steel mills to raw-material zones.',
-        difficulty: 'application',
+        difficulty: 'standard',
       },
       {
         stem: 'Which type of coal—essential for blast-furnace steel smelting—is relatively scarce in India, forcing steelmakers to import substantial quantities?',
@@ -873,7 +873,7 @@ India was divided into **15 Agro-Climatic Zones** (1988–89) based on physiogra
         ],
         correctOptionIndex: 0,
         explanation: 'Sealed unlined rock caverns protect emergency crude stocks against geopolitical disruptions and evaporation hazards.',
-        difficulty: 'application',
+        difficulty: 'standard',
       },
       {
         stem: 'Which region of India contains the largest share of wind power potential, exemplified by Muppandal wind corridor?',
@@ -1018,7 +1018,7 @@ India was divided into **15 Agro-Climatic Zones** (1988–89) based on physiogra
         ],
         correctOptionIndex: 0,
         explanation: 'Frost-free tropical peninsular conditions give higher sucrose recovery and a longer crushing window, though UP remains top in total cane output.',
-        difficulty: 'application',
+        difficulty: 'standard',
       },
       {
         stem: 'What are the two endpoints of the Western Dedicated Freight Corridor (WDFC)?',
@@ -1049,7 +1049,7 @@ India was divided into **15 Agro-Climatic Zones** (1988–89) based on physiogra
         ],
         correctOptionIndex: 0,
         explanation: 'Coastal location lowers ocean freight costs for imported coking coal while accessing Bailadila iron ore by rail.',
-        difficulty: 'application',
+        difficulty: 'standard',
       },
       {
         stem: 'Which Indian port handles the largest share of containerized cargo in India?',
@@ -1212,7 +1212,7 @@ India was divided into **15 Agro-Climatic Zones** (1988–89) based on physiogra
         ],
         correctOptionIndex: 0,
         explanation: 'High thermal mass concrete, low tree canopy, and anthropogenic heat raise urban temperatures—especially night-time lows.',
-        difficulty: 'application',
+        difficulty: 'standard',
       },
       {
         stem: 'Under Census of India criteria, which three conditions must a settlement satisfy to be classified as a "Census Town" without statutory municipality status?',
@@ -1248,7 +1248,7 @@ India was divided into **15 Agro-Climatic Zones** (1988–89) based on physiogra
         ],
         correctOptionIndex: 0,
         explanation: 'Impervious pavements and blocked drainage channels prevent natural percolation, turning moderate rain into flash street flooding.',
-        difficulty: 'application',
+        difficulty: 'standard',
       },
       {
         stem: 'How does India\'s "Total Fertility Rate (TFR)" of ~2.0 (NFHS-5) compare with the standard demographic replacement level of 2.1?',

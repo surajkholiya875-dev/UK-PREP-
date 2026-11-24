@@ -126,7 +126,7 @@ While Ramsay prevented widespread rebellion in Nainital–Almora, **Kalu Mahara*
         ],
         correctOptionIndex: 0,
         explanation: 'Closing village-adjacent forests and restricting grazing/looting triggered deep resentment, forest fires, and eventually the 1921 Kumaon Forest Grievances Committee (which birthed Van Panchayats).',
-        difficulty: 'application',
+        difficulty: 'standard',
       },
       {
         stem: 'Which Garhwal–Kumaon administrative district was carved out separately as "British Garhwal" headquarters at Pauri in 1839–40?',
@@ -274,7 +274,7 @@ Traditional peasant rebellions against corrupt officials (*Kamdars*), revenue hi
         ],
         correctOptionIndex: 0,
         explanation: 'Under the 1820 Sanad, Sudarshan Shah and his successors governed Tehri as a loyal princely state under British paramountcy.',
-        difficulty: 'application',
+        difficulty: 'standard',
       },
       {
         stem: 'Which Tehri ruler established the Tehri High Court in 1938 and introduced the "Tehri State Forest Settlement" and Panchayat Act?',
@@ -312,7 +312,7 @@ Traditional peasant rebellions against corrupt officials (*Kamdars*), revenue hi
         ],
         correctOptionIndex: 0,
         explanation: 'Political mobilization in British Kumaon/Garhwal targeted colonial policy directly (Kumaon Parishad, 1921), whereas Tehri subjects formed the Tehri Rajya Praja Mandal (1939) seeking civil liberties and Indian integration.',
-        difficulty: 'application',
+        difficulty: 'standard',
       },
     ],
   },
@@ -458,7 +458,7 @@ Parallel **1921 Forest Satyagraha** (against grazing bans & forest fires) prompt
         ],
         correctOptionIndex: 0,
         explanation: 'Mobilizing at Uttarayani turned a traditional pilgrimage gathering into an unstoppable mass non-cooperation pledge.',
-        difficulty: 'application',
+        difficulty: 'standard',
       },
       {
         stem: 'Which Kumaon social reformer and Dalit leader launched the newspaper *Samta* (1934) in Almora to campaign against untouchability and for Shilpkar upliftment?',
@@ -625,7 +625,7 @@ Parallel **1921 Forest Satyagraha** (against grazing bans & forest fires) prompt
         ],
         correctOptionIndex: 0,
         explanation: 'British rule rested heavily on disciplined Indian regiments; Chandra Singh Garhwali\'s principled mutiny shattered colonial confidence in unquestioning troop obedience.',
-        difficulty: 'application',
+        difficulty: 'standard',
       },
       {
         stem: 'Which Quit India leader from Uttarakhand operated underground and organized the Kumaon/Tarai railway disruption and youth mobilization around Haldwani–Almora?',
@@ -798,7 +798,7 @@ Parallel **1921 Forest Satyagraha** (against grazing bans & forest fires) prompt
         ],
         correctOptionIndex: 0,
         explanation: 'Severe censorship and ban on political societies inside Tehri forced organizers to base Praja Mandal headquarters in Dehradun.',
-        difficulty: 'application',
+        difficulty: 'standard',
       },
       {
         stem: 'Who led the Rawain agitation and later served as President of the Azad Panchayat / faced arrests during the Tiladi episode?',
@@ -817,7 +817,7 @@ Parallel **1921 Forest Satyagraha** (against grazing bans & forest fires) prompt
         ],
         correctOptionIndex: 0,
         explanation: 'Internal democratic pressure led by Nagendra Saklani\'s sacrifice and Paripurnanand Painuli/Daulat Ram, paired with Sardar Patel\'s integration drive, completed merger on 1 August 1949.',
-        difficulty: 'application',
+        difficulty: 'standard',
       },
       {
         stem: 'In which district of modern Uttarakhand is Tiladi Maidan located today?',
@@ -992,7 +992,7 @@ Parallel **1921 Forest Satyagraha** (against grazing bans & forest fires) prompt
         ],
         correctOptionIndex: 0,
         explanation: 'Decades of Chipko and Nasha Nahi Rozgar activism gave hill women formidable grassroots leadership that unified society across party lines.',
-        difficulty: 'application',
+        difficulty: 'standard',
       },
       {
         stem: 'What was "Kashi Singh Airy\'s" notable contribution inside the UP Legislative Assembly during the statehood struggle?',

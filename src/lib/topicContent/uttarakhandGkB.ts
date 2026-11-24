@@ -25,7 +25,7 @@ These three Greater Himalayan **Garhwal** border/shrine districts hold the headw
 
 ## 3. Rudraprayag District (Est. 16 Sept 1997; Area ~1,984 sq km)
 - **Formation:** Carved out from Chamoli, Tehri & Pauri on **16 Sept 1997** (alongside Bageshwar & Champawat!).
-- **2011 Census:** **Smallest population among Uttarakhand’s 13 districts (~2.42 lakh)** and **Highest Sex Ratio (1,114 — wait: Almora leads overall at 1,139, Rudraprayag ranks 2nd at 1,114!)**.
+- **2011 Census:** **Smallest population among Uttarakhand’s 13 districts (~2.42 lakh)** and **2nd Highest Sex Ratio (1,114)** after Almora (1,139).
 - **Sacred Sites:** **Kedarnath** (*Mandakini origin, Chorabari Glacier*), **Tungnath** (highest Shiva temple), **Madmaheshwar**, **Omkareshwar (Ukhimath)**, **Triyuginarayan** (mythic Shiva–Parvati wedding eternal flame), **Kalimath**, **Agastyamuni**, **Kartik Swami** (Rudraprayag–Chamoli ridge), **Guptkashi**, **Deoria Tal**, **Vasuki Tal**.
 
 ## 4. Key Revision Takeaways
@@ -193,7 +193,7 @@ Together, **Nainital** (Kumaon's Division HQ & Lake District) and **Udham Singh 
 ## 1. Nainital District (Area ~4,251 sq km; HQ: Nainital — Kumaon Division HQ!)
 - **Physical Profile:** Spans high middle-Himalayan lake basins (**Naini, Bhimtal, Naukuchiatal, Sattal, Khurpatal** — *"Lake District of India"*), temperate fruit ridges (**Ramgarh, Mukteshwar**), and broad **Bhabar** commercial foothills (**Haldwani–Kathgodam**, **Ramnagar**, **Kaladhungi**).
 - **Historical Notes:** **Naini Lake** popularized/documented in 1841 by sugar merchant **P. Barron ("Pilgrim")**; **Uttarakhand High Court** sits in **Nainital** (**est. 9 Nov 2000**); **Commissioner Sir Henry Ramsay** ("King of Kumaon") shaped colonial administration from Nainital/Almora.
-- **2011 Census:** Total Literacy **83.88%** (**2nd highest** in state after Dehradun; **Highest Female Literacy in UK ~77.29%**? Wait—Dehradun leads both M & F literacy slightly, Nainital closely follows at **#2 overall 83.88%**!).
+- **2011 Census:** Total Literacy **83.88%** (**2nd highest overall literacy in Uttarakhand** after Dehradun at 84.25%).
 - **Key Landmarks & Institutions:** **Kainchi Dham** (*Neem Karoli Baba Ashram* on Kosi/Shipra tributary), **Naina Devi Shakti Peeth**, **Jim Corbett National Park gateway (Ramnagar)** & **Corbett Museum (Chhoti Haldwani / Kaladhungi)**, **ARIES (Manora Peak & Devasthal)**, **IVRI Mukteshwar**, **Kumaun University (1973)**, **Dr. R.S. Tolia ATI**, **NBPGR Bhowali**.
 
 ## 2. Udham Singh Nagar District (Est. 30 Sept 1995; HQ: Rudrapur; Area ~2,542 sq km)

@@ -202,7 +202,7 @@ India follows a **Parliamentary Executive**: the President is the constitutional
 - **Election (Articles 54–55):** Indirectly elected via **Proportional Representation by Single Transferable Vote (secret ballot)** by an **Electoral College** consisting ONLY of:
   1. **Elected MPs** of Lok Sabha & Rajya Sabha (*nominated MPs do NOT vote*).
   2. **Elected MLAs** of all States + **Delhi & Puducherry** (70th Amendment, 1992). (*State MLCs & nominated MLAs do NOT vote.*)
-  - Formula weights equalize state-to-state and MP–MLA representation (`Value of MLA vote = State Pop (1971 Census) / (Total elected MLAs × 1000)`).
+  - Formula weights equalize state-to-state and MP–MLA representation (\`Value of MLA vote = State Pop (1971 Census) / (Total elected MLAs × 1000)\`).
 - **Impeachment (Article 61):** Solely for **"violation of the Constitution"**. Initiated in **either House** by **1/4th members' notice (14 days)**; passed by **2/3rds of TOTAL membership of BOTH Houses** separately. Notably, **nominated MPs participate in impeachment** (unlike election), while **State MLAs do NOT participate**.
 - **Veto Powers (Article 111):** Absolute, Suspensive (cannot return **Money Bills**; must assent if re-passed after 44th Amendment), and **Pocket Veto** (no time limit—used by President Zail Singh on 1986 Postal Bill). Note: Constitutional Amendment Bills allow **NO veto** (24th Amendment, 1971).
 - **Ordinance Power (Article 123):** Issued when **either or both Houses are not in session** and immediate action is needed; co-extensive with Parliament's legislative power; must be laid before Parliament and expires **6 weeks after reassembly** (max effective life ~6 months + 6 weeks). Repromulgation without laying before legislature is unconstitutional (*Krishna Kumar Singh v. State of Bihar, 2017*).
@@ -373,7 +373,7 @@ India follows a **Parliamentary Executive**: the President is the constitutional
         difficulty: 'standard',
       },
       {
-        stem: 'In Uttarakhand\'s political history, which Chief Minister also later served as Union Minister and Governor/VP-tier national statesman — wait, rephrase purely to constitutional executive fact: Under Article 53(1), in whom is the executive power of the Union vested?',
+        stem: 'Under Article 53(1) of the Constitution of India, in whom is the executive power of the Union formally vested?',
         options: [
           'The Prime Minister personally',
           'The President of India, to be exercised directly or through subordinate officers in accordance with the Constitution',

@@ -1024,8 +1024,8 @@ Designed specifically around India’s resource reality (**modest Uranium, ~25%+
 - **Risks & Ethics:** Algorithmic bias, copyright disputes, job transition, hallucination, and **Deepfakes** (AI-synthesized deceptive audio/video impersonation combating via watermarking/forensic detection).
 
 ## 2. Quantum Computing & India's National Quantum Mission (NQM)
-- **Classical Bit vs Quantum Qubit:** Classical computer bits exist strictly as `0` **OR** `1`. A **Qubit** exploits quantum mechanics:
-  - **Superposition:** Simultaneously exists in coherent linear combination of `0` and `1` until measured.
+- **Classical Bit vs Quantum Qubit:** Classical computer bits exist strictly as \`0\` **OR** \`1\`. A **Qubit** exploits quantum mechanics:
+  - **Superposition:** Simultaneously exists in coherent linear combination of \`0\` and \`1\` until measured.
   - **Entanglement:** Correlated multi-qubit states acting instantaneously in concert, enabling exponential speedups for **drug discovery/molecular simulation, logistics optimization, and RSA cryptographic factoring (*Shor’s algorithm*)**!
 - **National Quantum Mission (2023–2031; ~Rs 6,003 Cr, DST):** Aims to build **50–1,000 physical qubit** intermediate-scale quantum computers, **2,000 km satellite/fibre Quantum Key Distribution (QKD)** unhackable networks, and **4 Thematic Hubs** (*Quantum Computing, Quantum Communication, Quantum Sensing & Metrology, Quantum Materials*).
 

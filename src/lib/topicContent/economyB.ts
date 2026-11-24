@@ -213,29 +213,29 @@ export const ECONOMY_PART_B: TopicContentPackage[] = [
 
 ## 1. Core Macroeconomic Aggregates & Identities
 - **GDP (Gross Domestic Product):** Market value of all **final** goods and services produced **within the domestic territory** of a country during an accounting year (*territory-based* — includes foreign firms producing inside India; excludes Indian citizens earning abroad).
-- **GNP (Gross National Product):** `GNP = GDP + NFIA` (*Net Factor Income from Abroad* = factor income earned by residents abroad minus factor income paid to non-residents domestically; *citizenship/residency-based*; usually India's `GNP < GDP` because NFIA is slightly negative due to outward interest/dividend remittances).
-- **NNP (Net National Product) & National Income:** `NNP = GNP - Depreciation (Consumption of Fixed Capital)`. Historically **NNP at Factor Cost** equalled **National Income**.
+- **GNP (Gross National Product):** \`GNP = GDP + NFIA\` (*Net Factor Income from Abroad* = factor income earned by residents abroad minus factor income paid to non-residents domestically; *citizenship/residency-based*; usually India's \`GNP < GDP\` because NFIA is slightly negative due to outward interest/dividend remittances).
+- **NNP (Net National Product) & National Income:** \`NNP = GNP - Depreciation (Consumption of Fixed Capital)\`. Historically **NNP at Factor Cost** equalled **National Income**.
 - **Factor Cost vs Basic Prices vs Market Prices (Post-2015 NAS Revision):**
-  - `GVA at Basic Prices = GVA at Factor Cost + Production Taxes - Production Subsidies` (taxes/subsidies independent of volume, e.g., land revenue, stamp duty).
-  - `GDP at Market Prices = GVA at Basic Prices + Product Taxes - Product Subsidies` (volume-linked taxes/subsidies like GST, excise, customs, food/fertilizer subsidy).
+  - \`GVA at Basic Prices = GVA at Factor Cost + Production Taxes - Production Subsidies\` (taxes/subsidies independent of volume, e.g., land revenue, stamp duty).
+  - \`GDP at Market Prices = GVA at Basic Prices + Product Taxes - Product Subsidies\` (volume-linked taxes/subsidies like GST, excise, customs, food/fertilizer subsidy).
   - Today, **MoSPI / NSO** reports headline **GDP at Market Prices** (Constant **2011–12** prices) and sectoral **GVA at Basic Prices**.
 
 ## 2. Three Methods of Measuring National Income
-1. **Product / Value Added Method:** Sum of Gross Value Added across Primary, Secondary, and Tertiary sectors (`Value of Output - Intermediate Consumption`)—avoids **double counting**.
+1. **Product / Value Added Method:** Sum of Gross Value Added across Primary, Secondary, and Tertiary sectors (\`Value of Output - Intermediate Consumption\`)—avoids **double counting**.
 2. **Income Method:** Sum of factor incomes: **Wages/Compensation + Rent + Interest + Profit + Mixed Income of Self-Employed** (excludes **transfer payments** like pensions/scholarships and windfall/second-hand sales).
-3. **Expenditure Method:** `GDP = C + I + G + (X - M)` — Private Final Consumption Expenditure (**C**, ~58–60% of India's GDP), Gross Fixed Capital Formation/Investment (**I**), Government Final Consumption (**G**), Net Exports (**X − M**).
+3. **Expenditure Method:** \`GDP = C + I + G + (X - M)\` — Private Final Consumption Expenditure (**C**, ~58–60% of India's GDP), Gross Fixed Capital Formation/Investment (**I**), Government Final Consumption (**G**), Net Exports (**X − M**).
 
 ## 3. Real vs Nominal GDP, GDP Deflator & PPP
 - **Nominal GDP:** Valued at current market prices; **Real GDP:** Valued at constant base-year prices (**2011–12**).
-- **GDP Deflator:** `(Nominal GDP / Real GDP) × 100` — broadest measure of economy-wide inflation covering all domestically produced goods & services (unlike CPI/WPI baskets, though excludes imports!).
+- **GDP Deflator:** \`(Nominal GDP / Real GDP) × 100\` — broadest measure of economy-wide inflation covering all domestically produced goods & services (unlike CPI/WPI baskets, though excludes imports!).
 - **Purchasing Power Parity (PPP):** Adjusts exchange rates for domestic cost-of-living differences (India is **#5/#4 nominal GDP** globally but **#3 in PPP terms** behind China and the US).
-- **Personal Income (PI) & Disposable Personal Income (DPI):** `PI = NI - Undistributed Corporate Profits - Corporate Tax - Net Interest Payments + Transfer Payments`; `DPI = PI - Personal Direct Taxes`.
+- **Personal Income (PI) & Disposable Personal Income (DPI):** \`PI = NI - Undistributed Corporate Profits - Corporate Tax - Net Interest Payments + Transfer Payments\`; \`DPI = PI - Personal Direct Taxes\`.
 
 ## 4. Limitations of GDP as a Welfare Metric
 - Ignores **income inequality**, **non-market unpaid household/care work**, **informal sector underestimation**, and **environmental depletion** (why **Green GDP** and Uttarakhand's **Gross Environmental Product [GEP]** matter!).
 
 ## 5. Key Revision Takeaways
-- **Territory = GDP**; **Residency/Nationality = GNP (`GDP + NFIA`)**; **Net = Gross − Depreciation**; **GDP (Market Price) = GVA (Basic Price) + Net Product Taxes**.
+- **Territory = GDP**; **Residency/Nationality = GNP (\`GDP + NFIA\`)**; **Net = Gross − Depreciation**; **GDP (Market Price) = GVA (Basic Price) + Net Product Taxes**.
 - **Transfer payments** (old-age pension, scholarships, gifts) and **second-hand goods resales** are **excluded** from current-year GDP.
 - **GDP Deflator** covers all domestic goods/services (excluding imported consumer items).`,
     mcqs: [
