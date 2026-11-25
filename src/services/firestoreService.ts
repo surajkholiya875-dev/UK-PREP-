@@ -10,6 +10,7 @@ import {
   setDoc,
   updateDoc,
   where,
+  writeBatch,
 } from 'firebase/firestore';
 import { db, handleFirestoreError, OperationType } from '../lib/firebase';
 import {
@@ -297,6 +298,55 @@ export async function upsertAdminEntity<T extends { id: string }>(
   } catch (error) {
     handleFirestoreError(error, isEdit ? OperationType.UPDATE : OperationType.CREATE, path);
   }
+}
+
+export interface BatchWriteOperation<T extends { id: string } = Record<string, unknown> & { id: string }> {
+  collectionName: string;
+  id: string;
+  payload: Omit<T, 'createdAt' | 'updatedAt'>;
+  isEdit?: boolean;
+}
+
+const FIRESTORE_BATCH_CHUNK_SIZE = 200;
+
+export async function batchUpsertAdminEntities(
+  operations: BatchWriteOperation[]
+): Promise<number> {
+  if (operations.length === 0) return 0;
+
+  let committedCount = 0;
+  for (let start = 0; start < operations.length; start += FIRESTORE_BATCH_CHUNK_SIZE) {
+    const chunk = operations.slice(start, start + FIRESTORE_BATCH_CHUNK_SIZE);
+    const batch = writeBatch(db);
+    let lastPath = '';
+
+    try {
+      for (const op of chunk) {
+        const ref = doc(db, op.collectionName, op.id);
+        lastPath = `${op.collectionName}/${op.id}`;
+        if (op.isEdit) {
+          const updatePayload = { ...op.payload } as Record<string, unknown>;
+          delete updatePayload.id;
+          delete updatePayload.createdBy;
+          delete updatePayload.createdAt;
+          updatePayload.updatedAt = serverTimestamp();
+          batch.update(ref, updatePayload);
+        } else {
+          batch.set(ref, {
+            ...op.payload,
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp(),
+          });
+        }
+      }
+      await batch.commit();
+      committedCount += chunk.length;
+    } catch (error) {
+      handleFirestoreError(error, OperationType.WRITE, lastPath || 'batch');
+    }
+  }
+
+  return committedCount;
 }
 
 export async function deleteAdminEntity(collectionName: string, id: string): Promise<void> {

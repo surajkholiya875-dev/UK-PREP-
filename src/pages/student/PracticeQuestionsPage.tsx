@@ -183,8 +183,12 @@ export function PracticeQuestionsPage() {
           <LoadingState label="Loading secure practice questions..." />
         ) : filtered.length === 0 ? (
           <EmptyState
-            title="No published questions for this selection"
-            description="Questions are displayed only after they are published and assigned to a syllabus topic. Select another topic or question type."
+            title={typeFilter === 'pyq' ? 'Verified PYQs not added yet' : 'No published questions for this selection'}
+            description={
+              typeFilter === 'pyq'
+                ? 'Only previous-year questions whose exact question stem, exam name, and year are verified from official papers are published here.'
+                : 'Questions are displayed only after they are published and assigned to a syllabus topic. Select another topic or question type.'
+            }
           />
         ) : (
           <div className="space-y-4">

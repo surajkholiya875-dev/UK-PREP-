@@ -1,4 +1,5 @@
 import {
+  Chapter,
   Course,
   Question,
   QuestionDifficulty,
@@ -6,6 +7,7 @@ import {
   Subject,
   TestPaper,
   Topic,
+  Unit,
 } from '../../types/academic';
 import { normalizeTextKey } from '../syllabusHierarchy';
 
@@ -71,6 +73,8 @@ export function normalizeQuestionKey(stem: string): string {
 export function buildTopicContentAudit(params: {
   subjects: Subject[];
   courses: Course[];
+  units?: Unit[];
+  chapters?: Chapter[];
   topics: Topic[];
   materials: StudyMaterial[];
   questions: Question[];
@@ -91,9 +95,20 @@ export function buildTopicContentAudit(params: {
     pendingAssessments: number;
   };
 } {
-  const { subjects, topics, materials, questions, tests, catalogByNormalizedTitle } = params;
+  const {
+    subjects,
+    units = [],
+    chapters = [],
+    topics,
+    materials,
+    questions,
+    tests,
+    catalogByNormalizedTitle,
+  } = params;
 
   const subjectById = new Map(subjects.map((s) => [s.id, s]));
+  const unitById = new Map(units.map((u) => [u.id, u]));
+  const chapterById = new Map(chapters.map((c) => [c.id, c]));
   const materialsByTopic = new Map<string, StudyMaterial[]>();
   for (const m of materials) {
     if (!m.topicId) continue;
@@ -145,8 +160,12 @@ export function buildTopicContentAudit(params: {
   let pendingAssessments = 0;
 
   for (const topic of publishedTopics) {
-    const subj = subjectById.get(topic.subjectId);
-    const subjId = subj?.id ?? topic.subjectId;
+    const parentChapter = topic.chapterId ? chapterById.get(topic.chapterId) : undefined;
+    const parentUnit = unitById.get(topic.unitId || parentChapter?.unitId || '');
+    const effectiveSubjectId =
+      topic.subjectId || parentChapter?.subjectId || parentUnit?.subjectId || '';
+    const subj = subjectById.get(effectiveSubjectId);
+    const subjId = subj?.id ?? effectiveSubjectId;
     const subjTitle = subj?.title ?? 'Unassigned Subject';
     if (!bySubject.has(subjId)) {
       bySubject.set(subjId, {

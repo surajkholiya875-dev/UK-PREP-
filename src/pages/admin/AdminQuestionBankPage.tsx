@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Pencil, Plus, Trash2, X } from 'lucide-react';
 import { AppShell } from '../../components/ui/AppShell';
 import { EmptyState, ErrorState, LoadingState, SuccessBanner } from '../../components/ui/StateBlocks';
@@ -241,7 +242,20 @@ export function AdminQuestionBankPage({ defaultType = 'mcq' }: { defaultType?: Q
       breadcrumb={`UK Prep / Admin / ${defaultType === 'pyq' ? 'PYQ Management' : 'Question Bank'}`}
       isAdminWorkspace
     >
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div className="space-y-6">
+        <div className="rounded-xl border border-edge bg-panel px-4 py-3 flex flex-wrap items-center justify-between gap-3 text-xs">
+          <span className="text-ink-muted">
+            Adding topic-wise MCQs or verified PYQs in batches? Use the Topic-Wise Batch Seeder &amp; Bulk JSON Import.
+          </span>
+          <Link
+            to="/admin/topics"
+            className="font-semibold text-accent-text hover:underline whitespace-nowrap"
+          >
+            Open Topic Batch Sync →
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         <div className="lg:col-span-5 bg-panel border border-edge rounded-xl p-6 shadow-sm h-fit">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-base font-semibold text-ink">
@@ -576,6 +590,7 @@ export function AdminQuestionBankPage({ defaultType = 'mcq' }: { defaultType?: Q
               })}
             </div>
           )}
+        </div>
         </div>
       </div>
     </AppShell>

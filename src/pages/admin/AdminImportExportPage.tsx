@@ -1,11 +1,16 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Timestamp } from 'firebase/firestore';
 import { Download, Upload } from 'lucide-react';
 import { AppShell } from '../../components/ui/AppShell';
 import { ErrorState, SuccessBanner } from '../../components/ui/StateBlocks';
 import { ADMIN_NAV_ITEMS } from '../../config/navigation';
 import { useAuth } from '../../context/AuthContext';
-import { fetchAllAdminCollection, upsertAdminEntity } from '../../services/firestoreService';
+import {
+  BatchWriteOperation,
+  batchUpsertAdminEntities,
+  fetchAllAdminCollection,
+} from '../../services/firestoreService';
 
 const EXPORTABLE_COLLECTIONS = [
   'examinations',
@@ -115,6 +120,7 @@ export function AdminImportExportPage() {
         if (!rows.length) continue;
         const existing = await fetchAllAdminCollection<{ id: string }>(collectionName);
         const existingIds = new Set(existing.map((item) => item.id));
+        const ops: BatchWriteOperation[] = [];
         for (const record of rows) {
           if (existingIds.has(String(record.id))) { skipped += 1; continue; }
           const restored = { ...record, createdBy: firebaseUser.uid } as Record<string, unknown>;
@@ -126,8 +132,15 @@ export function AdminImportExportPage() {
               }
             }
           }
-          await upsertAdminEntity(collectionName, String(record.id), restored as { id: string }, false);
-          imported += 1;
+          ops.push({
+            collectionName,
+            id: String(record.id),
+            payload: restored as { id: string },
+          });
+        }
+        if (ops.length > 0) {
+          await batchUpsertAdminEntities(ops);
+          imported += ops.length;
         }
       }
       setNotice('Import complete: ' + imported + ' new records added; ' + skipped + ' existing IDs skipped. Review data before publishing.');
@@ -195,6 +208,21 @@ export function AdminImportExportPage() {
               </button>
             </div>
           )}
+        </div>
+
+        <div className="bg-panel border border-edge rounded-xl p-6 shadow-sm space-y-3">
+          <h2 className="text-base font-semibold text-ink">
+            Topic-Wise Content Batch Seeder &amp; JSON Import
+          </h2>
+          <p className="text-sm text-ink-muted">
+            To seed or bulk-import study notes, MCQs, verified PYQs, and topic-wise practice assessments directly against live Firestore topic IDs in batches, use the Topic Batch Sync &amp; Bulk JSON Import tool on the Topics management page.
+          </p>
+          <Link
+            to="/admin/topics"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-accent-text hover:underline"
+          >
+            Go to Topic Batch Sync &amp; Bulk Import →
+          </Link>
         </div>
       </div>
     </AppShell>

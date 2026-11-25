@@ -1,6 +1,19 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { BookOpenCheck, CheckCircle2, ClipboardList, Layers, Pencil, Plus, Sparkles, Trash2, X } from 'lucide-react';
+import {
+  BookOpenCheck,
+  CheckCircle2,
+  ClipboardList,
+  Download,
+  FileJson,
+  Layers,
+  Pencil,
+  Plus,
+  Sparkles,
+  Trash2,
+  Upload,
+  X,
+} from 'lucide-react';
 import { AppShell } from '../../components/ui/AppShell';
 import { EmptyState, ErrorState, LoadingState, SuccessBanner } from '../../components/ui/StateBlocks';
 import { ADMIN_NAV_ITEMS } from '../../config/navigation';
@@ -8,11 +21,17 @@ import { useAuth } from '../../context/AuthContext';
 import { compareNaturalText, normalizeTextKey, safeSortOrder } from '../../lib/syllabusHierarchy';
 import { buildSyllabusSyncPlans, SubjectSyllabusPlan } from '../../lib/ukpscSyllabusCatalog';
 import {
+  BulkImportValidationResult,
+  validateAndBuildBulkTopicImport,
+} from '../../lib/topicContent/bulkImport';
+import {
   buildTopicContentAudit,
-  SubjectContentAuditSummary,
   TopicContentPackage,
+  TopicContentSyncItem,
 } from '../../lib/topicContent/types';
 import {
+  BatchWriteOperation,
+  batchUpsertAdminEntities,
   clampString,
   deleteAdminEntity,
   fetchAllAdminCollection,
@@ -41,6 +60,13 @@ export function AdminTopicsPage() {
   const [contentProgressLabel, setContentProgressLabel] = useState<string | null>(null);
   const [showSyllabusAudit, setShowSyllabusAudit] = useState(true);
   const [showContentAudit, setShowContentAudit] = useState(true);
+  const [showTopicBatchSelector, setShowTopicBatchSelector] = useState(false);
+  const [batchSubjectFilter, setBatchSubjectFilter] = useState('');
+  const [selectedBatchTopicIds, setSelectedBatchTopicIds] = useState<string[]>([]);
+  const [showBulkJsonImport, setShowBulkJsonImport] = useState(false);
+  const [bulkJsonText, setBulkJsonText] = useState('');
+  const [bulkValidation, setBulkValidation] = useState<BulkImportValidationResult | null>(null);
+  const [bulkImporting, setBulkImporting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
 
@@ -193,31 +219,30 @@ export function AdminTopicsPage() {
     let publishedTopics = 0;
 
     try {
-      for (const plan of plansToRun) {
-        setSyncProgressLabel(`Populating ${plan.subjectTitle}...`);
+      const unitOps: BatchWriteOperation[] = [];
+      const chapterOps: BatchWriteOperation[] = [];
+      const topicOps: BatchWriteOperation[] = [];
 
+      for (const plan of plansToRun) {
         const unitIdByKey = new Map<string, string>();
         for (const existingUnit of units.filter((u) => u.subjectId === plan.subjectId)) {
           unitIdByKey.set(normalizeTextKey(existingUnit.title), existingUnit.id);
           if (!existingUnit.isPublished) {
-            await upsertAdminEntity<Unit>(
-              'units',
-              existingUnit.id,
-              {
-                ...existingUnit,
-                isPublished: true,
-              },
-              true
-            );
+            unitOps.push({
+              collectionName: 'units',
+              id: existingUnit.id,
+              payload: { ...existingUnit, isPublished: true },
+              isEdit: true,
+            });
           }
         }
 
         for (const unitDef of plan.unitsToCreate) {
           const unitId = generateSafeId('unit');
-          await upsertAdminEntity<Unit>(
-            'units',
-            unitId,
-            {
+          unitOps.push({
+            collectionName: 'units',
+            id: unitId,
+            payload: {
               id: unitId,
               subjectId: plan.subjectId,
               courseId: plan.courseId,
@@ -227,8 +252,7 @@ export function AdminTopicsPage() {
               isPublished: true,
               createdBy: firebaseUser.uid,
             },
-            false
-          );
+          });
           unitIdByKey.set(normalizeTextKey(unitDef.title), unitId);
           addedUnits += 1;
         }
@@ -243,15 +267,12 @@ export function AdminTopicsPage() {
             unitId: existingChapter.unitId,
           });
           if (!existingChapter.isPublished) {
-            await upsertAdminEntity<Chapter>(
-              'chapters',
-              existingChapter.id,
-              {
-                ...existingChapter,
-                isPublished: true,
-              },
-              true
-            );
+            chapterOps.push({
+              collectionName: 'chapters',
+              id: existingChapter.id,
+              payload: { ...existingChapter, isPublished: true },
+              isEdit: true,
+            });
           }
         }
 
@@ -259,10 +280,10 @@ export function AdminTopicsPage() {
           const resolvedUnitId = unitIdByKey.get(normalizeTextKey(chapDef.unitTitle));
           if (!resolvedUnitId) continue;
           const chapterId = generateSafeId('chap');
-          await upsertAdminEntity<Chapter>(
-            'chapters',
-            chapterId,
-            {
+          chapterOps.push({
+            collectionName: 'chapters',
+            id: chapterId,
+            payload: {
               id: chapterId,
               unitId: resolvedUnitId,
               subjectId: plan.subjectId,
@@ -273,8 +294,7 @@ export function AdminTopicsPage() {
               isPublished: true,
               createdBy: firebaseUser.uid,
             },
-            false
-          );
+          });
           chapterIdByKey.set(normalizeTextKey(chapDef.title), {
             id: chapterId,
             unitId: resolvedUnitId,
@@ -283,32 +303,23 @@ export function AdminTopicsPage() {
         }
 
         for (const draftTopic of plan.topicsToPublish) {
-          await upsertAdminEntity<Topic>(
-            'topics',
-            draftTopic.id,
-            {
-              ...draftTopic,
-              isPublished: true,
-            },
-            true
-          );
+          topicOps.push({
+            collectionName: 'topics',
+            id: draftTopic.id,
+            payload: { ...draftTopic, isPublished: true },
+            isEdit: true,
+          });
           publishedTopics += 1;
         }
 
-        for (let idx = 0; idx < plan.topicsToCreate.length; idx += 1) {
-          const topicDef = plan.topicsToCreate[idx];
+        for (const topicDef of plan.topicsToCreate) {
           const chapRef = chapterIdByKey.get(normalizeTextKey(topicDef.chapterTitle));
           if (!chapRef) continue;
-          if (idx % 5 === 0) {
-            setSyncProgressLabel(
-              `Populating ${plan.subjectTitle} (${idx + 1}/${plan.topicsToCreate.length} topics)...`
-            );
-          }
           const topicId = generateSafeId('top');
-          await upsertAdminEntity<Topic>(
-            'topics',
-            topicId,
-            {
+          topicOps.push({
+            collectionName: 'topics',
+            id: topicId,
+            payload: {
               id: topicId,
               chapterId: chapRef.id,
               unitId: chapRef.unitId,
@@ -320,10 +331,22 @@ export function AdminTopicsPage() {
               isPublished: true,
               createdBy: firebaseUser.uid,
             },
-            false
-          );
+          });
           addedTopics += 1;
         }
+      }
+
+      if (unitOps.length > 0) {
+        setSyncProgressLabel(`Committing ${unitOps.length} unit(s)...`);
+        await batchUpsertAdminEntities(unitOps);
+      }
+      if (chapterOps.length > 0) {
+        setSyncProgressLabel(`Committing ${chapterOps.length} chapter(s)...`);
+        await batchUpsertAdminEntities(chapterOps);
+      }
+      if (topicOps.length > 0) {
+        setSyncProgressLabel(`Committing ${topicOps.length} topic(s)...`);
+        await batchUpsertAdminEntities(topicOps);
       }
 
       setNotice(
@@ -347,6 +370,8 @@ export function AdminTopicsPage() {
     const audit = buildTopicContentAudit({
       subjects,
       courses,
+      units,
+      chapters,
       topics,
       materials,
       questions,
@@ -360,7 +385,7 @@ export function AdminTopicsPage() {
       return 0;
     });
     return { ...audit, subjectSummaries: sortedSummaries };
-  }, [subjects, courses, topics, materials, questions, tests, contentCatalog]);
+  }, [subjects, courses, units, chapters, topics, materials, questions, tests, contentCatalog]);
 
   const actionableContentSummaries = useMemo(
     () =>
@@ -376,11 +401,43 @@ export function AdminTopicsPage() {
     [contentAudit.subjectSummaries]
   );
 
-  const executeContentSync = async (summariesToRun: SubjectContentAuditSummary[]) => {
-    if (!firebaseUser || summariesToRun.length === 0) return;
+  const batchFilteredItems = useMemo(() => {
+    const summaries = batchSubjectFilter
+      ? contentAudit.subjectSummaries.filter((s) => s.subjectId === batchSubjectFilter)
+      : contentAudit.subjectSummaries;
+    return summaries.flatMap((s) => s.items);
+  }, [contentAudit.subjectSummaries, batchSubjectFilter]);
+
+  const pendingBatchItems = useMemo(
+    () =>
+      batchFilteredItems.filter(
+        (item) =>
+          item.matchedPackage &&
+          (item.needsMaterial ||
+            item.missingMcqs.length > 0 ||
+            item.missingPyqs.length > 0 ||
+            item.needsTest)
+      ),
+    [batchFilteredItems]
+  );
+
+  const executeTopicBatchSync = async (
+    itemsToSync: TopicContentSyncItem[],
+    syncKey: string
+  ) => {
+    const pendingItems = itemsToSync.filter(
+      (item) =>
+        item.matchedPackage &&
+        (item.needsMaterial ||
+          item.missingMcqs.length > 0 ||
+          item.missingPyqs.length > 0 ||
+          item.needsTest)
+    );
+    if (!firebaseUser || pendingItems.length === 0) return;
+
     setError(null);
     setNotice(null);
-    setSyncingContentId(summariesToRun.length === 1 ? summariesToRun[0].subjectId : 'all');
+    setSyncingContentId(syncKey);
 
     const validExamIds = new Set(examinations.map((e) => e.id));
     const courseById = new Map(courses.map((c) => [c.id, c]));
@@ -388,7 +445,9 @@ export function AdminTopicsPage() {
     const fallbackCourseId = courses[0]?.id ?? '';
 
     if (!fallbackExamId) {
-      setError('Create an Examination and Course first so questions and topic assessments can link to a valid examinationId.');
+      setError(
+        'Create an Examination and Course first so questions and topic assessments can link to a valid examinationId.'
+      );
       setSyncingContentId(null);
       return;
     }
@@ -398,32 +457,28 @@ export function AdminTopicsPage() {
     let createdPyqs = 0;
     let createdTests = 0;
 
+    const TOPIC_WAVE_SIZE = 10;
+
     try {
-      for (const summary of summariesToRun) {
-        const subject = subjectById.get(summary.subjectId);
-        const pendingItems = summary.items.filter(
-          (item) =>
-            item.matchedPackage &&
-            (item.needsMaterial ||
-              item.missingMcqs.length > 0 ||
-              item.missingPyqs.length > 0 ||
-              item.needsTest)
+      for (let waveStart = 0; waveStart < pendingItems.length; waveStart += TOPIC_WAVE_SIZE) {
+        const wave = pendingItems.slice(waveStart, waveStart + TOPIC_WAVE_SIZE);
+        setContentProgressLabel(
+          `Batch ${Math.floor(waveStart / TOPIC_WAVE_SIZE) + 1}/${Math.ceil(pendingItems.length / TOPIC_WAVE_SIZE)} (${Math.min(waveStart + wave.length, pendingItems.length)}/${pendingItems.length} topics)...`
         );
 
-        for (let idx = 0; idx < pendingItems.length; idx += 1) {
-          const item = pendingItems[idx];
+        const contentOps: BatchWriteOperation[] = [];
+        const testOps: BatchWriteOperation[] = [];
+
+        for (const item of wave) {
           const pkg = item.matchedPackage;
           if (!pkg) continue;
-
-          setContentProgressLabel(
-            `${summary.subjectTitle} (${idx + 1}/${pendingItems.length}): ${item.topic.title.slice(0, 42)}...`
-          );
 
           const topic = item.topic;
           const chap = chapterById.get(topic.chapterId);
           const unit = unitById.get(topic.unitId || chap?.unitId || '');
           const resolvedSubjectId =
-            topic.subjectId || chap?.subjectId || unit?.subjectId || summary.subjectId;
+            topic.subjectId || chap?.subjectId || unit?.subjectId || '';
+          const subject = subjectById.get(resolvedSubjectId);
           const resolvedCourseId =
             topic.courseId || chap?.courseId || unit?.courseId || subject?.courseId || fallbackCourseId;
           const resolvedCourse = courseById.get(resolvedCourseId);
@@ -433,12 +488,12 @@ export function AdminTopicsPage() {
             ? candidateExamId
             : fallbackExamId;
 
-          if (item.needsMaterial && resolvedCourseId) {
+          if (item.needsMaterial && resolvedCourseId && resolvedSubjectId) {
             const matId = generateSafeId('mat');
-            await upsertAdminEntity<StudyMaterial>(
-              'studyMaterials',
-              matId,
-              {
+            contentOps.push({
+              collectionName: 'studyMaterials',
+              id: matId,
+              payload: {
                 id: matId,
                 topicId: topic.id,
                 chapterId: topic.chapterId,
@@ -451,8 +506,7 @@ export function AdminTopicsPage() {
                 isPublished: true,
                 createdBy: firebaseUser.uid,
               },
-              false
-            );
+            });
             createdMaterials += 1;
           }
 
@@ -460,10 +514,10 @@ export function AdminTopicsPage() {
 
           for (const mcq of item.missingMcqs) {
             const qId = generateSafeId('q');
-            await upsertAdminEntity<Question>(
-              'questions',
-              qId,
-              {
+            contentOps.push({
+              collectionName: 'questions',
+              id: qId,
+              payload: {
                 id: qId,
                 topicId: topic.id,
                 chapterId: topic.chapterId,
@@ -478,18 +532,17 @@ export function AdminTopicsPage() {
                 isPublished: true,
                 createdBy: firebaseUser.uid,
               },
-              false
-            );
+            });
             createdQuestionIds.push(qId);
             createdMcqs += 1;
           }
 
           for (const pyq of item.missingPyqs) {
             const qId = generateSafeId('q');
-            await upsertAdminEntity<Question>(
-              'questions',
-              qId,
-              {
+            contentOps.push({
+              collectionName: 'questions',
+              id: qId,
+              payload: {
                 id: qId,
                 topicId: topic.id,
                 chapterId: topic.chapterId,
@@ -506,8 +559,7 @@ export function AdminTopicsPage() {
                 isPublished: true,
                 createdBy: firebaseUser.uid,
               },
-              false
-            );
+            });
             createdQuestionIds.push(qId);
             createdPyqs += 1;
           }
@@ -523,10 +575,10 @@ export function AdminTopicsPage() {
             if (allQuestionIds.length > 0) {
               const testId = generateSafeId('tst');
               const testTitle = pkg.assessmentTitle || `Practice Assessment: ${topic.title}`;
-              await upsertAdminEntity<TestPaper>(
-                'tests',
-                testId,
-                {
+              testOps.push({
+                collectionName: 'tests',
+                id: testId,
+                payload: {
                   id: testId,
                   examinationId: resolvedExaminationId,
                   courseId: resolvedCourseId,
@@ -545,27 +597,140 @@ export function AdminTopicsPage() {
                   isPublished: true,
                   createdBy: firebaseUser.uid,
                 },
-                false
-              );
+              });
               createdTests += 1;
             }
           }
         }
+
+        if (contentOps.length > 0) {
+          await batchUpsertAdminEntities(contentOps);
+        }
+        if (testOps.length > 0) {
+          await batchUpsertAdminEntities(testOps);
+        }
       }
 
+      setSelectedBatchTopicIds([]);
       setNotice(
-        `Content sync complete: published ${createdMaterials} study material(s), ${createdMcqs} MCQ(s), ${createdPyqs} PYQ(s), and ${createdTests} topic assessment(s).`
+        `Batch sync complete: published ${createdMaterials} study material(s), ${createdMcqs} MCQ(s), ${createdPyqs} PYQ(s), and ${createdTests} topic assessment(s).`
       );
       await loadData();
     } catch (err) {
       setError(
         err instanceof Error
           ? err.message
-          : 'Failed while syncing topic content. Existing records were preserved; please retry.'
+          : 'Failed while syncing topic content batch. Existing records were preserved; please retry.'
       );
     } finally {
       setSyncingContentId(null);
       setContentProgressLabel(null);
+    }
+  };
+
+  const handleDownloadTopicTemplate = (onlyUnmatchedOrPending: boolean) => {
+    const sourceItems = contentAudit.subjectSummaries.flatMap((s) => s.items);
+    const targetItems = onlyUnmatchedOrPending
+      ? sourceItems.filter(
+          (item) => !item.matchedPackage || item.needsMaterial || item.existingMcqCount < 15 || item.needsTest
+        )
+      : sourceItems;
+
+    const template = targetItems.map((item) => ({
+      topicId: item.topic.id,
+      topicTitle: item.topic.title,
+      subjectTitle: item.subjectTitle,
+      studyMaterial: {
+        title: `${item.topic.title} — Study Notes`,
+        materialType: 'notes',
+        estimatedMinutes: 25,
+        contentMarkdown: `# ${item.topic.title}\n\n## 1. Key Concepts & Definitions\n\n## 2. Uttarakhand & Exam Context\n\n## 3. Revision Takeaways\n`,
+      },
+      mcqs: [
+        {
+          stem: 'Replace with a topic-specific UKPSC MCQ stem (min 5 chars)',
+          options: ['Option A', 'Option B', 'Option C', 'Option D'],
+          correctOptionIndex: 0,
+          explanation: 'Explain clearly why the correct option holds.',
+          difficulty: 'standard',
+        },
+      ],
+      practiceTest: {
+        title: `Practice Assessment: ${item.topic.title}`,
+        durationMinutes: 15,
+        negativeMarking: 0.25,
+      },
+    }));
+
+    const blob = new Blob([JSON.stringify(template, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `ukprep-topic-batch-template-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    setNotice(`Downloaded topic batch JSON template with ${template.length} live topic ID(s).`);
+  };
+
+  const handleValidateBulkJson = (rawText: string) => {
+    setBulkJsonText(rawText);
+    if (!firebaseUser || !rawText.trim()) {
+      setBulkValidation(null);
+      return;
+    }
+    const result = validateAndBuildBulkTopicImport({
+      rawJsonText: rawText,
+      adminUid: firebaseUser.uid,
+      topics,
+      chapters,
+      units,
+      subjects,
+      courses,
+      examinations,
+      existingMaterials: materials,
+      existingQuestions: questions,
+      existingTests: tests,
+    });
+    setBulkValidation(result);
+  };
+
+  const handleBulkJsonFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const text = await file.text();
+      handleValidateBulkJson(text);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unable to read JSON file.');
+    }
+  };
+
+  const handleExecuteBulkJsonImport = async () => {
+    if (!bulkValidation || bulkValidation.errors.length > 0) return;
+    setBulkImporting(true);
+    setError(null);
+    setNotice(null);
+    try {
+      const primaryOps = [...bulkValidation.materialOps, ...bulkValidation.questionOps];
+      if (primaryOps.length > 0) {
+        await batchUpsertAdminEntities(primaryOps);
+      }
+      if (bulkValidation.testOps.length > 0) {
+        await batchUpsertAdminEntities(bulkValidation.testOps);
+      }
+      setNotice(
+        `Bulk topic import complete: added ${bulkValidation.materialOps.length} study material(s), ${bulkValidation.questionOps.length} question(s), and ${bulkValidation.testOps.length} topic assessment(s)` +
+          (bulkValidation.skippedDuplicates > 0
+            ? ` (${bulkValidation.skippedDuplicates} duplicate item(s) skipped).`
+            : '.')
+      );
+      setBulkJsonText('');
+      setBulkValidation(null);
+      await loadData();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Bulk topic import failed.');
+    } finally {
+      setBulkImporting(false);
     }
   };
 
@@ -881,6 +1046,21 @@ export function AdminTopicsPage() {
               <div className="flex flex-wrap items-center gap-2 shrink-0">
                 <button
                   type="button"
+                  onClick={() => setShowTopicBatchSelector((prev) => !prev)}
+                  className="px-3 py-2 text-xs font-medium rounded-lg border border-edge-strong bg-subtle text-ink hover:bg-canvas transition-colors"
+                >
+                  {showTopicBatchSelector ? 'Hide Topic Batch Selector' : 'Select Topic Batch'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowBulkJsonImport((prev) => !prev)}
+                  className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-lg border border-edge-strong bg-subtle text-ink hover:bg-canvas transition-colors"
+                >
+                  <FileJson className="w-3.5 h-3.5" />
+                  <span>{showBulkJsonImport ? 'Hide Bulk JSON Import' : 'Bulk JSON Import'}</span>
+                </button>
+                <button
+                  type="button"
                   onClick={() => setShowContentAudit((prev) => !prev)}
                   className="px-3 py-2 text-xs font-medium rounded-lg border border-edge-strong bg-subtle text-ink hover:bg-canvas transition-colors"
                 >
@@ -892,7 +1072,12 @@ export function AdminTopicsPage() {
                   <button
                     type="button"
                     disabled={Boolean(syncingContentId) || Boolean(syncingSubjectId)}
-                    onClick={() => void executeContentSync(actionableContentSummaries)}
+                    onClick={() =>
+                      void executeTopicBatchSync(
+                        actionableContentSummaries.flatMap((s) => s.items),
+                        'all'
+                      )
+                    }
                     className="inline-flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-xs font-semibold text-accent-ink hover:bg-accent-hover disabled:opacity-60 transition-colors"
                   >
                     <ClipboardList className="h-4 w-4" />
@@ -938,6 +1123,227 @@ export function AdminTopicsPage() {
                 </div>
               </div>
             </div>
+
+            {showTopicBatchSelector && (
+              <div className="rounded-xl border border-edge bg-subtle p-4 space-y-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <h3 className="text-xs font-semibold uppercase tracking-wider text-accent-text">
+                      Topic-Wise Batch Seeder ({selectedBatchTopicIds.length} Selected)
+                    </h3>
+                    <p className="text-xs text-ink-muted mt-0.5">
+                      Pick a subject or specific pending topics and publish their Study Notes, 15 MCQs, and Topic Practice Assessment in fast Firestore batches.
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <select
+                      aria-label="Filter topics for batch seeding"
+                      value={batchSubjectFilter}
+                      onChange={(e) => setBatchSubjectFilter(e.target.value)}
+                      className="px-2.5 py-1.5 text-xs rounded-lg border border-edge-strong bg-field text-ink"
+                    >
+                      <option value="">All Subjects ({contentAudit.subjectSummaries.length})</option>
+                      {contentAudit.subjectSummaries.map((s) => (
+                        <option key={s.subjectId} value={s.subjectId}>
+                          {s.subjectTitle} ({s.totalPublishedTopics})
+                        </option>
+                      ))}
+                    </select>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setSelectedBatchTopicIds(pendingBatchItems.slice(0, 10).map((i) => i.topic.id))
+                      }
+                      disabled={pendingBatchItems.length === 0}
+                      className="px-2.5 py-1.5 text-xs font-medium rounded-lg border border-edge-strong bg-panel text-ink hover:border-accent disabled:opacity-50"
+                    >
+                      Select Next 10 Pending
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedBatchTopicIds(pendingBatchItems.map((i) => i.topic.id))}
+                      disabled={pendingBatchItems.length === 0}
+                      className="px-2.5 py-1.5 text-xs font-medium rounded-lg border border-edge-strong bg-panel text-ink hover:border-accent disabled:opacity-50"
+                    >
+                      Select All Pending ({pendingBatchItems.length})
+                    </button>
+                    {selectedBatchTopicIds.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => setSelectedBatchTopicIds([])}
+                        className="px-2.5 py-1.5 text-xs font-medium rounded-lg border border-edge-strong bg-panel text-ink-muted hover:text-ink"
+                      >
+                        Clear
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      disabled={
+                        selectedBatchTopicIds.length === 0 ||
+                        Boolean(syncingContentId) ||
+                        Boolean(syncingSubjectId)
+                      }
+                      onClick={() => {
+                        const selectedSet = new Set(selectedBatchTopicIds);
+                        void executeTopicBatchSync(
+                          batchFilteredItems.filter((item) => selectedSet.has(item.topic.id)),
+                          'batch'
+                        );
+                      }}
+                      className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-accent text-accent-ink hover:bg-accent-hover disabled:opacity-50"
+                    >
+                      {syncingContentId === 'batch'
+                        ? contentProgressLabel || 'Syncing batch...'
+                        : `Populate Selected (${selectedBatchTopicIds.length})`}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="max-h-72 overflow-y-auto divide-y divide-edge rounded-lg border border-edge bg-panel">
+                  {batchFilteredItems.map((item) => {
+                    const isPending =
+                      Boolean(item.matchedPackage) &&
+                      (item.needsMaterial ||
+                        item.missingMcqs.length > 0 ||
+                        item.missingPyqs.length > 0 ||
+                        item.needsTest);
+                    const isChecked = selectedBatchTopicIds.includes(item.topic.id);
+                    return (
+                      <label
+                        key={item.topic.id}
+                        className="flex items-center justify-between gap-3 px-3 py-2 text-xs cursor-pointer hover:bg-subtle/60"
+                      >
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <input
+                            type="checkbox"
+                            checked={isChecked}
+                            disabled={!isPending}
+                            onChange={(e) => {
+                              const checked = e.target.checked;
+                              setSelectedBatchTopicIds((prev) =>
+                                checked
+                                  ? Array.from(new Set([...prev, item.topic.id]))
+                                  : prev.filter((id) => id !== item.topic.id)
+                              );
+                            }}
+                            className="accent-accent"
+                          />
+                          <div className="min-w-0">
+                            <div className="font-medium text-ink truncate">{item.topic.title}</div>
+                            <div className="text-[11px] font-mono text-ink-muted">
+                              {item.subjectTitle} · Notes: {item.existingMaterialCount} · MCQs:{' '}
+                              {item.existingMcqCount} · PYQs: {item.existingPyqCount} · Tests:{' '}
+                              {item.existingTestCount}
+                            </div>
+                          </div>
+                        </div>
+                        <span
+                          className={`shrink-0 text-[11px] font-mono ${
+                            !item.matchedPackage
+                              ? 'text-ink-faint'
+                              : isPending
+                                ? 'text-accent-text'
+                                : 'text-emerald-600 dark:text-emerald-400'
+                          }`}
+                        >
+                          {!item.matchedPackage
+                            ? 'Custom (JSON Import)'
+                            : isPending
+                              ? `+${item.needsMaterial ? 1 : 0}N / +${item.missingMcqs.length}Q / +${item.needsTest ? 1 : 0}T`
+                              : 'Synced'}
+                        </span>
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {showBulkJsonImport && (
+              <div className="rounded-xl border border-edge bg-subtle p-4 space-y-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <h3 className="text-xs font-semibold uppercase tracking-wider text-accent-text">
+                      Bulk Topic Content Import (JSON Batch)
+                    </h3>
+                    <p className="text-xs text-ink-muted mt-0.5">
+                      Import Study Notes, MCQs, verified PYQs (requires examName + examYear), and Topic Assessments linked directly to live Firestore topic IDs.
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleDownloadTopicTemplate(true)}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border border-edge-strong bg-panel text-ink hover:border-accent"
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                      <span>Download Live Topic Template</span>
+                    </button>
+                    <label className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border border-edge-strong bg-panel text-ink cursor-pointer hover:border-accent">
+                      <Upload className="w-3.5 h-3.5" />
+                      <span>Load JSON File</span>
+                      <input
+                        type="file"
+                        accept=".json,application/json"
+                        onChange={(e) => void handleBulkJsonFile(e)}
+                        className="sr-only"
+                      />
+                    </label>
+                  </div>
+                </div>
+
+                <textarea
+                  rows={6}
+                  value={bulkJsonText}
+                  onChange={(e) => handleValidateBulkJson(e.target.value)}
+                  placeholder='Paste JSON array: [{ "topicId": "...", "studyMaterial": { ... }, "mcqs": [ ... ], "verifiedPyqs": [ ... ], "practiceTest": { ... } }]'
+                  className="w-full px-3 py-2 text-xs font-mono rounded-lg border border-edge-strong bg-field text-ink focus:outline-none focus:ring-2 focus:ring-accent"
+                />
+
+                {bulkValidation && (
+                  <div className="rounded-lg border border-edge bg-panel p-3 text-xs space-y-2">
+                    {bulkValidation.errors.length > 0 ? (
+                      <div className="space-y-1 text-red-600 dark:text-red-400">
+                        <div className="font-semibold">
+                          Validation issues ({bulkValidation.errors.length}):
+                        </div>
+                        <ul className="list-disc pl-5 space-y-0.5">
+                          {bulkValidation.errors.slice(0, 8).map((errMsg, idx) => (
+                            <li key={idx}>{errMsg}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    ) : (
+                      <div className="flex flex-wrap items-center justify-between gap-3">
+                        <div className="font-mono text-ink">
+                          Ready across {bulkValidation.validEntries} topic(s): +
+                          {bulkValidation.materialOps.length} Notes · +
+                          {bulkValidation.questionOps.length} Questions · +
+                          {bulkValidation.testOps.length} Tests
+                          {bulkValidation.skippedDuplicates > 0
+                            ? ` (${bulkValidation.skippedDuplicates} duplicates skipped)`
+                            : ''}
+                        </div>
+                        <button
+                          type="button"
+                          disabled={
+                            bulkImporting ||
+                            (bulkValidation.materialOps.length === 0 &&
+                              bulkValidation.questionOps.length === 0 &&
+                              bulkValidation.testOps.length === 0)
+                          }
+                          onClick={() => void handleExecuteBulkJsonImport()}
+                          className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold rounded-lg bg-accent text-accent-ink hover:bg-accent-hover disabled:opacity-50"
+                        >
+                          <Upload className="w-3.5 h-3.5" />
+                          <span>{bulkImporting ? 'Importing Batch...' : 'Import Batch to Firestore'}</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
 
             {showContentAudit && (
               <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
@@ -989,7 +1395,7 @@ export function AdminTopicsPage() {
                         <button
                           type="button"
                           disabled={Boolean(syncingContentId) || Boolean(syncingSubjectId)}
-                          onClick={() => void executeContentSync([summary])}
+                          onClick={() => void executeTopicBatchSync(summary.items, summary.subjectId)}
                           className="w-full rounded-md border border-accent/50 bg-panel px-2.5 py-1.5 text-[11px] font-semibold text-accent-text hover:bg-accent hover:text-accent-ink disabled:opacity-60 transition-colors"
                         >
                           {isBusy && syncingContentId === summary.subjectId

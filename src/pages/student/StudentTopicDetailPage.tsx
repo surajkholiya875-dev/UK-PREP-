@@ -674,7 +674,7 @@ export function StudentTopicDetailPage() {
                   title={
                     activeTab === 'mcq'
                       ? 'No MCQs published for this topic yet'
-                      : 'Verified PYQs are not available for this topic yet'
+                      : 'Verified PYQs not added yet'
                   }
                   description={
                     activeTab === 'mcq'
