@@ -26,7 +26,7 @@ import {
   validateCandidates,
 } from '../../lib/bulkQuestionImport/validation';
 import { compareNaturalText, safeSortOrder } from '../../lib/syllabusHierarchy';
-import { batchUpsertAdminEntities } from '../../services/firestoreService';
+import { resilientBatchUpsertAdminEntities } from '../../services/firestoreService';
 import {
   Chapter,
   Course,
@@ -333,27 +333,33 @@ export function BulkQuestionImportPanel({
     setImportProgress({ done: 0, total: operations.length });
     const importedRowIds = new Set<string>();
     const failedMessages: string[] = [];
-    let failedCount = 0;
 
-    const CHUNK_SIZE = 100;
-    for (let start = 0; start < operations.length; start += CHUNK_SIZE) {
-      const chunk = operations.slice(start, start + CHUNK_SIZE);
-      try {
-        await batchUpsertAdminEntities(chunk.map((item) => item.op));
-        chunk.forEach((item) => importedRowIds.add(item.rowId));
-        setImportProgress({ done: importedRowIds.size, total: operations.length });
-      } catch (err) {
-        failedCount += chunk.length;
-        failedMessages.push(err instanceof Error ? err.message : 'Firestore batch write failed.');
+    const rowIdByDocId = new Map(operations.map((item) => [item.op.id, item.rowId]));
+    const existingIds = new Set(existingQuestions.map((q) => q.id));
+    const resilientOps = operations.map((item) => ({
+      ...item.op,
+      isEdit: existingIds.has(item.op.id),
+    }));
+
+    const result = await resilientBatchUpsertAdminEntities(resilientOps, ({ processed, total }) => {
+      setImportProgress({ done: processed, total });
+    });
+
+    for (const outcome of result.outcomes) {
+      const rowId = rowIdByDocId.get(outcome.id);
+      if (outcome.action === 'created' || outcome.action === 'updated') {
+        if (rowId) importedRowIds.add(rowId);
+      } else {
+        failedMessages.push(`${outcome.collectionName}/${outcome.id}: ${outcome.error || 'Write failed.'}`);
       }
     }
 
     setImportSummary({
       extracted: validatedCandidates.length,
       readyToImport: operations.length,
-      imported: importedRowIds.size,
+      imported: result.createdCount + result.updatedCount,
       skipped: skippedCount,
-      failed: failedCount,
+      failed: result.failedCount,
       failedMessages,
     });
 

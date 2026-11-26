@@ -7,7 +7,7 @@ import {
   Topic,
   Unit,
 } from '../../types/academic';
-import { BatchWriteOperation, clampString, generateSafeId } from '../../services/firestoreService';
+import { BatchWriteOperation, clampString } from '../../services/firestoreService';
 import { normalizeQuestionKey } from '../topicContent/types';
 import { ExtractedQuestionCandidate } from './types';
 
@@ -152,6 +152,18 @@ export function validateCandidates(params: {
   });
 }
 
+function stableQuestionDocId(topicId: string, stem: string): string {
+  const input = `${topicId}::${normalizeQuestionKey(stem)}`;
+  let hash = 2166136261;
+  for (let i = 0; i < input.length; i += 1) {
+    hash ^= input.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  const hex = (hash >>> 0).toString(16).padStart(8, '0');
+  const safePrefix = topicId.replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 32) || 'topic';
+  return `q-${safePrefix}-${hex}`.slice(0, 128);
+}
+
 export function buildBulkQuestionWriteOperations(params: {
   candidates: ExtractedQuestionCandidate[];
   adminUid: string;
@@ -220,7 +232,7 @@ export function buildBulkQuestionWriteOperations(params: {
       : [];
     const safeCorrectIdx = isObjective ? Math.min(Math.max(0, c.correctOptionIndex), cleanOptions.length - 1) : -1;
 
-    const id = generateSafeId('q');
+    const id = stableQuestionDocId(topic.id, c.stem);
     const payload: Omit<Question, 'createdAt' | 'updatedAt'> = {
       id,
       topicId: topic.id,
@@ -230,23 +242,25 @@ export function buildBulkQuestionWriteOperations(params: {
       questionType: c.questionType,
       questionFormat: c.questionFormat,
       examCommission: c.examCommission,
-      stem: clampString(c.stem, 3000),
+      stem: clampString(c.stem, 5000),
       options: cleanOptions,
       correctOptionIndex: safeCorrectIdx,
-      ...(c.explanation.trim() ? { explanation: clampString(c.explanation, 3000) } : {}),
+      ...(c.explanation.trim() ? { explanation: clampString(c.explanation, 6000) } : {}),
       difficulty: c.difficulty,
       ...(c.examName.trim() ? { examName: clampString(c.examName, 120) } : {}),
-      ...(Number.isInteger(c.examYear) ? { examYear: c.examYear } : {}),
+      ...(Number.isInteger(c.examYear) && c.examYear! >= 1950 && c.examYear! <= 2100
+        ? { examYear: c.examYear }
+        : {}),
       ...(c.paperName.trim() ? { paperName: clampString(c.paperName, 160) } : {}),
       ...(typeof c.marks === 'number' && Number.isFinite(c.marks) && c.marks >= 0
-        ? { marks: Math.min(c.marks, 250) }
+        ? { marks: Math.min(c.marks, 500) }
         : {}),
       ...(Number.isInteger(c.wordLimit) && c.wordLimit! >= 1
         ? { wordLimit: Math.min(c.wordLimit!, 5000) }
         : {}),
       ...(c.questionNumber?.trim() ? { questionNumber: clampString(c.questionNumber, 40) } : {}),
       ...(c.modelAnswer.trim() ? { modelAnswer: clampString(c.modelAnswer, 6000) } : {}),
-      ...(c.sourceReference.trim() ? { sourceReference: clampString(c.sourceReference, 300) } : {}),
+      ...(c.sourceReference.trim() ? { sourceReference: clampString(c.sourceReference, 500) } : {}),
       ...(c.questionType === 'pyq' ? { isVerified: Boolean(c.isVerified) } : {}),
       isPublished: c.questionType === 'pyq' ? Boolean(c.isVerified && c.isPublished) : Boolean(c.isPublished),
       createdBy: adminUid,

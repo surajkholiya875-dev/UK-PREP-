@@ -37,7 +37,9 @@ service cloud.firestore {
     // Single-owner admin policy. Custom claims and client-writable profile roles
     // must never grant administrator access to another account.
     function isAdmin() {
-      return isVerifiedUser() && request.auth.token.email == 'surajkholiya875@gmail.com';
+      return isVerifiedUser()
+        && request.auth.token.email is string
+        && request.auth.token.email.lower() == 'surajkholiya875@gmail.com';
     }
 
     function isValidString(val, minLen, maxLen) {
@@ -232,7 +234,7 @@ service cloud.firestore {
         && data.questionType in ['mcq', 'pyq', 'current_affairs']
         && (!('questionFormat' in data) || data.questionFormat in ['objective', 'descriptive', 'other'])
         && (!('examCommission' in data) || data.examCommission in ['UKPSC_PCS', 'UKSSSC', 'UPSC', 'Other'])
-        && isValidString(data.stem, 5, 3000)
+        && isValidString(data.stem, 5, 5000)
         && data.options is list
         && (
           (
@@ -244,19 +246,20 @@ service cloud.firestore {
             data.options.size() >= 2
             && data.options.size() <= 5
             && data.options[0] is string
+            && data.options[1] is string
             && isValidNumber(data.correctOptionIndex, 0, 4)
           )
         )
-        && (!('explanation' in data) || isValidString(data.explanation, 0, 3000))
+        && (!('explanation' in data) || isValidString(data.explanation, 0, 6000))
         && data.difficulty in ['foundation', 'standard', 'advanced']
         && (!('examName' in data) || isValidString(data.examName, 0, 120))
-        && (!('examYear' in data) || isValidNumber(data.examYear, 1990, 2100))
+        && (!('examYear' in data) || isValidNumber(data.examYear, 1950, 2100))
         && (!('paperName' in data) || isValidString(data.paperName, 0, 160))
-        && (!('marks' in data) || isValidNumber(data.marks, 0, 250))
+        && (!('marks' in data) || isValidNumber(data.marks, 0, 500))
         && (!('wordLimit' in data) || isValidNumber(data.wordLimit, 1, 5000))
         && (!('questionNumber' in data) || isValidString(data.questionNumber, 0, 40))
         && (!('modelAnswer' in data) || isValidString(data.modelAnswer, 0, 6000))
-        && (!('sourceReference' in data) || isValidString(data.sourceReference, 0, 300))
+        && (!('sourceReference' in data) || isValidString(data.sourceReference, 0, 500))
         && (!('isVerified' in data) || data.isVerified is bool)
         && data.isPublished is bool
         && isValidId(data.createdBy)

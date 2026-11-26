@@ -12,7 +12,12 @@ import {
   where,
   writeBatch,
 } from 'firebase/firestore';
-import { db, handleFirestoreError, OperationType } from '../lib/firebase';
+import {
+  buildFirestoreErrorInfo,
+  db,
+  handleFirestoreError,
+  OperationType,
+} from '../lib/firebase';
 import {
   Announcement,
   BLUEPRINT_LIMITS,
@@ -347,6 +352,133 @@ export async function batchUpsertAdminEntities(
   }
 
   return committedCount;
+}
+
+export interface BatchRecordOutcome {
+  collectionName: string;
+  id: string;
+  action: 'created' | 'updated' | 'failed';
+  error?: string;
+}
+
+export interface ResilientBatchResult {
+  createdCount: number;
+  updatedCount: number;
+  failedCount: number;
+  outcomes: BatchRecordOutcome[];
+}
+
+const RESILIENT_BATCH_CHUNK_SIZE = 50;
+
+function extractReadableFirestoreError(error: unknown): string {
+  const raw = error instanceof Error ? error.message : String(error);
+  try {
+    const parsed = JSON.parse(raw) as { error?: string; path?: string };
+    if (parsed && typeof parsed.error === 'string') {
+      return parsed.error;
+    }
+  } catch {
+    // Plain error message
+  }
+  return raw || 'Firestore write failed.';
+}
+
+/**
+ * Commits admin writes in chunks for throughput, and automatically isolates any
+ * failing chunk into individual document writes so valid records succeed and
+ * every failed record is reported with its exact ID and error message.
+ */
+export async function resilientBatchUpsertAdminEntities(
+  operations: BatchWriteOperation[],
+  onProgress?: (progress: { processed: number; total: number }) => void
+): Promise<ResilientBatchResult> {
+  if (operations.length === 0) {
+    return { createdCount: 0, updatedCount: 0, failedCount: 0, outcomes: [] };
+  }
+
+  let createdCount = 0;
+  let updatedCount = 0;
+  let failedCount = 0;
+  const outcomes: BatchRecordOutcome[] = [];
+  let processed = 0;
+
+  for (let start = 0; start < operations.length; start += RESILIENT_BATCH_CHUNK_SIZE) {
+    const chunk = operations.slice(start, start + RESILIENT_BATCH_CHUNK_SIZE);
+    const batch = writeBatch(db);
+
+    for (const op of chunk) {
+      const ref = doc(db, op.collectionName, op.id);
+      if (op.isEdit) {
+        const updatePayload = { ...op.payload } as Record<string, unknown>;
+        delete updatePayload.id;
+        delete updatePayload.createdBy;
+        delete updatePayload.createdAt;
+        updatePayload.updatedAt = serverTimestamp();
+        batch.update(ref, updatePayload);
+      } else {
+        batch.set(ref, {
+          ...op.payload,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+        });
+      }
+    }
+
+    try {
+      await batch.commit();
+      for (const op of chunk) {
+        const action = op.isEdit ? 'updated' : 'created';
+        if (action === 'updated') updatedCount += 1;
+        else createdCount += 1;
+        outcomes.push({ collectionName: op.collectionName, id: op.id, action });
+      }
+      processed += chunk.length;
+      onProgress?.({ processed, total: operations.length });
+    } catch {
+      // Chunk failed (often due to one invalid/missing-parent doc); isolate each record individually.
+      for (const op of chunk) {
+        const path = `${op.collectionName}/${op.id}`;
+        const ref = doc(db, op.collectionName, op.id);
+        try {
+          if (op.isEdit) {
+            const updatePayload = { ...op.payload } as Record<string, unknown>;
+            delete updatePayload.id;
+            delete updatePayload.createdBy;
+            delete updatePayload.createdAt;
+            updatePayload.updatedAt = serverTimestamp();
+            await updateDoc(ref, updatePayload);
+            updatedCount += 1;
+            outcomes.push({ collectionName: op.collectionName, id: op.id, action: 'updated' });
+          } else {
+            await setDoc(ref, {
+              ...op.payload,
+              createdAt: serverTimestamp(),
+              updatedAt: serverTimestamp(),
+            });
+            createdCount += 1;
+            outcomes.push({ collectionName: op.collectionName, id: op.id, action: 'created' });
+          }
+        } catch (itemError) {
+          const info = buildFirestoreErrorInfo(
+            itemError,
+            op.isEdit ? OperationType.UPDATE : OperationType.CREATE,
+            path
+          );
+          failedCount += 1;
+          outcomes.push({
+            collectionName: op.collectionName,
+            id: op.id,
+            action: 'failed',
+            error: extractReadableFirestoreError(info.error),
+          });
+        }
+        processed += 1;
+        onProgress?.({ processed, total: operations.length });
+      }
+    }
+  }
+
+  return { createdCount, updatedCount, failedCount, outcomes };
 }
 
 export async function deleteAdminEntity(collectionName: string, id: string): Promise<void> {
