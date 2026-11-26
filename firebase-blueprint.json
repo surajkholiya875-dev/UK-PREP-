@@ -205,6 +205,8 @@
         "difficulty": { "type": "string", "enum": ["foundation", "standard", "advanced"] },
         "examName": { "type": "string", "maxLength": 120 },
         "examYear": { "type": "number" },
+        "sourceReference": { "type": "string", "maxLength": 300 },
+        "isVerified": { "type": "boolean" },
         "isPublished": { "type": "boolean" },
         "createdBy": { "type": "string", "minLength": 1, "maxLength": 128 },
         "createdAt": { "type": "string", "format": "date-time" },

@@ -1086,17 +1086,27 @@ The Kali defines most of Uttarakhand's eastern border with Nepal before becoming
     assessmentDurationMinutes: 15,
     contentMarkdown: `# Western Ramganga, Kosi & Gaula River Basins
 
-## 1. Nature of Non-Glacial Rivers
-**Western Ramganga**, **Kosi**, and **Gaula** are **non-glacial, spring-fed and rain-fed** Lesser Himalayan rivers whose dry-season baseflow depends on Banj Oak watershed conservation and groundwater recharge.
+## 1. Hydrological Character of Non-Glacial Lesser Himalayan Rivers
+Unlike the snow- and glacier-fed **Bhagirathi, Alaknanda, Yamuna, and Kali** systems, the **Western Ramganga**, **Kosi**, and **Gaula** originate entirely within the **Lesser Himalaya** below the permanent snowline.
+- **Primary Water Sources:** Monsoon rainfall (June–September) and subsurface groundwater **springs/seepage** (*Naulas/Dharas*) sustained by broad-leaved **Banj Oak (*Quercus leucotrichophora*)** forests.
+- **Vulnerability:** Because they lack glacial meltwater buffers, summer baseflows drop sharply between April and June when Chir Pine encroachment, forest fires, and unplanned slope concretization reduce spring recharge—making springshed conservation under **SARRA** vital for Kumaon and Garhwal towns.
 
-## 2. Basin Profiles
-- **Western Ramganga:** Originates in **Dudhatoli Range** (Diwali Khal); flows through Chaukhutiya, Bhikiyasain, and **Patli Dun / Corbett National Park** (**Kalagarh Dam** on Pauri–Bijnor edge), entering UP to join the Ganga near Kannauj. Tributaries: Vinod, Gagas, Mandal.
-- **Kosi (Kaushiki):** Originates in **Dharapani / Kausani** hills (Almora); flows past Someshwar, Hawalbagh, receives **Suyal** at Kakrighat, exits hills at **Ramnagar** (Nainital), and joins Western Ramganga in UP.
-- **Gaula (Gargi):** Originates in **Paharpani / Motiapathar** (Nainital); flows past **Jamrani** and **Kathgodam–Haldwani**, joining Western Ramganga (via Bahgul) in UP.
+## 2. Detailed River Basin Profiles
+| River System | Origin | Major Tributaries | Key Uttarakhand Towns / Projects | Ultimate Confluence |
+|---|---|---|---|---|
+| **Western Ramganga** | **Diwali Khal (Dudhatoli Range, Chamoli/Pauri)** | **Vinod, Gagas, Bino, Mandal, Palain, Khoh** | Gairsain–Chaukhutiya, Bhikiyasain, **Patli Dun / Corbett National Park**, **Kalagarh Dam** | Joins **Ganga** near **Kannauj (UP)** |
+| **Kosi (*Kaushiki*)** | **Dharapani / Budhapinath (Kausani hills, Bageshwar–Almora border)** | **Suyal, Devgad, Minol Gad, Dabka** | Someshwar, Hawalbagh, **Kakrighat**, Khairna, **Ramnagar** | Joins **Western Ramganga** in UP (Rampur/Moradabad belt) |
+| **Gaula (*Gargi*)** | **Paharpani / Motiapathar (Nainital)** | **Baliya Nala, Kalsa, Logar Gad** | Bhimtal-outlet region, **Jamrani Dam site**, **Kathgodam**, **Haldwani** | Joins **Western Ramganga** (via Bahgul/Kichha) in UP |
+
+### Important Basin Notes for UKPSC
+1. **Western Ramganga:** Flows through **Dudhatoli** (the "Pithoragarh/Garhwal water tower" giving rise to 5 rivers: Western & Eastern Nayar, Western Ramganga, Ata Gad, and Vuno). Its **Kalagarh Dam** (commissioned 1974–75 on the Pauri–Bijnor edge) regulates irrigation in western UP and forms a major wetland inside **Corbett Tiger Reserve**.
+2. **Kosi (*Kaushiki*):** Flows past Almora's agricultural valleys (**Someshwar** "rice bowl") and **Kakrighat** (where **Swami Vivekananda** meditated under a peepal tree and **Suyal** joins Kosi), before exiting the Siwalik foothills at **Ramnagar** (Nainital).
+3. **Gaula:** Lifeline of **Haldwani–Kathgodam** drinking water and Bhabar irrigation; the **Jamrani Multipurpose Dam Project** upstream of Kathgodam addresses Haldwani's acute summer water deficit and Terai irrigation.
 
 ## 3. Key Revision Takeaways
-- All three are **non-glacial** rivers.
-- **Kalagarh Dam** = Western Ramganga; **Ramnagar** = Kosi exit; **Haldwani–Kathgodam** = Gaula exit.
+- **Western Ramganga, Kosi, and Gaula** are **non-glacial, spring- and rain-fed** rivers.
+- **Dudhatoli Range** = source of **Western Ramganga**; **Kalagarh Dam** = Corbett / Pauri–Bijnor edge.
+- **Kosi** receives **Suyal** at Kakrighat and exits hills at **Ramnagar**; **Gaula** exits at **Kathgodam–Haldwani** (**Jamrani Dam**).
 `,
     mcqs: [
       {

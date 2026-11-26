@@ -22,6 +22,14 @@ export interface TopicMcqSpec {
 export interface TopicPyqSpec extends TopicMcqSpec {
   examName: string;
   examYear: number;
+  sourceReference?: string;
+}
+
+export interface TopicSupplementSpec {
+  title: string;
+  materialType: 'reference' | 'summary';
+  estimatedMinutes: number;
+  contentMarkdown: string;
 }
 
 export interface TopicContentPackage {
@@ -29,6 +37,7 @@ export interface TopicContentPackage {
   materialTitle: string;
   estimatedMinutes: number;
   contentMarkdown: string;
+  supplement?: TopicSupplementSpec;
   mcqs: TopicMcqSpec[];
   verifiedPyqs?: TopicPyqSpec[];
   assessmentTitle?: string;
@@ -44,6 +53,7 @@ export interface TopicContentSyncItem {
   existingPyqCount: number;
   existingTestCount: number;
   needsMaterial: boolean;
+  needsSupplement: boolean;
   missingMcqs: TopicMcqSpec[];
   missingPyqs: TopicPyqSpec[];
   needsTest: boolean;
@@ -90,6 +100,7 @@ export function buildTopicContentAudit(params: {
     withAssessment: number;
     unmatched: number;
     pendingMaterials: number;
+    pendingSupplements: number;
     pendingMcqs: number;
     pendingPyqs: number;
     pendingAssessments: number;
@@ -155,6 +166,7 @@ export function buildTopicContentAudit(params: {
   let withAssessment = 0;
   let unmatched = 0;
   let pendingMaterials = 0;
+  let pendingSupplements = 0;
   let pendingMcqs = 0;
   let pendingPyqs = 0;
   let pendingAssessments = 0;
@@ -184,7 +196,8 @@ export function buildTopicContentAudit(params: {
     summary.totalPublishedTopics += 1;
 
     const pkg = catalogByNormalizedTitle.get(normalizeTextKey(topic.title)) ?? null;
-    const topicMats = (materialsByTopic.get(topic.id) ?? []).filter((m) => m.isPublished);
+    const allTopicMats = materialsByTopic.get(topic.id) ?? [];
+    const topicMats = allTopicMats.filter((m) => m.isPublished);
     const topicQs = (questionsByTopic.get(topic.id) ?? []).filter((q) => q.isPublished);
     const topicMcqs = topicQs.filter((q) => q.questionType === 'mcq');
     const topicPyqs = topicQs.filter((q) => q.questionType === 'pyq');
@@ -193,6 +206,12 @@ export function buildTopicContentAudit(params: {
     const existingStemKeys = new Set(topicQs.map((q) => normalizeQuestionKey(q.stem)));
 
     const needsMaterial = Boolean(pkg && topicMats.length === 0);
+    const needsSupplement = Boolean(
+      pkg?.supplement &&
+        !allTopicMats.some(
+          (m) => normalizeTextKey(m.title) === normalizeTextKey(pkg.supplement!.title)
+        )
+    );
     const missingMcqs = pkg
       ? pkg.mcqs.filter((mcq) => !existingStemKeys.has(normalizeQuestionKey(mcq.stem)))
       : [];
@@ -224,6 +243,7 @@ export function buildTopicContentAudit(params: {
     }
 
     if (needsMaterial) pendingMaterials += 1;
+    if (needsSupplement) pendingSupplements += 1;
     pendingMcqs += missingMcqs.length;
     pendingPyqs += missingPyqs.length;
     if (needsTest) pendingAssessments += 1;
@@ -237,6 +257,7 @@ export function buildTopicContentAudit(params: {
       existingPyqCount: topicPyqs.length,
       existingTestCount: topicTsts.length,
       needsMaterial,
+      needsSupplement,
       missingMcqs,
       missingPyqs,
       needsTest,
@@ -255,6 +276,7 @@ export function buildTopicContentAudit(params: {
       withAssessment,
       unmatched,
       pendingMaterials,
+      pendingSupplements,
       pendingMcqs,
       pendingPyqs,
       pendingAssessments,

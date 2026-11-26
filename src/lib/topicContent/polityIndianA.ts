@@ -219,6 +219,49 @@ Adopted on **26 November 1949** based on the **Objectives Resolution**, the Prea
 - **42nd Amendment (1976)** added **Socialist, Secular, Integrity** to the Preamble.
 - **Kesavananda Bharati (1973)** held Preamble **IS part of the Constitution**.
 - **Article 2** = external new territories; **Article 3** = internal state carving (simple majority via **Article 4**), whereas **ceding territory to a foreign nation** needs **Article 368**.`,
+    supplement: {
+      title: 'Constitutional Clauses, Landmark SC Cases & Revision Tables — Preamble, Union & Citizenship',
+      materialType: 'reference',
+      estimatedMinutes: 25,
+      contentMarkdown: `# Supplement: Preamble, Union & Its Territory (Arts. 1–4) and Citizenship (Arts. 5–11)
+
+## 1. Key Articles, Clauses & Constitutional Mechanics
+| Article | Clause / Key Provision | Constitutional Significance & Exam Points |
+|---|---|---|
+| **Preamble** | Enacting clause (**26 Nov 1949**) | Key to framers' minds; non-justiciable independently; reflects Basic Structure |
+| **Art. 1(1)–(3)** | "India, that is Bharat, shall be a Union of States" | **Territory of India** (States + UTs + acquired territories) is wider than **Union of India** (States only) |
+| **Art. 2** | Admission/establishment of **new States** | Used for external territories not previously in the Union (e.g., **35th & 36th Amendments, 1974–75** for Sikkim) |
+| **Art. 3 (a)–(e) + Proviso** | Form new State, increase/diminish area, alter boundaries/names | Requires **prior Presidential recommendation** + reference to affected State Legislature (non-binding view; e.g., **UP Reorganisation Act, 2000** creating Uttarakhand) |
+| **Art. 4(1)–(2)** | Consequential changes to Schedules 1 & 4 | Passed by **simple majority**; NOT an Art. 368 amendment |
+| **Art. 5–8** | Citizenship at commencement (26 Jan 1950) | Covers domicile (Art. 5), migrants from Pakistan (Art. 6), re-migrants (Art. 7), PIOs abroad (Art. 8) |
+| **Art. 9 & Art. 11** | Termination on foreign citizenship; Parliamentary supremacy | Single citizenship; **Citizenship Act, 1955** enacted under Art. 11 |
+
+## 2. Landmark Supreme Court Cases (Facts, Issue, Ratio & Exam Relevance)
+### A. *In re: The Berubari Union and Exchange of Enclaves* (1960)
+- **Facts:** Following the 1958 Nehru–Noon Agreement to transfer half of Berubari Union No. 12 (West Bengal) and exchange Cooch Behar enclaves with Pakistan, the President sought an **Article 143** advisory opinion on whether Parliament could cede territory via Article 3 alone.
+- **Legal Issue:** Is the Preamble part of the Constitution, and can Indian territory be ceded to a foreign state under Article 3 by simple majority?
+- **Judgment / Ratio:** Held that (1) the **Preamble is NOT part of the Constitution** (later overruled in *Kesavananda*), and (2) **Article 3 covers only internal reorganization**; ceding sovereign Indian territory to a foreign nation requires a **constitutional amendment under Article 368** (prompting the **9th Amendment Act, 1960**, and later the **100th Amendment Act, 2015** for Bangladesh enclaves).
+- **Exam Relevance:** Directly tested on Art. 3 vs Art. 368 and the Preamble's evolving legal status.
+
+### B. *Kesavananda Bharati v. State of Kerala* (1973) & *S.R. Bommai* (1994) / *LIC of India* (1995)
+- **Facts:** Challenge to Kerala Land Reforms Acts and the 24th, 25th, and 29th Constitutional Amendments; Petitioners relied partly on the Preamble's foundational vision.
+- **Legal Issue:** Does the Preamble form an enforceable, integral part of the Constitution, and can it be amended?
+- **Judgment / Ratio:** A 13-judge bench overruled *Berubari*, holding the **Preamble IS an integral part of the Constitution** and may be amended under Article 368 **without destroying Basic Structure**. *S.R. Bommai (1994)* reaffirmed **Secularism** and **Federalism** as Preamble-anchored Basic Structure features; *LIC of India (1995)* reiterated the Preamble's integral status.
+- **Exam Relevance:** Clarifies why the 42nd Amendment (1976) could validly insert *Socialist, Secular, Integrity* without breaching Basic Structure.
+
+### C. *In re: Section 6A of the Citizenship Act, 1955* (2024 Constitution Bench)
+- **Facts:** Constitutional challenge to Section 6A (inserted via the 1985 Assam Accord), granting special cut-off rules (1 Jan 1966 / 25 March 1971) for migrants entering Assam.
+- **Legal Issue:** Did Parliament have competence under **Article 11** and **Article 246** to craft state-specific citizenship provisions without violating Articles 14 or 29?
+- **Judgment / Ratio:** A 5-judge Constitution Bench (4:1 majority, Oct 2024) **upheld Section 6A**, holding Parliament possesses broad legislative power under Article 11 to design historically tailored citizenship remedies.
+- **Exam Relevance:** Links **Article 11**, **Article 355**, and statutory evolution of the Citizenship Act, 1955.
+
+> **Admin Review Note:** Recent Citizenship (Amendment) Rules, 2024 notifications under CAA 2019 and pending petitions before the Supreme Court regarding Section 6A follow-up directions/CAA validity should be verified by faculty against current Supreme Court orders before citing final outcome dates.
+
+## 3. Key Terms & Concise Revision Summary
+- **Popular Sovereignty:** Authority derived from *"We, the People of India"*.
+- **Indestructible Union of Destructible States:** Centre cannot be broken apart by secession; Parliament can alter state boundaries under Art. 3.
+- **Quick Revision:** **42nd Amendment (1976)** = only Preamble amendment; **Art. 2** = new external territory; **Art. 3** = internal state carving; **Art. 9** = loss on foreign citizenship; **Art. 11** = Parliament's plenary citizenship power.`,
+    },
     mcqs: [
       {
         stem: 'Which three words were inserted into the Preamble of the Indian Constitution by the 42nd Constitutional Amendment Act, 1976?',
@@ -433,6 +476,45 @@ Indian constitutional amending procedure (Part XX, **Article 368**, inspired by 
 - **No Joint Sitting** is permitted for an Article 368 Constitutional Amendment Bill.
 - **24th Amendment (1971)** made Presidential assent obligatory on Constitutional Amendment Bills.
 - **24 April 1973 (*Kesavananda Bharati*)** is the watershed date for both the **Basic Structure Doctrine** and **9th Schedule scrutiny (*I.R. Coelho, 2007*)**.`,
+    supplement: {
+      title: 'Constitutional Clauses, Landmark SC Cases & Revision Tables — Article 368 & Basic Structure',
+      materialType: 'reference',
+      estimatedMinutes: 25,
+      contentMarkdown: `# Supplement: Constitutional Amendment (Article 368) & Basic Structure Jurisprudence
+
+## 1. Article 368 Clauses & Key Constitutional Amendments
+| Provision / Amendment | Legal Scope & Mechanism |
+|---|---|
+| **Art. 368(1)** | Constituent power of Parliament to amend by addition, variation, or repeal (inserted explicitly by **24th Amendment, 1971**) |
+| **Art. 368(2)** | Special majority (>50% total strength + >=2/3rds present & voting in each House separately); President **"shall give his assent"** |
+| **Art. 368(2) Proviso** | Requires ratification by **at least half the States** (simple majority) for federal articles (Arts. 54, 55, 73, 162, 241, 279A, SC/HC chapters, 7th Schedule lists, 4th Schedule, and Art. 368 itself) |
+| **Art. 368(3)** | **Article 13 does NOT apply** to Art. 368 amendments (added by 24th Amendment, 1971) |
+| **Art. 368(4) & (5)** | Added by 42nd Amendment (1976) claiming unlimited power and barring judicial review — **STRUCK DOWN in *Minerva Mills* (1980)** |
+
+## 2. Landmark Supreme Court Cases (Facts, Issue, Ratio & Exam Relevance)
+### A. *Shankari Prasad Singh Deo v. Union of India* (1951) & *Golaknath v. State of Punjab* (1967)
+- **Facts:** Landowners challenged the **1st Amendment (1951)** (adding Arts. 31A/31B & Ninth Schedule) and **17th Amendment (1964)** for curtailing property rights under Part III.
+- **Legal Issue:** Is a Constitutional Amendment passed under Article 368 included within the term **"law"** under **Article 13(2)**?
+- **Judgment / Ratio:** *Shankari Prasad* (5:0) distinguished constituent power (Art. 368) from ordinary legislative law (Art. 13), upholding FR amendability. In **Golaknath (1967)** (11-judge bench, 6:5), Subba Rao CJ reversed that view, applying **prospective overruling** to save past amendments while barring future Parliament from abridging Part III.
+- **Exam Relevance:** Explains the direct constitutional trigger behind the **24th Constitutional Amendment Act, 1971**.
+
+### B. *Kesavananda Bharati Sripadagalvaru v. State of Kerala* (1973)
+- **Facts:** Swami Kesavananda Bharati challenged Kerala's land reform takeover of Edneer Mutt property and the validity of the **24th, 25th, and 29th Amendments**.
+- **Legal Issue:** Whether Parliament's amending power under Article 368 is unlimited or subject to implied substantive limits.
+- **Judgment / Ratio:** A 13-judge bench (7:6 majority, delivered **24 April 1973**) overruled *Golaknath* and upheld the 24th Amendment, ruling Parliament can amend *any* provision including Fundamental Rights—**but cannot abrogate or destroy the "Basic Structure" (identity) of the Constitution**.
+- **Exam Relevance:** Foundational pillar of Indian constitutionalism: Supremacy of Constitution, Secularism, Federalism, Separation of Powers, Judicial Review, Democratic Republic.
+
+### C. *Minerva Mills Ltd. v. Union of India* (1980) & *I.R. Coelho v. State of Tamil Nadu* (2007)
+- **Facts:** Sick textile mill nationalization challenge targeting the **42nd Amendment** (Art. 368(4)-(5) & expanded Art. 31C); later *I.R. Coelho* examined unchecked insertions into the **Ninth Schedule**.
+- **Legal Issue:** Can Parliament strip courts of Judicial Review over amendments or shield post-1973 Ninth Schedule statutes completely?
+- **Judgment / Ratio:** *Minerva Mills* invalidated Art. 368(4)-(5) and restored the **FR–DPSP balance**; **I.R. Coelho (2007)** (9-judge bench) held that all laws placed in the **Ninth Schedule after 24 April 1973** must satisfy the **Golden Triangle (Arts. 14, 19, 21)** and **Basic Structure** test.
+- **Exam Relevance:** Connects Art. 31B/9th Schedule directly with **24 April 1973** cut-off questions.
+
+## 3. Key Terms & Concise Revision Summary
+- **Constituent Power vs Legislative Power:** Amending the Constitution vs enacting ordinary statutes.
+- **Doctrine of Prospective Overruling:** Applied in *Golaknath (1967)* so past land-reform amendments remained intact.
+- **Quick Revision:** **No Joint Sitting (Art. 108)** for Art. 368 Bills · **24th Amendment (1971)** compels Presidential assent · **24 April 1973** = Basic Structure & 9th Schedule review cut-off.`,
+    },
     mcqs: [
       {
         stem: 'Which procedural rule applies strictly to a Constitutional Amendment Bill introduced under Article 368 of the Constitution?',
@@ -635,6 +717,64 @@ Inspired by the US Bill of Rights, Part III ("Magna Carta of India") guarantees 
 - **Citizens-only FRs:** Articles **15, 16, 19, 29, 30**; available to **all persons (including foreigners)**: **14, 20, 21, 21A, 22, 23, 24, 25–28**.
 - **Never suspended even during National Emergency (44th Amendment, 1978):** **Articles 20 and 21**.
 - **Article 19(1)(f)** moved to **Article 300A** (legal right) by the **44th Amendment, 1978**.`,
+    supplement: {
+      title: 'Constitutional Articles, Clauses, Amendments & Landmark SC Cases — Articles 12 to 22',
+      materialType: 'reference',
+      estimatedMinutes: 35,
+      contentMarkdown: `# Supplement: Fundamental Rights (Articles 12–22) — Articles, Clauses & Landmark SC Cases
+
+## 1. Detailed Article & Clause Reference (Articles 12–22)
+| Article | Key Clauses & Textual Scope | Key Amendments |
+|---|---|---|
+| **Art. 12** | Definition of **"State"**: Union/State Govts & Legislatures, local authorities, and **"other authorities"** (*Ajay Hasia, 1981* instrumentality test) | Original |
+| **Art. 13(1)–(4)** | **13(1):** Pre-1950 inconsistent laws void (*Eclipse*); **13(2):** Post-1950 inconsistent laws void (*ab initio* / *Severability*); **13(3):** Defines "law"; **13(4):** Exempts Art. 368 | **24th Am. (1971)** added 13(4) |
+| **Art. 14** | Equality before law + Equal protection of the laws (all persons) | Original |
+| **Art. 15(1)–(6)** | Non-discrimination on 5 grounds (*only* religion, race, caste, sex, place of birth); **15(3)** women/children; **15(4)** SEBC/SC/ST; **15(5)** private unaided edu. insts (except minority); **15(6)** EWS 10% | **1st (1951)**, **93rd (2005)**, **103rd (2019)** |
+| **Art. 16(1)–(6)** | Public employment equality; **16(3)** Parliament residence rule; **16(4)** backward class quota; **16(4A)** SC/ST promotion + consequential seniority; **16(4B)** backlog vacancies; **16(6)** EWS 10% | **77th (1995)**, **81st (2000)**, **85th (2001)**, **103rd (2019)** |
+| **Art. 17 & 18** | **Art. 17:** Abolition of Untouchability (offence under *PCR Act 1955* & *SC/ST Act 1989*); **Art. 18(1)–(4):** Abolition of titles except military/academic | Original |
+| **Art. 19(1)(a)–(g) & (2)–(6)** | 6 Citizen Freedoms + reasonable restrictions (**19(2):** 8 grounds for speech; **19(1)(c):** includes co-operatives; **19(1)(f)** property omitted) | **1st (1951)**, **16th (1963)**, **44th (1978)**, **97th (2011)** |
+| **Art. 20(1)–(3)** | **20(1):** No ex-post-facto criminal law; **20(2):** No double jeopardy (*autrefois convict*); **20(3):** No compelled self-incrimination | Protected vs Emergency (**44th Am., 1978**) |
+| **Art. 21 & 21A** | Life & personal liberty (*"procedure established by law"*); **Art. 21A:** Free & compulsory education (6–14 yrs) | **86th Am. (2002)** inserted Art. 21A |
+| **Art. 22(1)–(7)** | **22(1)–(2):** Punitive arrest rights (grounds, lawyer, **24-hr Magistrate production**); **22(4)–(7):** Preventive detention safeguards (max **3 months** without Advisory Board) | **44th Am. (1978)** proposed 2-month cap *(not yet notified)* |
+
+## 2. Landmark Supreme Court Cases (Facts, Issue, Ratio & Exam Relevance)
+### A. *E.P. Royappa v. State of Tamil Nadu* (1974)
+- **Facts:** Senior IAS officer E.P. Royappa challenged his frequent transfers and creation of a temporary post, alleging executive arbitrariness violating Article 14.
+- **Legal Issue:** Is Article 14 confined to the mechanical "reasonable classification" test?
+- **Judgment / Ratio:** Bhagwati J. formulated the **New Concept of Equality**: *"Equality and arbitrariness are sworn enemies"*—arbitrary state action inherently violates Article 14 even without class comparisons.
+- **Exam Relevance:** Cornerstone of administrative fairness and *Manifest Arbitrariness* (*Shayara Bano, 2017*).
+
+### B. *Indra Sawhney v. Union of India* (1992) & *M. Nagaraj* (2006) / *Janhit Abhiyan* (2022)
+- **Facts:** Challenge to the 1990 Mandal Commission Office Memorandum implementing 27% OBC reservation and 10% economic reservation in Central civil posts.
+- **Legal Issue:** Validity of caste-based backward class identification, 50% ceiling, Creamy Layer exclusion, and reservation in promotions under **Article 16(4)**.
+- **Judgment / Ratio:** A 9-judge bench (6:3) upheld **27% OBC reservation**, mandated **exclusion of Creamy Layer**, held reservations should not ordinarily exceed **50%**, and barred promotion quotas under Art. 16(4) (later reversed via **77th Amendment** adding Art. 16(4A), subject to *M. Nagaraj* quantifiable backwardness/inadequacy data and *Jarnail Singh, 2018* removing quantifiable backwardness data for SC/ST). Later, **Janhit Abhiyan (2022)** (3:2) upheld the **103rd Amendment (10% EWS)** under Arts. 15(6)/16(6).
+- **Exam Relevance:** High-frequency UKPSC Mains/Prelims topic linking **77th, 81st, 85th, 102nd, 103rd, and 105th Amendments**.
+
+### C. *Maneka Gandhi v. Union of India* (1978)
+- **Facts:** Passport impounded *"in public interest"* under Section 10(3)(c) of the Passports Act, 1967 without giving reasons or prior hearing.
+- **Legal Issue:** Whether "procedure established by law" in **Article 21** permits any arbitrary enacted procedure (as held in *A.K. Gopalan, 1950*) and whether Arts. 14, 19, and 21 operate in separate silos.
+- **Judgment / Ratio:** Overturned *A.K. Gopalan*'s silo approach, establishing the **Golden Triangle (Articles 14, 19, 21)**: any law restricting personal liberty must follow a **"fair, just, and reasonable"** procedure (*substantive due process*), and right to travel abroad falls within Art. 21.
+- **Exam Relevance:** Single most cited Article 21 case in Indian constitutional history.
+
+### D. *Justice K.S. Puttaswamy (Retd.) v. Union of India* (2017) & *Shreya Singhal* (2015) / *Navtej Singh Johar* (2018)
+- **Facts:** Challenge to mandatory Aadhaar biometrics triggered review of whether Privacy is a Fundamental Right (previously doubted in *M.P. Sharma, 1954* & *Kharak Singh, 1962*).
+- **Legal Issue:** Is the Right to Privacy protected under Part III, and what test governs state intrusion?
+- **Judgment / Ratio:** A unanimous 9-judge bench declared **Right to Privacy an intrinsic Fundamental Right under Article 21** (overruling *M.P. Sharma* & *Kharak Singh* and formally burying *ADM Jabalpur*), subject to a **three-fold test**: (1) Legality (valid law), (2) Legitimate State aim, and (3) **Proportionality**. Paired with *Shreya Singhal (2015)* (striking down Sec. 66A IT Act under Art. 19(1)(a) for vagueness/chilling effect) and *Navtej Singh Johar (2018)* (decriminalizing consensual adult same-sex acts under Arts. 14, 15, 19, 21).
+- **Exam Relevance:** Essential for Mains essays on digital privacy, proportionality, and constitutional morality.
+
+### E. *Selvi v. State of Karnataka* (2010) & *D.K. Basu v. State of West Bengal* (1997)
+- **Facts:** Challenge to involuntary narco-analysis, polygraph, and BEAP tests on accused persons; *D.K. Basu* addressed custodial torture/deaths.
+- **Legal Issue:** Do coerced neuro-scientific tests violate **Article 20(3)** and **Article 21**?
+- **Judgment / Ratio:** *Selvi* barred involuntary narco/polygraph tests as compelled self-incrimination under Art. 20(3) and mental privacy intrusion under Art. 21; *D.K. Basu* laid down 11 mandatory arrest/custody guidelines (memo of arrest, informing relative, medical check) operationalizing **Article 21 & 22**.
+
+> **Admin Review Note:** (1) Section 3 of the **44th Constitutional Amendment Act, 1978** reducing the preventive detention Advisory Board threshold under **Article 22(4)** from 3 months to 2 months has **not yet been brought into force by Central Government notification**—students must quote **"3 months (existing law)"** while noting the unnotified 44th Amendment change. (2) Regarding **sub-classification within SC/ST quotas** (*State of Punjab v. Davinder Singh, 2024*), verify current statutory/executive implementation guidelines before finalizing teaching notes.
+
+## 3. Key Terms & Concise Revision Summary
+- **Doctrine of Eclipse (Art. 13(1)):** Pre-constitutional inconsistent laws become dormant (not dead) and revive if FR restriction is removed.
+- **Doctrine of Severability:** Only the unconstitutional portion of a statute is struck down if separable.
+- **Golden Triangle:** Articles **14, 19, and 21** read harmoniously (*Maneka Gandhi, 1978*).
+- **Quick Revision:** Citizens only = **15, 16, 19, 29, 30** · Unsuspendable in Emergency = **20 & 21** · **103rd Amendment** = EWS (Arts. 15(6), 16(6)).`,
+    },
     mcqs: [
       {
         stem: 'Which set of Fundamental Rights under Part III is guaranteed exclusively to CITIZENS of India and NOT to foreigners?',
@@ -846,6 +986,63 @@ Dr. B.R. Ambedkar called **Article 32** the **"heart and soul of the Constitutio
 - **Article 23** = prohibition of human trafficking & *begar*; **Article 24** = ban on child labour < 14 years.
 - **Article 25** covers **all persons**, includes Sikh *Kirpan* under Explanation I, and limits rights by **public order, morality, health** (note: *sovereignty/integrity* is NOT a restriction listed in Art. 25, unlike Art. 19!).
 - **Habeas Corpus** works against both **public and private** illegal detention; **Prohibition/Certiorari** apply strictly to **judicial/quasi-judicial bodies**, not pure legislative or private acts.`,
+    supplement: {
+      title: 'Constitutional Articles, Clauses, Amendments & Landmark SC Cases — Articles 23 to 35',
+      materialType: 'reference',
+      estimatedMinutes: 30,
+      contentMarkdown: `# Supplement: Fundamental Rights (Articles 23–35) — Articles, Writs & Landmark SC Cases
+
+## 1. Detailed Article & Clause Reference (Articles 23–35)
+| Article | Clauses & Scope | Key Statutory / Amendment Link |
+|---|---|---|
+| **Art. 23(1)–(2)** | Bans human trafficking, *begar*, forced labour; **23(2)** allows non-discriminatory compulsory public service | *Bonded Labour System (Abolition) Act, 1976*; Art. 35 criminalizes violations |
+| **Art. 24** | Bars employment of children **below 14 years** in factories, mines, or hazardous work | *Child & Adolescent Labour (Prohibition & Regulation) Amendment Act, 2016* |
+| **Art. 25(1)–(2) + Expl. I & II** | Conscience + profess, practice, propagate (subject to **public order, morality, health** & Part III); **25(2)(a)** secular regulation; **25(2)(b)** social reform & throwing open Hindu public religious institutions (Expl. II covers Sikhs, Jains, Buddhists); Expl. I covers Sikh *Kirpan* | Original |
+| **Art. 26(a)–(d)** | Denominational rights: establish institutions, manage own affairs in matters of religion, own & administer property (subject to public order, morality, health) | Original |
+| **Art. 27 & Art. 28(1)–(3)** | **Art. 27:** No tax specifically promoting any religion; **Art. 28:** No religious instruction in wholly state-funded institutions; consent needed in state-recognized/aided schools | Original |
+| **Art. 29(1)–(2)** | **29(1):** Any section of citizens conserving distinct language, script, culture; **29(2):** Non-denial of admission to state-maintained/aided institutions on religion, race, caste, language | **1st Amendment (1951)** clarified Art. 15(4) exception |
+| **Art. 30(1), (1A), (2)** | Minority educational institution rights; **30(1A)** fair compensation on acquisition; **30(2)** non-discriminatory state grant-in-aid | **44th Am. (1978)** added Art. 30(1A) |
+| **Art. 31A, 31B, 31C** | Agrarian reform shield (31A), Ninth Schedule shield (31B), and Art. 39(b)/(c) DPSP shield (31C) | **1st (1951)**, **25th (1971)**, **42nd (1976)** |
+| **Art. 32(1)–(4)** | Right to move SC for FR enforcement; **32(2)** 5 writs; **32(3)** Parliament may empower other courts; **32(4)** cannot be suspended except via Constitution (Art. 359) | Basic Structure (*L. Chandra Kumar, 1997*) |
+| **Art. 33–35** | **33:** Armed forces/police FR restrictions; **34:** Martial law indemnity; **35:** Exclusive Parliamentary power for FR-linked criminal laws & Art. 16(3) | **50th Am. (1984)** expanded Art. 33 |
+
+## 2. Landmark Supreme Court Cases (Facts, Issue, Ratio & Exam Relevance)
+### A. *People's Union for Democratic Rights (PUDR) v. Union of India* (1982 — Asiad Workers Case)
+- **Facts:** Construction workers hired by private contractors for the 1982 Asian Games in Delhi were paid less than statutory minimum wages.
+- **Legal Issue:** Does paying less than minimum wage due to economic compulsion fall within "forced labour" under **Article 23**?
+- **Judgment / Ratio:** Held that **"force"** in Article 23 includes **economic necessity** compelling a worker to accept sub-minimum wages—therefore paying below minimum wage violates Article 23 (and is horizontally enforceable even against private contractors).
+- **Exam Relevance:** Classic link between **Article 23**, horizontal rights, and PIL *locus standi*.
+
+### B. *Commissioner, Hindu Religious Endowments v. Sri Lakshmindra Thirtha Swamiar of Sri Shirur Mutt* (1954)
+- **Facts:** Challenge to Madras Hindu Religious and Charitable Endowments Act regulating matha properties and levying an annual contribution fee on religious institutions.
+- **Legal Issue:** What constitutes "matters of religion" under **Articles 25–26**, and is a regulatory contribution a prohibited "tax" under **Article 27**?
+- **Judgment / Ratio:** Laid down the **Essential Religious Practices (ERP) Doctrine** (religion covers rituals/practices regarded by the faith itself as integral, while secular administration is regulable) and distinguished a **secular service "fee"** (valid under Art. 27) from a religious **"tax"** (barred).
+- **Exam Relevance:** Foundation for all modern Art. 25–26 cases, including *Sabarimala (2018)* and temple trust governance.
+
+### C. *Rev. Stainislaus v. State of Madhya Pradesh* (1977)
+- **Facts:** Challenge to MP and Odisha anti-conversion laws prohibiting forcible/fraudulent conversions.
+- **Legal Issue:** Does the right to **"propagate"** religion under **Article 25(1)** include a right to convert another person?
+- **Judgment / Ratio:** Upheld the statutes, holding **"propagate"** means transmitting or expounding one's religious tenets—not a fundamental right to convert another person by force, fraud, or inducement, which affects **public order** and equal freedom of conscience.
+- **Exam Relevance:** Key precedent for state anti-conversion/freedom-of-religion Acts (including Uttarakhand's Freedom of Religion Act).
+
+### D. *T.M.A. Pai Foundation v. State of Karnataka* (2002)
+- **Facts:** 11-judge bench examining state regulation, admissions, and fee structures in aided and unaided minority and non-minority professional institutions.
+- **Legal Issue:** How is "minority" determined under **Article 30**, and is Article 30(1) absolute against state academic standards?
+- **Judgment / Ratio:** Held that (1) **the State is the unit** for determining both linguistic and religious minorities under Art. 30, and (2) while unaided minority institutions have broad autonomy, **Article 30 does not bar reasonable regulations** ensuring merit, transparency, and prevention of maladministration/profiteering.
+- **Exam Relevance:** Essential for Art. 29–30 distinctions and *P.A. Inamdar (2005)* follow-up.
+
+### E. *L. Chandra Kumar v. Union of India* (1997) & *ADM Jabalpur* (1976, overruled)
+- **Facts:** Statutory exclusion of High Court Arts. 226/227 jurisdiction over Administrative Tribunals created under Articles 323A/323B.
+- **Legal Issue:** Can constitutional amendments eliminate Supreme Court (Art. 32) or High Court (Art. 226) judicial review?
+- **Judgment / Ratio:** **Articles 32 and 226 form part of the inviolable Basic Structure**; tribunals may act as courts of first instance but cannot displace High Court Division Bench scrutiny. *(Note: ADM Jabalpur's 1976 Emergency suspension ruling was expressly overruled in Puttaswamy, 2017.)*
+
+> **Admin Review Note:** The scope of the **Essential Religious Practices (ERP)** doctrine and review petitions arising from *Indian Young Lawyers Association v. State of Kerala (Sabarimala, 2018)* remain pending before a **9-judge Supreme Court bench** (*Kantaru Rajeevaru*); flag pending status when teaching Art. 25–26 boundaries.
+
+## 3. Key Terms & Concise Revision Summary
+- **Horizontal Rights:** FRs enforceable even against private individuals (**Arts. 15(2), 17, 23, 24**, and *Habeas Corpus* writ).
+- **Art. 32 vs Art. 226:** Art. 32 is itself a Fundamental Right (SC only for FRs, cannot refuse); Art. 226 covers FRs + ordinary legal rights (HC, discretionary).
+- **Quick Revision:** **Mandamus** does not run against President/Governor · **Prohibition** = preventive during trial; **Certiorari** = curative quashing order · **Quo-Warranto** = public office validity.`,
+    },
     mcqs: [
       {
         stem: 'Which Fundamental Right explicitly prohibits "traffic in human beings, begar, and other similar forms of forced labour", and was interpreted in the 1982 PUDR case to cover payment below statutory minimum wages?',

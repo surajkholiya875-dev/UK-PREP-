@@ -717,20 +717,29 @@ With steep mountain river gradients and perennial snowmelt, Uttarakhand holds ~2
     assessmentDurationMinutes: 15,
     contentMarkdown: `# Irrigation Canals, Springs & Drinking Water Schemes
 
-## 1. Irrigation & Canal Networks
-- **Plains vs Hills:** Plains (Haridwar, US Nagar) have ~80%+ irrigation; hills <20%, mainly valley *Talaon* fields fed by gravity **Guls/Kuhls**.
-- **Upper Ganga Canal (1854):** Built by **Sir Proby Cautley** from **Bhimgoda Barrage (Haridwar)** across the **Solani Aqueduct (Roorkee)**.
-- **Sharda Canal (1928):** Starts at **Banbasa** on the Kali/Sharda river.
-- **Rajpur Canal (Dehradun):** Historic canal supplying Doon Valley.
+## 1. Contrasting Irrigation Geography: Plains vs Hills
+Uttarakhand exhibits a sharp physiographic divide in irrigation infrastructure:
+- **Plains (Udham Singh Nagar & Haridwar):** Account for the overwhelming share of irrigated area (~80%+ net sown area irrigated) due to flat alluvial gradients, dense **canal networks**, and shallow **tube wells** in the **Terai** artesian belt.
+- **Hill Districts (9 completely mountainous districts + hill blocks):** Less than **20%** of cultivated land is irrigated, restricted to fertile valley-bottom alluvial terraces (**Talaon** land), whereas terraced upland slopes (**Upraon** and intermittent **Ijran/Katil** slopes) remain largely rain-fed.
 
-## 2. Mountain Springs & State Initiatives
-- **Naula:** Stone-walled subsurface seepage catchment tank; **Dhara:** Channeled natural spring spout.
-- **SARRA (Spring and River Rejuvenation Authority):** Uttarakhand's nodal authority for springshed mapping and non-glacial river revival (Kosi, Gaula, Song, Rispana).
-- **Urban & Rural Water Security:** Jal Jeevan Mission, **Surya Dhar Lake** (Doiwala), **Song Dam**, and **Jamrani Dam**.
+## 2. Major Historic & Modern Canal Systems
+| Canal / Project | Origin / Headworks | Engineer / Era | Command & Significance |
+|---|---|---|---|
+| **Upper Ganga Canal** | **Bhimgoda Barrage, Haridwar** | **Sir Proby Cautley (1842–1854)** | Landmark masonry **Solani Aqueduct at Roorkee**; irrigates Haridwar and western Doab; triggered founding of **Thomason College of Civil Engineering (now IIT Roorkee)** |
+| **Eastern Ganga Canal** | **Bhimgoda Barrage (left bank), Haridwar** | Post-Independence | Irrigates Haridwar–Bijnor–Moradabad Kharif belt |
+| **Sharda Canal** | **Banbasa Barrage (Champawat/US Nagar border)** | **1928** | Taps **Kali/Sharda river**; irrigates Udham Singh Nagar and Terai plains |
+| **Rajpur & Katapathar Canals** | Dehradun valley streams / Yamuna | Historic Garhwal era (*Rani Karnavati*) & colonial upgrades | Traditional Doon Valley irrigation & Dehradun urban feeder |
 
-## 3. Key Revision Takeaways
-- **Upper Ganga Canal** = Haridwar (Cautley); **Sharda Canal** = Banbasa.
-- **Guls** = hill irrigation channels; **Naula/Dhara** = hill springs; **SARRA** = spring/river revival authority.
+## 3. Traditional Hill Water Architecture & Springshed Revival
+- **Guls / Kuhls:** Community-managed contour gravity channels diverting perennial hill streams (*Gadheras*) onto valley *Talaon* rice fields.
+- **Naula vs Dhara:** A **Naula** is a stepped, roofed stone catchment chamber tapping slow subsurface seepage; a **Dhara** is a channeled natural spring spout issuing at slope outcrops (like *Surya Kund* / temple spouts).
+- **SARRA (Spring and River Rejuvenation Authority):** Constituted by the Uttarakhand Government to map drying mountain springsheds, recharge upslope fracture zones (contour trenches, check dams, oak plantation), and revive non-glacial rivers (**Kosi, Gaula, Song, Rispana**).
+- **Flagship Drinking Water & Storage Projects:** **Jal Jeevan Mission (Har Ghar Jal)** multi-village hill pumping/gravity schemes, **Surya Dhar Lake** (Doiwala, Dehradun), **Song Dam Project** (Dehradun drinking water), **Jamrani Dam** (Haldwani), and **Lakhwar–Vyasi** multi-state Yamuna storage.
+
+## 4. Key Revision Takeaways
+- **Upper Ganga Canal (1854)** = **Haridwar (Bhimgoda)** by **Sir Proby Cautley** across **Solani Aqueduct (Roorkee)**; **Sharda Canal (1928)** = **Banbasa**.
+- **Talaon** (irrigated valley terraces via **Guls**) vs **Upraon** (rain-fed hill slopes).
+- **Naula** (stone seepage tank) & **Dhara** (spring spout) are revived via **SARRA** springshed management.
 `,
     mcqs: [
       {
@@ -893,20 +902,29 @@ With steep mountain river gradients and perennial snowmelt, Uttarakhand holds ~2
     assessmentDurationMinutes: 15,
     contentMarkdown: `# Demographic Profile of Uttarakhand (Census 2011)
 
-## 1. Official State Summary (Census 2011)
-| Metric | Value | Highest District | Lowest District |
-|---|---|---|---|
-| **Population** | **10,086,292** (~1.01 Cr) | Haridwar | Rudraprayag |
-| **Decadal Growth** | **18.81%** | Udham Singh Nagar (+33.45%) | Pauri (-1.41%), Almora (-1.28%) |
-| **Density** | **189 / km²** | Haridwar (801) | Uttarkashi (41) |
-| **Sex Ratio** | **963** | Almora (1,139) | Haridwar (880) |
-| **Child Sex Ratio (0–6)** | **890** | Almora (922) | Pithoragarh (816) |
-| **Total Literacy** | **78.82%** | Dehradun (84.25%) | Udham Singh Nagar (73.10%) |
-| **Male / Female Literacy** | **87.40% / 70.01%** | Rudraprayag (M) / Dehradun (F) | Haridwar (M) / Uttarkashi (F) |
-| **Urban Share** | **30.23%** | Dehradun (55.52%) | Bageshwar (3.49%) |
+## 1. Official State Summary & District Extremes (Census 2011)
+According to the **2011 Census of India** (Uttarakhand's second decennial census after statehood in 2000), the State's total population stood at **10,086,292** (~0.83% of India's population, ranking 20th among States/UTs):
 
-## 2. Key Revision Takeaways
-- **Pauri (-1.41%) & Almora (-1.28%)** recorded negative growth; **Almora** leads sex ratios; **Haridwar** leads population & density.
+| Demographic Indicator | Uttarakhand State (2011) | Highest District | Lowest District |
+|---|---|---|---|
+| **Total Population** | **10,086,292** (M: 5,137,773; F: 4,948,519) | **Haridwar** (18,90,422) | **Rudraprayag** (2,42,285) |
+| **Decadal Growth (2001–11)** | **18.81%** (down from 20.41% in 1991–2001) | **Udham Singh Nagar** (+33.45%) | **Pauri Garhwal (-1.41%)** & **Almora (-1.28%)** |
+| **Population Density** | **189 / km²** (up from 159 in 2001) | **Haridwar** (801 / km²) | **Uttarkashi** (41 / km²) |
+| **Overall Sex Ratio** | **963** females / 1,000 males | **Almora** (1,139) | **Haridwar** (880) |
+| **Child Sex Ratio (0–6 yrs)** | **890** girls / 1,000 boys | **Almora** (922) | **Pithoragarh** (816) |
+| **Total Literacy Rate** | **78.82%** (Rank 17th nationally) | **Dehradun** (84.25%) | **Udham Singh Nagar** (73.10%) |
+| **Male / Female Literacy** | **87.40% / 70.01%** (17.39% gap) | **Rudraprayag** (M: 93.90%) / **Dehradun** (F: 78.54%) | **Haridwar** (M: 81.04%) / **Uttarkashi** (F: 62.35%) |
+| **Urbanization Share** | **30.23%** (Rural: **69.77%**) | **Dehradun** (55.52%) | **Bageshwar** (3.49%) |
+
+## 2. Social Composition & Hill Migration Dynamics
+- **Scheduled Castes (SC):** **18.76%** of state population (highest numerical population in **Haridwar**; highest percentage share in **Bageshwar [27.73%]**; lowest percentage in **Dehradun** / Champawat comparative ranges—Bageshwar & Pithoragarh lead hill SC proportion).
+- **Scheduled Tribes (ST):** **2.89%** (~2.92 lakh; highest in **Udham Singh Nagar** [Tharu, Buksa], followed by **Dehradun** [Jaunsari] and **Pithoragarh** [Bhotiya/Raji]; lowest ST share in **Rudraprayag**).
+- **Plains Concentration & "Ghost Villages":** Just **three plains/foothill districts (Haridwar, Dehradun, Udham Singh Nagar)** hold over half of Uttarakhand's population due to industrial/SIDCUL jobs and better infrastructure, whereas hill out-migration produced **negative decadal growth in Pauri (-1.41%) and Almora (-1.28%)** and male out-migration elevated **hill sex ratios (>1,000 in 7 hill districts)** led by **Almora (1,139)**, **Rudraprayag (1,114)**, and **Pauri (1,103)**.
+
+## 3. Key Revision Takeaways
+- **10,086,292 population · 189/km² density · 963 sex ratio · 890 child sex ratio · 78.82% literacy · 30.23% urban**.
+- **Negative decadal growth:** **Pauri Garhwal (-1.41%)** & **Almora (-1.28%)**; **Highest growth:** **Udham Singh Nagar (+33.45%)** & **Dehradun (+32.33%)**.
+- **Lowest density:** **Uttarkashi (41)** followed by **Chamoli (49)**; **Lowest child sex ratio:** **Pithoragarh (816)**.
 `,
     mcqs: [
       {

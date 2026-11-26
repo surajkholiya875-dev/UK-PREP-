@@ -222,7 +222,7 @@ service cloud.firestore {
 
     function isValidQuestion(data, questionId) {
       return data.keys().hasAll(['id', 'topicId', 'chapterId', 'subjectId', 'examinationId', 'questionType', 'stem', 'options', 'correctOptionIndex', 'difficulty', 'isPublished', 'createdBy', 'createdAt', 'updatedAt'])
-        && data.keys().hasOnly(['id', 'topicId', 'chapterId', 'subjectId', 'examinationId', 'questionType', 'stem', 'options', 'correctOptionIndex', 'explanation', 'difficulty', 'examName', 'examYear', 'isPublished', 'createdBy', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['id', 'topicId', 'chapterId', 'subjectId', 'examinationId', 'questionType', 'stem', 'options', 'correctOptionIndex', 'explanation', 'difficulty', 'examName', 'examYear', 'sourceReference', 'isVerified', 'isPublished', 'createdBy', 'createdAt', 'updatedAt'])
         && data.id == questionId
         && isValidId(data.id)
         && isValidId(data.topicId)
@@ -237,6 +237,8 @@ service cloud.firestore {
         && data.difficulty in ['foundation', 'standard', 'advanced']
         && (!('examName' in data) || isValidString(data.examName, 0, 120))
         && (!('examYear' in data) || isValidNumber(data.examYear, 1990, 2100))
+        && (!('sourceReference' in data) || isValidString(data.sourceReference, 0, 300))
+        && (!('isVerified' in data) || data.isVerified is bool)
         && data.isPublished is bool
         && isValidId(data.createdBy)
         && data.createdAt is timestamp
@@ -652,7 +654,7 @@ service cloud.firestore {
         && incoming().createdBy == existing().createdBy
         && incoming().createdAt == existing().createdAt
         && incoming().updatedAt == request.time
-        && incoming().diff(existing()).affectedKeys().hasOnly(['topicId', 'chapterId', 'subjectId', 'examinationId', 'questionType', 'stem', 'options', 'correctOptionIndex', 'explanation', 'difficulty', 'examName', 'examYear', 'isPublished', 'updatedAt']);
+        && incoming().diff(existing()).affectedKeys().hasOnly(['topicId', 'chapterId', 'subjectId', 'examinationId', 'questionType', 'stem', 'options', 'correctOptionIndex', 'explanation', 'difficulty', 'examName', 'examYear', 'sourceReference', 'isVerified', 'isPublished', 'updatedAt']);
       allow delete: if isValidId(questionId) && isAdmin();
     }
 

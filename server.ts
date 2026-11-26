@@ -178,16 +178,26 @@ async function createServer() {
       }
 
       const snapshot = requestedTopicId
-        ? await db.collection('questions').where('topicId', '==', requestedTopicId).limit(500).get()
+        ? await db.collection('questions').where('topicId', '==', requestedTopicId).limit(1000).get()
         : await db.collection('questions').where('isPublished', '==', true).limit(500).get();
       const questions = snapshot.docs
         .map((document) => ({ id: document.id, ...document.data() }))
-        .filter((question: any) =>
-          question.isPublished === true &&
-          (!requestedTopicId || question.topicId === requestedTopicId) &&
-          (!requestedType || question.questionType === requestedType)
-        )
-        .slice(0, 200)
+        .filter((question: any) => {
+          if (question.isPublished !== true) return false;
+          if (requestedTopicId && question.topicId !== requestedTopicId) return false;
+          if (requestedType && question.questionType !== requestedType) return false;
+          if (question.questionType === 'pyq') {
+            const hasVerifiedExam =
+              typeof question.examName === 'string' &&
+              question.examName.trim().length > 0 &&
+              Number.isInteger(question.examYear);
+            if (question.isVerified === false || !hasVerifiedExam) {
+              return false;
+            }
+          }
+          return true;
+        })
+        .slice(0, 500)
         .map((question: any) => ({
           id: question.id,
           topicId: question.topicId,
@@ -202,6 +212,10 @@ async function createServer() {
             ? { examName: question.examName.trim() }
             : {}),
           ...(Number.isInteger(question.examYear) ? { examYear: question.examYear } : {}),
+          ...(typeof question.sourceReference === 'string' && question.sourceReference.trim()
+            ? { sourceReference: question.sourceReference.trim() }
+            : {}),
+          ...(typeof question.isVerified === 'boolean' ? { isVerified: question.isVerified } : {}),
         }));
 
       return res.status(200).json({ questions });
@@ -315,7 +329,18 @@ async function createServer() {
         incorrectCount: 0, unansweredCount: ids.length, durationSeconds: 0, durationLimitSeconds: durationMinutes * 60,
         startedAt, updatedAt: startedAt,
       });
-      const questions = questionDocs.map((q: any, index: number) => ({ id: ids[index], stem: q.stem, options: q.options }));
+      const questions = questionDocs.map((q: any, index: number) => ({
+        id: ids[index],
+        stem: q.stem,
+        options: q.options,
+        questionType: typeof q.questionType === 'string' ? q.questionType : 'mcq',
+        ...(q.questionType === 'pyq' && typeof q.examName === 'string' && q.examName.trim()
+          ? { examName: q.examName.trim() }
+          : {}),
+        ...(q.questionType === 'pyq' && Number.isInteger(q.examYear)
+          ? { examYear: q.examYear }
+          : {}),
+      }));
       return res.status(200).json({ attemptId, startedAt: Date.now(), test: { id: testId, topicId, testType: test.testType, title: test.title, durationMinutes, totalMarks, negativeMarking, questionCount: ids.length }, questions });
     } catch (error) {
       console.error('Unable to start test:', error);

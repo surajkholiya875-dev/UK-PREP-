@@ -230,6 +230,8 @@ export interface Question {
   difficulty: QuestionDifficulty;
   examName?: string;
   examYear?: number;
+  sourceReference?: string;
+  isVerified?: boolean;
   isPublished: boolean;
   createdBy: string;
   createdAt: unknown;

@@ -34,6 +34,8 @@ export interface BulkTopicMcqInput {
 export interface BulkTopicPyqInput extends BulkTopicMcqInput {
   examName: string;
   examYear: number;
+  sourceReference?: string;
+  isVerified?: boolean;
 }
 
 export interface BulkTopicTestInput {
@@ -389,7 +391,11 @@ export function validateAndBuildBulkTopicImport(params: {
             difficulty: diff,
             examName: clampString(pyq.examName, 120),
             examYear: pyq.examYear,
-            isPublished: true,
+            ...(typeof pyq.sourceReference === 'string' && pyq.sourceReference.trim()
+              ? { sourceReference: clampString(pyq.sourceReference, 300) }
+              : {}),
+            isVerified: pyq.isVerified !== false,
+            isPublished: pyq.isVerified !== false,
             createdBy: adminUid,
           },
         });

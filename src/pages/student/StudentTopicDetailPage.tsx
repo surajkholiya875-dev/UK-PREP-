@@ -37,6 +37,8 @@ interface PracticeQuestion {
   difficulty: string;
   examName?: string;
   examYear?: number;
+  sourceReference?: string;
+  isVerified?: boolean;
 }
 
 interface AnswerFeedback {
@@ -50,6 +52,9 @@ interface SafeAssessmentQuestion {
   id: string;
   stem: string;
   options: string[];
+  questionType?: 'mcq' | 'pyq' | 'current_affairs';
+  examName?: string;
+  examYear?: number;
 }
 
 interface SubmittedAssessmentResult {
@@ -69,7 +74,7 @@ const MATERIAL_LABELS: Record<string, string> = {
   summary: 'Revision Sheet',
   pyq_analysis: 'PYQ Analysis',
   current_affairs: 'Current Affairs',
-  reference: 'Reference Material',
+  reference: 'Supplement & Legal Reference',
 };
 
 const MATERIAL_ORDER: Record<string, number> = {
@@ -81,7 +86,7 @@ const MATERIAL_ORDER: Record<string, number> = {
 };
 
 function stripEditorialFooter(content: string): string {
-  const footerMarkers = [/^##\s+Sources\s*$/im, /^##\s+Legal accuracy note\s*$/im];
+  const footerMarkers = [/^##\s+Legal accuracy note\s*$/im];
   const positions = footerMarkers
     .map((marker) => content.search(marker))
     .filter((position) => position >= 0);
@@ -238,7 +243,7 @@ export function StudentTopicDetailPage() {
   useEffect(() => {
     let cancelled = false;
     const loadQuestions = async () => {
-      if (!firebaseUser || !topic || (activeTab !== 'mcq' && activeTab !== 'pyq')) {
+      if (!firebaseUser || !topic) {
         setQuestions([]);
         setQuestionLoading(false);
         return;
@@ -250,7 +255,7 @@ export function StudentTopicDetailPage() {
       try {
         const token = await firebaseUser.getIdToken();
         const response = await fetch(
-          `/api/student/questions?topicId=${encodeURIComponent(topic.id)}&questionType=${activeTab}`,
+          `/api/student/questions?topicId=${encodeURIComponent(topic.id)}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         const payload = await response.json();
@@ -271,11 +276,15 @@ export function StudentTopicDetailPage() {
     return () => {
       cancelled = true;
     };
-  }, [firebaseUser?.uid, topic?.id, activeTab, questionReload]);
+  }, [firebaseUser?.uid, topic?.id, questionReload]);
 
-  const uniqueQuestions = useMemo(() => {
+  useEffect(() => {
+    setQuestionFilter('all');
+  }, [activeTab]);
+
+  const deduplicateQuestions = useCallback((list: PracticeQuestion[]) => {
     const seen = new Set<string>();
-    return questions.filter((question) => {
+    return list.filter((question) => {
       const normalize = (value: string) =>
         value
           .normalize('NFKC')
@@ -283,12 +292,36 @@ export function StudentTopicDetailPage() {
           .replace(/[’‘]/g, "'")
           .replace(/[^\p{L}\p{N}]+/gu, ' ')
           .trim();
-      const key = `${normalize(question.stem)}|${question.options.map(normalize).sort().join('|')}`;
+      const key = `${question.questionType}|${normalize(question.stem)}|${question.options.map(normalize).sort().join('|')}`;
       if (seen.has(key)) return false;
       seen.add(key);
       return true;
     });
-  }, [questions]);
+  }, []);
+
+  const mcqQuestions = useMemo(
+    () => deduplicateQuestions(questions.filter((q) => q.questionType === 'mcq' || q.questionType === 'current_affairs')),
+    [questions, deduplicateQuestions]
+  );
+
+  const pyqQuestions = useMemo(
+    () =>
+      deduplicateQuestions(
+        questions.filter(
+          (q) =>
+            q.questionType === 'pyq' &&
+            q.isVerified !== false &&
+            Boolean(q.examName?.trim()) &&
+            Number.isInteger(q.examYear)
+        )
+      ),
+    [questions, deduplicateQuestions]
+  );
+
+  const uniqueQuestions = useMemo(
+    () => (activeTab === 'pyq' ? pyqQuestions : mcqQuestions),
+    [activeTab, mcqQuestions, pyqQuestions]
+  );
 
   const practiceStats = useMemo(() => {
     let answered = 0;
@@ -557,7 +590,7 @@ export function StudentTopicDetailPage() {
               </div>
               <h1 className="mt-2 text-2xl sm:text-3xl font-bold text-ink">{topic.title}</h1>
               {topic.syllabusNotes && (
-                <p className="mt-3 max-w-3xl border-l-2 border-accent pl-4 text-sm leading-7 text-ink-muted">
+                <p className="mt-3 max-w-3xl rounded-lg border border-edge bg-subtle/60 px-4 py-3 text-sm leading-7 text-ink-muted">
                   {topic.syllabusNotes}
                 </p>
               )}
@@ -587,23 +620,30 @@ export function StudentTopicDetailPage() {
             <nav className="flex flex-wrap gap-2" aria-label="Topic sections">
               {(
                 [
-                  { id: 'content', label: `Study Material (${materials.length})` },
-                  { id: 'mcq', label: 'MCQs' },
-                  { id: 'pyq', label: 'PYQs' },
-                  { id: 'assessment', label: `Practice Assessment (${topicTests.length})` },
+                  { id: 'content', label: 'Study Material', count: materials.length },
+                  { id: 'mcq', label: 'MCQs', count: questionLoading ? null : mcqQuestions.length },
+                  { id: 'pyq', label: 'PYQs', count: questionLoading ? null : pyqQuestions.length },
+                  { id: 'assessment', label: 'Practice Assessments', count: topicTests.length },
                 ] as const
               ).map((tab) => (
                 <button
                   key={tab.id}
                   type="button"
                   onClick={() => setActiveTab(tab.id)}
-                  className={`rounded-full border px-4 py-2 text-xs sm:text-sm font-semibold transition-colors ${
+                  className={`inline-flex items-center gap-2 whitespace-nowrap shrink-0 rounded-lg border px-4 py-2 text-xs sm:text-sm font-semibold tabular-nums transition-colors ${
                     activeTab === tab.id
                       ? 'border-accent bg-accent text-accent-ink'
                       : 'border-edge bg-panel text-ink-muted hover:border-accent/60 hover:text-ink'
                   }`}
                 >
-                  {tab.label}
+                  <span>{tab.label}</span>
+                  <span
+                    className={`font-mono text-xs ${
+                      activeTab === tab.id ? 'text-accent-ink/90' : 'text-ink-faint'
+                    }`}
+                  >
+                    ({tab.count === null ? '…' : tab.count})
+                  </span>
                 </button>
               ))}
             </nav>
@@ -673,19 +713,19 @@ export function StudentTopicDetailPage() {
                 <EmptyState
                   title={
                     activeTab === 'mcq'
-                      ? 'No MCQs published for this topic yet'
-                      : 'Verified PYQs not added yet'
+                      ? 'Not published yet'
+                      : 'No verified PYQs available yet.'
                   }
                   description={
                     activeTab === 'mcq'
-                      ? 'Published practice MCQs assigned to this topic will appear here.'
-                      : 'Only previous-year questions whose exact question stem, exam name, and year are verified from official papers are published here.'
+                      ? 'Published practice MCQs linked to this topic will appear here once published.'
+                      : 'Only authentic previous-year questions verified with official exam name, year, and source reference are published here.'
                   }
                 />
               ) : (
                 <div className="space-y-4">
                   <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-edge bg-panel px-4 py-3 text-xs">
-                    <div className="flex flex-wrap items-center gap-3 font-mono text-ink-muted">
+                    <div className="flex flex-wrap items-center gap-3 font-mono tabular-nums text-ink-muted">
                       <span>Total: {uniqueQuestions.length}</span>
                       <span>Answered: {practiceStats.answered}</span>
                       <span className="text-emerald-600 dark:text-emerald-400">
@@ -736,10 +776,17 @@ export function StudentTopicDetailPage() {
                         key={question.id}
                         className="rounded-2xl border border-edge bg-panel p-5 space-y-4 shadow-sm"
                       >
-                        <div className="text-xs font-semibold text-accent-text">
-                          {activeTab === 'mcq' ? 'MCQ' : 'Verified PYQ'} {index + 1}
-                          {question.examName ? ` · ${question.examName}` : ''}
-                          {question.examYear ? ` (${question.examYear})` : ''} · {question.difficulty}
+                        <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-semibold text-accent-text">
+                          <span>
+                            {activeTab === 'mcq' ? 'Practice MCQ' : 'Verified PYQ'} {index + 1}
+                            {question.examName ? ` · ${question.examName}` : ''}
+                            {question.examYear ? ` (${question.examYear})` : ''} · {question.difficulty}
+                          </span>
+                          {activeTab === 'pyq' && question.sourceReference && (
+                            <span className="font-normal text-ink-faint">
+                              Source: {question.sourceReference}
+                            </span>
+                          )}
                         </div>
                         <h3 className="font-semibold leading-7 text-ink">{question.stem}</h3>
                         <div className="grid gap-2 sm:grid-cols-2">
@@ -876,7 +923,14 @@ export function StudentTopicDetailPage() {
                           key={q.id}
                           className="bg-panel border border-edge rounded-xl p-5 space-y-3 shadow-sm"
                         >
-                          <div className="text-xs font-mono text-ink-faint">Question {idx + 1}</div>
+                          <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-mono text-ink-faint">
+                            <span>Question {idx + 1}</span>
+                            <span className="font-sans font-semibold text-accent-text">
+                              {q.questionType === 'pyq'
+                                ? `Verified PYQ${q.examName ? ` · ${q.examName}` : ''}${q.examYear ? ` (${q.examYear})` : ''}`
+                                : 'Practice Question'}
+                            </span>
+                          </div>
                           <p className="text-sm sm:text-base font-medium text-ink">{q.stem}</p>
                           <div className="grid gap-2 sm:grid-cols-2">
                             {q.options.map((opt, optIdx) => {
@@ -908,11 +962,19 @@ export function StudentTopicDetailPage() {
                   </div>
                 ) : topicTests.length === 0 ? (
                   <EmptyState
-                    title="No practice assessment published for this topic yet"
-                    description="Topic-wise practice assessments with timed grading, explanations, and incorrect-answer review will appear here once published."
+                    title="Not published yet"
+                    description="Timed topic-wise practice assessments with instructions, scoring, and answer explanations will appear here once published."
                   />
                 ) : (
                   <div className="space-y-6">
+                    <div className="rounded-xl border border-edge bg-panel p-4 text-xs text-ink-muted space-y-1">
+                      <div className="font-semibold text-ink">
+                        Assessment Instructions &amp; Scoring Guide
+                      </div>
+                      <p>
+                        Practice assessments contain curated <strong>Practice Questions</strong> (distinct from Official Verified PYQs unless explicitly tagged). Each attempt is timed, auto-submits when time expires, applies the listed negative marking per incorrect choice, and unlocks a full answer key with explanations immediately upon submission.
+                      </p>
+                    </div>
                     <div className="grid gap-4 md:grid-cols-2">
                       {topicTests.map((testPaper) => (
                         <div
@@ -922,14 +984,16 @@ export function StudentTopicDetailPage() {
                           <div>
                             <div className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-accent-text">
                               <ClipboardCheck className="w-3.5 h-3.5" />
-                              <span>{testPaper.testType.replace('_', ' ')} Assessment</span>
+                              <span>Practice Assessment ({testPaper.testType.replace('_', ' ')})</span>
                             </div>
                             <h3 className="mt-1.5 text-base font-bold text-ink">{testPaper.title}</h3>
-                            <div className="mt-3 flex flex-wrap gap-3 text-xs font-mono text-ink-muted">
-                              <span>{testPaper.questionCount} Qs</span>
+                            <div className="mt-3 flex flex-wrap gap-3 text-xs font-mono tabular-nums text-ink-muted">
+                              <span>{testPaper.questionCount} Practice Qs</span>
                               <span>· {testPaper.totalMarks} Marks</span>
-                              <span>· {testPaper.durationMinutes} mins</span>
-                              <span>· -{testPaper.negativeMarking} neg</span>
+                              <span>· {testPaper.durationMinutes} mins limit</span>
+                              <span>
+                                · {testPaper.negativeMarking > 0 ? `-${testPaper.negativeMarking} negative/wrong` : 'No negative marking'}
+                              </span>
                             </div>
                           </div>
                           <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-edge">

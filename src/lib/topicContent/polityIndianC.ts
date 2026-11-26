@@ -35,6 +35,45 @@ Unlike the US dual-court structure, India possesses a **single integrated judici
 - **SC Judge retirement = 65 yrs**; **HC Judge retirement = 62 yrs**; removal process identical for both (Parliamentary Special Majority under Art. 124(4)/217(1)(b)).
 - **Collegium for SC appointments** = **CJI + 4 senior-most SC judges** (*1998 Third Judges Case*); **99th Amendment (NJAC)** struck down in **2015**.
 - **Art. 226 (HC)** is wider in subject scope than **Art. 32 (SC)**; **Art. 143** is Presidential Advisory jurisdiction.`,
+    supplement: {
+      title: 'Constitutional Articles, Collegium Cases & PIL Landmarks — Judiciary & Judicial Review',
+      materialType: 'reference',
+      estimatedMinutes: 30,
+      contentMarkdown: `# Supplement: Judiciary (Articles 124–147 & 214–237), Judicial Review & PIL
+
+## 1. Key Articles & Constitutional Safeguards
+| Article | Provision & Constitutional Mechanism |
+|---|---|
+| **Art. 124(1)–(7)** | Establishment of SC; **124(2)** appointment & **65-yr** retirement; **124(4)–(5)** removal by Parliamentary Special Majority + *Judges Enquiry Act, 1968*; **124(7)** post-retirement practice bar |
+| **Art. 129 & 131** | **129:** SC as Court of Record (contempt power); **131:** Exclusive original federal jurisdiction (Union vs State / State vs State) |
+| **Art. 136 & 137** | **136:** Special Leave Petition (excludes military tribunals under 136(2)); **137:** Review power (basis for *Curative Petition*) |
+| **Art. 141, 142, 143** | **141:** SC law binding on all courts; **142:** Complete justice; **143(1)/(2):** Presidential Advisory reference |
+| **Art. 214–227** | High Courts; **217** HC Judge **62-yr** age (**15th Am., 1963**); **226** broader writ jurisdiction; **227** superintendence (excludes Armed Forces tribunals) |
+| **Art. 233–235** | **District Judges** appointed by Governor in consultation with High Court; HC control over subordinate judiciary |
+
+## 2. Landmark Supreme Court Cases (Facts, Issue, Ratio & Exam Relevance)
+### A. *SC Advocates-on-Record Association v. Union of India* (1993, 1998 & 2015 NJAC Case)
+- **Facts:** Interpretation of *"consultation"* with the Chief Justice under **Articles 124(2) and 217**, followed by the **99th Constitutional Amendment Act, 2014** establishing the 6-member National Judicial Appointments Commission (NJAC).
+- **Legal Issue:** Does the Executive or the Judiciary hold primacy in judicial appointments under Basic Structure?
+- **Judgment / Ratio:** *Second Judges Case (1993)* established judicial primacy; *Third Judges Case (1998)* structured the **SC Collegium (CJI + 4 senior-most judges)** and **HC Collegium (CJI + 2 senior-most judges)**; in **Fourth Judges Case (2015)** (4:1), SC struck down the **99th Amendment & NJAC Act**, holding judicial primacy in appointments is integral to **Independence of Judiciary (Basic Structure)**.
+- **Exam Relevance:** Must-know constitutional sequence (*1981 First → 1993 Second → 1998 Third → 2015 NJAC*).
+
+### B. *Hussainara Khatoon v. State of Bihar* (1979) & *S.P. Gupta* (1981)
+- **Facts:** Advocate Kapila Hingorani filed a habeas petition based on newspaper reports revealing thousands of undertrials detained in Bihar jails longer than maximum possible sentences.
+- **Legal Issue:** Can third parties approach the Supreme Court under Article 32 for disadvantaged victims, and is **Right to Speedy Trial** part of Article 21?
+- **Judgment / Ratio:** Relaxed traditional *locus standi*, launching **Public Interest Litigation (PIL)** and affirming **Speedy Trial** and **Free Legal Aid** under Articles 21 & 39A.
+
+### C. *Vishaka v. State of Rajasthan* (1997) & *Rupa Ashok Hurra* (2002)
+- **Facts:** *Vishaka* arose from workplace sexual assault of a social worker (Bhanwari Devi) amid absence of statutory safeguards; *Rupa Ashok Hurra* examined remedies after dismissal of a Review Petition.
+- **Legal Issue:** Can the Supreme Court fill a legislative vacuum under **Articles 32, 141, and 142**, or re-open a final dismissed review?
+- **Judgment / Ratio:** *Vishaka* invoked **Article 141 & CEDAW** to lay down binding workplace sexual-harassment guidelines until Parliament enacted the **POSH Act, 2013**; *Rupa Ashok Hurra* created the extraordinary **Curative Petition** for gross natural-justice violations.
+
+> **Admin Review Note:** Recent Supreme Court directions regarding **High Court vs Armed Forces Tribunal** Article 226 writ scope (*Union of India v. Parashotam Dass, 2023*) clarify that limited High Court Art. 226 scrutiny remains available despite Art. 227(4) exclusion; confirm exam syllabus phrasing between Art. 227(4) text and Art. 226 case law.
+
+## 3. Concise Revision Summary
+- **Single Integrated Judiciary:** SC + High Courts + District/Subordinate Courts enforce both Central and State laws.
+- **Key Thresholds:** SC Judge age = **65 yrs** · HC Judge age = **62 yrs** · District Judge direct bar experience = **7 yrs** (Art. 233(2)).`,
+    },
     mcqs: [
       {
         stem: 'Which Three Judges Case of 1998 expanded the Supreme Court Collegium to consist of the Chief Justice of India and the four senior-most judges of the Supreme Court?',

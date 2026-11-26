@@ -85,6 +85,7 @@ export function AdminTopicsPage() {
   const [selectedSubjectId, setSelectedSubjectId] = useState('');
   const [subjectFilter, setSubjectFilter] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   const [form, setForm] = useState({
     chapterId: '',
@@ -394,6 +395,7 @@ export function AdminTopicsPage() {
         summary.items.some(
           (item) =>
             item.needsMaterial ||
+            item.needsSupplement ||
             item.missingMcqs.length > 0 ||
             item.missingPyqs.length > 0 ||
             item.needsTest
@@ -415,6 +417,7 @@ export function AdminTopicsPage() {
         (item) =>
           item.matchedPackage &&
           (item.needsMaterial ||
+            item.needsSupplement ||
             item.missingMcqs.length > 0 ||
             item.missingPyqs.length > 0 ||
             item.needsTest)
@@ -430,6 +433,7 @@ export function AdminTopicsPage() {
       (item) =>
         item.matchedPackage &&
         (item.needsMaterial ||
+          item.needsSupplement ||
           item.missingMcqs.length > 0 ||
           item.missingPyqs.length > 0 ||
           item.needsTest)
@@ -511,6 +515,28 @@ export function AdminTopicsPage() {
             createdMaterials += 1;
           }
 
+          if (item.needsSupplement && pkg.supplement && resolvedCourseId && resolvedSubjectId) {
+            const suppId = generateSafeId('mat');
+            contentOps.push({
+              collectionName: 'studyMaterials',
+              id: suppId,
+              payload: {
+                id: suppId,
+                topicId: topic.id,
+                chapterId: topic.chapterId,
+                subjectId: resolvedSubjectId,
+                courseId: resolvedCourseId,
+                title: clampString(pkg.supplement.title, 200),
+                materialType: pkg.supplement.materialType,
+                contentMarkdown: clampString(pkg.supplement.contentMarkdown, 30000),
+                estimatedMinutes: Math.min(Math.max(1, pkg.supplement.estimatedMinutes || 15), 600),
+                isPublished: true,
+                createdBy: firebaseUser.uid,
+              },
+            });
+            createdMaterials += 1;
+          }
+
           const createdQuestionIds: string[] = [];
 
           for (const mcq of item.missingMcqs) {
@@ -557,6 +583,10 @@ export function AdminTopicsPage() {
                 difficulty: pyq.difficulty,
                 examName: clampString(pyq.examName, 120),
                 examYear: Math.min(Math.max(1990, pyq.examYear), 2100),
+                ...(pyq.sourceReference
+                  ? { sourceReference: clampString(pyq.sourceReference, 300) }
+                  : {}),
+                isVerified: true,
                 isPublished: true,
                 createdBy: firebaseUser.uid,
               },
@@ -1048,7 +1078,11 @@ export function AdminTopicsPage() {
                 </div>
                 <h2 className="mt-1 text-base font-semibold text-ink">
                   {actionableContentSummaries.length > 0
-                    ? `Pending Sync: ${contentAudit.totals.pendingMaterials} Study Notes · ${contentAudit.totals.pendingMcqs} MCQs · ${contentAudit.totals.pendingAssessments} Topic Assessments`
+                    ? `Pending Sync: ${contentAudit.totals.pendingMaterials} Study Notes${
+                        contentAudit.totals.pendingSupplements > 0
+                          ? ` · ${contentAudit.totals.pendingSupplements} Legal/SC Supplements`
+                          : ''
+                      } · ${contentAudit.totals.pendingMcqs} MCQs · ${contentAudit.totals.pendingAssessments} Topic Assessments`
                     : 'All Matched Published Topics Have Notes, 15+ MCQs & Topic Assessments'}
                 </h2>
                 <p className="mt-1 text-xs sm:text-sm text-ink-muted">
@@ -1216,6 +1250,7 @@ export function AdminTopicsPage() {
                     const isPending =
                       Boolean(item.matchedPackage) &&
                       (item.needsMaterial ||
+                        item.needsSupplement ||
                         item.missingMcqs.length > 0 ||
                         item.missingPyqs.length > 0 ||
                         item.needsTest);
@@ -1261,7 +1296,9 @@ export function AdminTopicsPage() {
                           {!item.matchedPackage
                             ? 'Custom (JSON Import)'
                             : isPending
-                              ? `+${item.needsMaterial ? 1 : 0}N / +${item.missingMcqs.length}Q / +${item.needsTest ? 1 : 0}T`
+                              ? `+${item.needsMaterial ? 1 : 0}N${
+                                  item.needsSupplement ? ' / +1S' : ''
+                                } / +${item.missingMcqs.length}Q / +${item.needsTest ? 1 : 0}T`
                               : 'Synced'}
                         </span>
                       </label>
@@ -1361,12 +1398,14 @@ export function AdminTopicsPage() {
               <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
                 {contentAudit.subjectSummaries.map((summary) => {
                   const pendingMats = summary.items.filter((i) => i.needsMaterial).length;
+                  const pendingSupps = summary.items.filter((i) => i.needsSupplement).length;
                   const pendingQs = summary.items.reduce(
                     (acc, i) => acc + i.missingMcqs.length + i.missingPyqs.length,
                     0
                   );
                   const pendingTsts = summary.items.filter((i) => i.needsTest).length;
-                  const hasPending = pendingMats > 0 || pendingQs > 0 || pendingTsts > 0;
+                  const hasPending =
+                    pendingMats > 0 || pendingSupps > 0 || pendingQs > 0 || pendingTsts > 0;
                   const isBusy =
                     syncingContentId === summary.subjectId || syncingContentId === 'all';
 
@@ -1389,7 +1428,8 @@ export function AdminTopicsPage() {
                         </div>
                         {hasPending ? (
                           <div className="mt-1 text-[11px] font-mono text-accent-text">
-                            Ready: +{pendingMats} notes · +{pendingQs} Qs · +{pendingTsts} tests
+                            Ready: +{pendingMats} notes
+                            {pendingSupps > 0 ? ` · +${pendingSupps} supp` : ''} · +{pendingQs} Qs · +{pendingTsts} tests
                           </div>
                         ) : (
                           <div className="mt-1 text-[11px] text-emerald-600 dark:text-emerald-400">
@@ -1662,19 +1702,39 @@ export function AdminTopicsPage() {
                         >
                           <Pencil className="w-4 h-4" />
                         </button>
-                        <button
-                          type="button"
-                          aria-label={`Delete ${t.title}`}
-                          onClick={async () => {
-                            await deleteAdminEntity('topics', t.id);
-                            setNotice('Topic deleted.');
-                            if (editingId === t.id) resetForm();
-                            await loadData();
-                          }}
-                          className="p-2 rounded-lg text-ink-muted hover:text-red-500 hover:bg-red-500/10 transition-colors"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                        {confirmDeleteId === t.id ? (
+                          <div className="flex items-center gap-1">
+                            <button
+                              type="button"
+                              onClick={async () => {
+                                await deleteAdminEntity('topics', t.id);
+                                setConfirmDeleteId(null);
+                                setNotice('Topic deleted.');
+                                if (editingId === t.id) resetForm();
+                                await loadData();
+                              }}
+                              className="px-2 py-1 text-[11px] font-semibold rounded bg-red-600 text-white hover:bg-red-700 transition-colors"
+                            >
+                              Confirm
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setConfirmDeleteId(null)}
+                              className="px-2 py-1 text-[11px] font-medium rounded border border-edge-strong bg-subtle text-ink hover:bg-canvas transition-colors"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            type="button"
+                            aria-label={`Delete ${t.title}`}
+                            onClick={() => setConfirmDeleteId(t.id)}
+                            className="p-2 rounded-lg text-ink-muted hover:text-red-500 hover:bg-red-500/10 transition-colors"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
                       </div>
                     </div>
                   );

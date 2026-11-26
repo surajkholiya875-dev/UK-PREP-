@@ -31,6 +31,51 @@ Borrowed from the **Irish Constitution (1937)** (and echoing the 1935 GoI Act's 
 - **42nd Amendment (1976)** added **Arts. 39A, 39(f) modified, 43A, 48A** to DPSPs AND created **Part IVA (10 Fundamental Duties)**.
 - **44th Amendment (1978)** added **Art. 38(2)** (minimizing income/status inequalities); **86th (2002)** modified **Art. 45** & added **51A(k)**; **97th (2011)** added **Art. 43B**.
 - **Uttarakhand UCC (2024)** directly operationalizes **Article 44** at the state level.`,
+    supplement: {
+      title: 'Constitutional Articles, Amendments & Landmark SC Cases — DPSPs (Arts. 36–51) & Fundamental Duties (Art. 51A)',
+      materialType: 'reference',
+      estimatedMinutes: 25,
+      contentMarkdown: `# Supplement: DPSPs (Articles 36–51) & Fundamental Duties (Article 51A)
+
+## 1. Article-by-Article & Amendment Matrix
+| Article | Directive / Duty Mandate | Amendment / Statutory Link |
+|---|---|---|
+| **Art. 36–37** | Definition of "State" (same as Art. 12); DPSPs non-enforceable yet **fundamental in governance** | Original |
+| **Art. 38(1)–(2)** | Social order securing justice; **38(2):** minimize inequalities in income, status, facilities | **44th Am. (1978)** added 38(2) |
+| **Art. 39(a)–(f)** | Livelihood, equitable material resources (**39(b)**), anti-concentration (**39(c)**), **equal pay for equal work (39(d))**, worker/child health | **42nd Am. (1976)** revised 39(f) |
+| **Art. 39A** | Equal justice and **free legal aid** (*NALSA / Legal Services Authorities Act, 1987*) | **42nd Am. (1976)** |
+| **Art. 40** | Organization of **Village Panchayats** as units of self-government | Realized by **73rd Am. (1992)** |
+| **Art. 43A & 43B** | **43A:** Worker participation in management; **43B:** Promotion of **co-operative societies** | **42nd (1976)** & **97th (2011)** |
+| **Art. 44 & 45** | **44:** Uniform Civil Code (**Uttarakhand UCC Act, 2024**); **45:** Early childhood care & education below age **6** | **86th Am. (2002)** substituted Art. 45 |
+| **Art. 48 & 48A** | Modern agriculture & cow protection; **48A:** Protect environment, forests, wildlife | **42nd Am. (1976)** added 48A |
+| **Art. 50 & 51** | Separation of judiciary from executive (**CrPC 1973 / BNSS**); international peace & treaty respect | Original |
+| **Art. 51A(a)–(k)** | **11 Fundamental Duties** of citizens (original 10 + **(k)** parent's education duty for ages 6–14) | **42nd (1976)** & **86th (2002)** |
+
+## 2. Landmark Supreme Court Cases (Facts, Issue, Ratio & Exam Relevance)
+### A. *State of Madras v. Champakam Dorairajan* (1951)
+- **Facts:** Madras Government's Communal G.O. fixed caste/community seats in medical/engineering colleges, defended under Article 46 (DPSP).
+- **Legal Issue:** Can a non-justiciable Directive Principle override an enforceable Fundamental Right (Article 29(2) / 15)?
+- **Judgment / Ratio:** Held that **Fundamental Rights prevail over DPSPs** in any direct conflict; DPSPs must run as subsidiary to Part III (triggering the **1st Constitutional Amendment Act, 1951** inserting **Article 15(4)**).
+- **Exam Relevance:** Start of the classic FR–DPSP constitutional conflict.
+
+### B. *Minerva Mills Ltd. v. Union of India* (1980)
+- **Facts:** Challenge to the **42nd Amendment (1976)** which amended **Article 31C** to give *all* DPSPs supremacy over Articles 14 and 19.
+- **Legal Issue:** Does granting absolute primacy to all DPSPs over Fundamental Rights violate the Basic Structure?
+- **Judgment / Ratio:** Struck down the expanded portion of Art. 31C, holding that **harmony and balance between Fundamental Rights and DPSPs is an essential feature of the Basic Structure** ("two wheels of a chariot"). *(Note: Unni Krishnan (1993) later read Art. 45 + Art. 21 together to recognize basic education as a Fundamental Right prior to the 86th Amendment.)*
+- **Exam Relevance:** Standard Mains question on *"harmonious construction"* between Part III and Part IV.
+
+### C. *M.C. Mehta v. Union of India* & *Randhir Singh* (1982)
+- **Facts:** Environmental PILs concerning Ganga pollution/mining and pay parity petition by Delhi Police driver-constables.
+- **Legal Issue:** How can courts operationalize non-justiciable DPSPs (**Arts. 39(d), 48A**) and Fundamental Duties (**Art. 51A(g)**)?
+- **Judgment / Ratio:** In *Randhir Singh (1982)*, SC read **Art. 39(d) ("equal pay for equal work")** into **Articles 14 & 16**; in *M.C. Mehta*, SC invoked **Art. 48A** and **Art. 51A(g)** to issue binding environmental directives.
+
+> **Admin Review Note:** Uttarakhand's **Uniform Civil Code Act, 2024** (notified into force in early 2025) operationalizes **Article 44** at the state level; verify current rules/exemptions (including Scheduled Tribe exemption) and any ongoing High Court/Supreme Court challenges when teaching current-affairs linkage.
+
+## 3. Concise Revision Summary
+- **42nd Amendment (1976)** = **Arts. 39A, 43A, 48A** + **10 Fundamental Duties (Art. 51A)** (Swaran Singh Committee).
+- **86th Amendment (2002)** = **Art. 21A** (FR) + revised **Art. 45** (DPSP < 6 yrs) + **Art. 51A(k)** (11th Duty, 6–14 yrs).
+- **Verma Committee (1999)** mapped existing penal statutes enforcing Fundamental Duties.`,
+    },
     mcqs: [
       {
         stem: 'Which Article under Part IV explicitly declares that Directive Principles are non-enforceable by any court, yet are "fundamental in the governance of the country"?',
