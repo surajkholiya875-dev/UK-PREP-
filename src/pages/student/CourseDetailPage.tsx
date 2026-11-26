@@ -1,31 +1,18 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ArrowDownWideNarrow, ArrowLeft, ArrowUpNarrowWide, Check, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Check, ChevronRight } from 'lucide-react';
+import { SubjectCardsSection } from '../../components/student/SubjectCardsSection';
 import { AppShell } from '../../components/ui/AppShell';
 import { EmptyState, ErrorState, LoadingState, SuccessBanner } from '../../components/ui/StateBlocks';
 import { STUDENT_NAV_ITEMS } from '../../config/navigation';
 import { useAuth } from '../../context/AuthContext';
-import {
-  buildCanonicalSubjectGroups,
-  CanonicalSubjectGroup,
-  compareNaturalText,
-  resolveOrderedTopicsForSubjectIds,
-  safeSortOrder,
-} from '../../lib/syllabusHierarchy';
+import { safeSortOrder } from '../../lib/syllabusHierarchy';
 import {
   enrollInCourse,
   fetchPublishedCollection,
   fetchStudentOwned,
 } from '../../services/firestoreService';
 import { Chapter, Course, Enrollment, Examination, Subject, Topic, Unit } from '../../types/academic';
-
-type SubjectSortOption = 'recommended' | 'az' | 'topic_count_desc' | 'topic_count_asc';
-
-interface SubjectCardItem {
-  group: CanonicalSubjectGroup;
-  topicCount: number;
-  recommendedIndex: number;
-}
 
 export function CourseDetailPage() {
   const { courseId } = useParams<{ courseId: string }>();
@@ -41,7 +28,6 @@ export function CourseDetailPage() {
   const [chapters, setChapters] = useState<Chapter[]>([]);
   const [topics, setTopics] = useState<Topic[]>([]);
   const [isEnrolled, setIsEnrolled] = useState(false);
-  const [sortBy, setSortBy] = useState<SubjectSortOption>('recommended');
 
   const loadDetail = async () => {
     if (!firebaseUser || !courseId) return;
@@ -88,58 +74,6 @@ export function CourseDetailPage() {
       setError(err instanceof Error ? err.message : 'Could not enroll.');
     }
   };
-
-  const subjectCards = useMemo<SubjectCardItem[]>(() => {
-    if (!course) return [];
-
-    const allCanonicalGroups = buildCanonicalSubjectGroups(subjects);
-    const hasCourseScopedSubjects = subjects.some((subject) => subject.courseId === course.id);
-    const visibleGroups = hasCourseScopedSubjects
-      ? allCanonicalGroups.filter((group) =>
-          group.memberSubjects.some((subject) => subject.courseId === course.id)
-        )
-      : allCanonicalGroups;
-
-    return visibleGroups.map((group, recommendedIndex) => {
-      const subjectIds = new Set(group.memberSubjects.map((item) => item.id));
-      const orderedTopics = resolveOrderedTopicsForSubjectIds({
-        subjectIds,
-        allUnits: units,
-        allChapters: chapters,
-        allTopics: topics,
-      });
-      return {
-        group,
-        topicCount: orderedTopics.length,
-        recommendedIndex,
-      };
-    });
-  }, [course, subjects, units, chapters, topics]);
-
-  const sortedSubjectCards = useMemo<SubjectCardItem[]>(() => {
-    const copy = [...subjectCards];
-    switch (sortBy) {
-      case 'az':
-        return copy.sort(
-          (a, b) =>
-            compareNaturalText(a.group.title, b.group.title) ||
-            a.recommendedIndex - b.recommendedIndex
-        );
-      case 'topic_count_desc':
-        return copy.sort(
-          (a, b) => b.topicCount - a.topicCount || a.recommendedIndex - b.recommendedIndex
-        );
-      case 'topic_count_asc':
-        return copy.sort(
-          (a, b) => a.topicCount - b.topicCount || a.recommendedIndex - b.recommendedIndex
-        );
-      case 'recommended':
-      default:
-        return copy.sort((a, b) => a.recommendedIndex - b.recommendedIndex);
-    }
-  }, [subjectCards, sortBy]);
-
-  const isTopicCountSort = sortBy === 'topic_count_desc' || sortBy === 'topic_count_asc';
 
   return (
     <AppShell
@@ -230,124 +164,16 @@ export function CourseDetailPage() {
             </div>
           </Link>
 
-          <div>
-            <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex items-baseline gap-2.5">
-                <h3 className="text-lg font-bold text-ink">Subjects</h3>
-                {subjectCards.length > 0 && (
-                  <span className="text-xs text-ink-muted">
-                    ({subjectCards.length})
-                  </span>
-                )}
-              </div>
-
-              {subjectCards.length > 0 && (
-                <div
-                  className="flex flex-wrap items-center gap-1.5"
-                  role="group"
-                  aria-label="Sort subjects"
-                >
-                  <span className="text-xs font-medium text-ink-muted mr-1">Sort:</span>
-                  <button
-                    type="button"
-                    aria-pressed={sortBy === 'recommended'}
-                    onClick={() => setSortBy('recommended')}
-                    className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-colors ${
-                      sortBy === 'recommended'
-                        ? 'bg-amber-400 border-amber-400 text-slate-950 font-semibold'
-                        : 'bg-panel border-edge text-ink-muted hover:text-ink hover:border-amber-400/60'
-                    }`}
-                  >
-                    Recommended order
-                  </button>
-                  <button
-                    type="button"
-                    aria-pressed={sortBy === 'az'}
-                    onClick={() => setSortBy('az')}
-                    className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-colors ${
-                      sortBy === 'az'
-                        ? 'bg-amber-400 border-amber-400 text-slate-950 font-semibold'
-                        : 'bg-panel border-edge text-ink-muted hover:text-ink hover:border-amber-400/60'
-                    }`}
-                  >
-                    A–Z
-                  </button>
-                  <button
-                    type="button"
-                    aria-pressed={isTopicCountSort}
-                    onClick={() =>
-                      setSortBy((prev) =>
-                        prev === 'topic_count_desc' ? 'topic_count_asc' : 'topic_count_desc'
-                      )
-                    }
-                    title={
-                      sortBy === 'topic_count_asc'
-                        ? 'Sorted low to high (click for high to low)'
-                        : 'Sort by topic count (high to low)'
-                    }
-                    className={`inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium rounded-lg border transition-colors ${
-                      isTopicCountSort
-                        ? 'bg-amber-400 border-amber-400 text-slate-950 font-semibold'
-                        : 'bg-panel border-edge text-ink-muted hover:text-ink hover:border-amber-400/60'
-                    }`}
-                  >
-                    <span>Topic count</span>
-                    {sortBy === 'topic_count_asc' ? (
-                      <ArrowUpNarrowWide className="w-3.5 h-3.5" aria-hidden="true" />
-                    ) : (
-                      <ArrowDownWideNarrow className="w-3.5 h-3.5" aria-hidden="true" />
-                    )}
-                  </button>
-                </div>
-              )}
-            </div>
-
-            {sortedSubjectCards.length === 0 ? (
-              <EmptyState
-                title="No subjects published in this course yet"
-                description="Add subjects from Admin Workspace → Subject Management."
-              />
-            ) : (
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                {sortedSubjectCards.map(({ group, topicCount }) => {
-                  const categoryLabel =
-                    group.primarySubject.scope === 'uttarakhand'
-                      ? 'Uttarakhand Focus'
-                      : group.slug === 'csat'
-                        ? 'Aptitude & CSAT'
-                        : 'Core Syllabus';
-
-                  return (
-                    <Link
-                      key={group.routeKey}
-                      to={`/student/syllabus/${encodeURIComponent(group.routeKey)}`}
-                      className="group rounded-xl border border-edge bg-panel p-5 shadow-sm transition hover:border-amber-400 hover:bg-subtle focus:outline-none focus:ring-2 focus:ring-amber-400"
-                    >
-                      <div className="text-xs font-mono text-accent-text">
-                        {categoryLabel}
-                      </div>
-                      <h4 className="mt-2 text-lg font-semibold text-ink group-hover:text-amber-500">
-                        {group.title}
-                      </h4>
-                      {group.primarySubject.description && (
-                        <p className="mt-2 line-clamp-3 text-sm leading-5 text-ink-muted">
-                          {group.primarySubject.description}
-                        </p>
-                      )}
-                      <div className="mt-4 flex items-center justify-between border-t border-edge pt-3 text-xs">
-                        <span className="text-ink-muted">
-                          {topicCount} {topicCount === 1 ? 'topic' : 'topics'}
-                        </span>
-                        <span className="inline-flex items-center gap-1 font-semibold text-amber-500">
-                          Open subject <ChevronRight className="h-3.5 w-3.5" />
-                        </span>
-                      </div>
-                    </Link>
-                  );
-                })}
-              </div>
-            )}
-          </div>
+          <SubjectCardsSection
+            subjects={subjects}
+            units={units}
+            chapters={chapters}
+            topics={topics}
+            courseId={course.id}
+            heading="Subjects"
+            emptyTitle="No subjects published in this course yet"
+            emptyDescription="Add subjects from Admin Workspace → Subject Management."
+          />
         </div>
       )}
     </AppShell>

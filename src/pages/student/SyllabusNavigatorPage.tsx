@@ -1,18 +1,21 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { SubjectCardsSection } from '../../components/student/SubjectCardsSection';
 import { AppShell } from '../../components/ui/AppShell';
-import { EmptyState, ErrorState, LoadingState } from '../../components/ui/StateBlocks';
+import { ErrorState, LoadingState } from '../../components/ui/StateBlocks';
 import { STUDENT_NAV_ITEMS } from '../../config/navigation';
 import { useAuth } from '../../context/AuthContext';
-import { buildCanonicalSubjectGroups } from '../../lib/syllabusHierarchy';
+import { safeSortOrder } from '../../lib/syllabusHierarchy';
 import { fetchPublishedCollection } from '../../services/firestoreService';
-import { Subject } from '../../types/academic';
+import { Chapter, Subject, Topic, Unit } from '../../types/academic';
 
 export function SyllabusNavigatorPage() {
   const { firebaseUser } = useAuth();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [subjects, setSubjects] = useState<Subject[]>([]);
+  const [units, setUnits] = useState<Unit[]>([]);
+  const [chapters, setChapters] = useState<Chapter[]>([]);
+  const [topics, setTopics] = useState<Topic[]>([]);
 
   const loadSyllabus = async () => {
     if (!firebaseUser) {
@@ -22,8 +25,25 @@ export function SyllabusNavigatorPage() {
     setLoading(true);
     setError(null);
     try {
-      const publishedSubjects = await fetchPublishedCollection<Subject>('subjects');
-      setSubjects(publishedSubjects);
+      const [publishedSubjects, publishedUnits, publishedChapters, publishedTopics] =
+        await Promise.all([
+          fetchPublishedCollection<Subject>('subjects'),
+          fetchPublishedCollection<Unit>('units'),
+          fetchPublishedCollection<Chapter>('chapters'),
+          fetchPublishedCollection<Topic>('topics'),
+        ]);
+      setSubjects(
+        [...publishedSubjects].sort((a, b) => safeSortOrder(a.sortOrder) - safeSortOrder(b.sortOrder))
+      );
+      setUnits(
+        [...publishedUnits].sort((a, b) => safeSortOrder(a.sortOrder) - safeSortOrder(b.sortOrder))
+      );
+      setChapters(
+        [...publishedChapters].sort((a, b) => safeSortOrder(a.sortOrder) - safeSortOrder(b.sortOrder))
+      );
+      setTopics(
+        [...publishedTopics].sort((a, b) => safeSortOrder(a.sortOrder) - safeSortOrder(b.sortOrder))
+      );
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load syllabus.');
     } finally {
@@ -36,36 +56,27 @@ export function SyllabusNavigatorPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [firebaseUser?.uid]);
 
-  const subjectGroups = buildCanonicalSubjectGroups(subjects);
-
   return (
     <AppShell
       workspaceTitle="Student LMS"
       navItems={STUDENT_NAV_ITEMS}
-      pageTitle="Syllabus"
-      breadcrumb="UK Prep / Student / Syllabus"
+      pageTitle="Subjects"
+      breadcrumb="UK Prep / Student / Subjects"
     >
       {loading ? (
         <LoadingState label="Loading all published syllabus subjects..." />
       ) : error ? (
         <ErrorState message={error} onRetry={() => void loadSyllabus()} />
-      ) : subjectGroups.length === 0 ? (
-        <EmptyState
-          title="No published subjects available"
-          description="Published subjects from all courses will appear here once they are published in Admin."
-        />
       ) : (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {subjectGroups.map((group) => (
-            <Link
-              key={group.routeKey}
-              to={`/student/syllabus/${encodeURIComponent(group.routeKey)}`}
-              className="block rounded-xl border border-edge bg-panel p-5 text-left transition hover:border-accent hover:bg-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
-            >
-              <span className="font-semibold text-ink">{group.title}</span>
-            </Link>
-          ))}
-        </div>
+        <SubjectCardsSection
+          subjects={subjects}
+          units={units}
+          chapters={chapters}
+          topics={topics}
+          heading="Subjects"
+          emptyTitle="No published subjects available"
+          emptyDescription="Published subjects from all courses will appear here once they are published in Admin."
+        />
       )}
     </AppShell>
   );

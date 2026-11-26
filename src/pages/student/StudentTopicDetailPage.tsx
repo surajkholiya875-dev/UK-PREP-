@@ -106,7 +106,11 @@ function isSafeHttpUrl(url: string | undefined): url is string {
 }
 
 export function StudentTopicDetailPage() {
-  const { subjectId, topicId } = useParams<{ subjectId?: string; topicId: string }>();
+  const { courseId, subjectId, topicId } = useParams<{
+    courseId?: string;
+    subjectId?: string;
+    topicId: string;
+  }>();
   const { firebaseUser } = useAuth();
 
   const [loading, setLoading] = useState(true);
@@ -549,7 +553,9 @@ export function StudentTopicDetailPage() {
   };
 
   const backHref = subjectId
-    ? `/student/syllabus/${encodeURIComponent(subjectId)}`
+    ? courseId
+      ? `/student/courses/${encodeURIComponent(courseId)}/subjects/${encodeURIComponent(subjectId)}`
+      : `/student/syllabus/${encodeURIComponent(subjectId)}`
     : '/student/topics';
   const backLabel = subjectId ? `← Back to ${subjectTitle}` : '← Back to Topics';
 

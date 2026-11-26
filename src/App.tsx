@@ -61,6 +61,8 @@ export default function App() {
               <Route path="/student/courses" element={<StudentRoute><MyCoursesPage /></StudentRoute>} />
               <Route path="/student/catalogue" element={<Navigate to="/student/courses" replace />} />
               <Route path="/student/courses/:courseId" element={<StudentRoute><CourseDetailPage /></StudentRoute>} />
+              <Route path="/student/courses/:courseId/subjects/:subjectId" element={<StudentRoute><StudentSubjectTopicsPage /></StudentRoute>} />
+              <Route path="/student/courses/:courseId/subjects/:subjectId/topics/:topicId" element={<StudentRoute><StudentTopicDetailPage /></StudentRoute>} />
               <Route path="/student/syllabus" element={<StudentRoute><SyllabusNavigatorPage /></StudentRoute>} />
               <Route path="/student/syllabus/:subjectId" element={<StudentRoute><StudentSubjectTopicsPage /></StudentRoute>} />
               <Route path="/student/syllabus/:subjectId/topics/:topicId" element={<StudentRoute><StudentTopicDetailPage /></StudentRoute>} />
