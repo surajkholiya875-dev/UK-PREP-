@@ -14,6 +14,7 @@ import {
   Upload,
   X,
 } from 'lucide-react';
+import { UnassignedSubjectRepairCard } from '../../components/admin/UnassignedSubjectRepairCard';
 import { AppShell } from '../../components/ui/AppShell';
 import { EmptyState, ErrorState, LoadingState, SuccessBanner } from '../../components/ui/StateBlocks';
 import { ADMIN_NAV_ITEMS } from '../../config/navigation';
@@ -914,6 +915,17 @@ export function AdminTopicsPage() {
       <div className="space-y-6">
         {notice && <SuccessBanner message={notice} />}
         {error && <ErrorState message={error} onRetry={() => void loadData()} />}
+
+        {!loading && (
+          <UnassignedSubjectRepairCard
+            subjects={subjects}
+            courses={courses}
+            units={units}
+            chapters={chapters}
+            topics={topics}
+            onRefresh={loadData}
+          />
+        )}
 
         {!loading && subjects.length > 0 && (
           <div className="rounded-xl border border-accent/40 bg-panel p-5 shadow-sm space-y-4">

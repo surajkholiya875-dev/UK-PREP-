@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Pencil, Plus, Trash2, X } from 'lucide-react';
+import { UnassignedSubjectRepairCard } from '../../components/admin/UnassignedSubjectRepairCard';
 import { AppShell } from '../../components/ui/AppShell';
 import { EmptyState, ErrorState, LoadingState, SuccessBanner } from '../../components/ui/StateBlocks';
 import { ADMIN_NAV_ITEMS } from '../../config/navigation';
@@ -12,7 +13,7 @@ import {
   generateSafeId,
   upsertAdminEntity,
 } from '../../services/firestoreService';
-import { Chapter, Question, StudyMaterial, Subject, Topic, Unit } from '../../types/academic';
+import { Chapter, Course, Question, StudyMaterial, Subject, Topic, Unit } from '../../types/academic';
 
 export function AdminUnitsChaptersPage() {
   const { firebaseUser } = useAuth();
@@ -23,6 +24,7 @@ export function AdminUnitsChaptersPage() {
   const [notice, setNotice] = useState<string | null>(null);
 
   const [subjects, setSubjects] = useState<Subject[]>([]);
+  const [courses, setCourses] = useState<Course[]>([]);
   const [units, setUnits] = useState<Unit[]>([]);
   const [chapters, setChapters] = useState<Chapter[]>([]);
   const [topics, setTopics] = useState<Topic[]>([]);
@@ -53,8 +55,9 @@ export function AdminUnitsChaptersPage() {
     setLoading(true);
     setError(null);
     try {
-      const [subjs, unts, chaps, tpcs, mats, qs] = await Promise.all([
+      const [subjs, crs, unts, chaps, tpcs, mats, qs] = await Promise.all([
         fetchAllAdminCollection<Subject>('subjects'),
+        fetchAllAdminCollection<Course>('courses'),
         fetchAllAdminCollection<Unit>('units'),
         fetchAllAdminCollection<Chapter>('chapters'),
         fetchAllAdminCollection<Topic>('topics'),
@@ -71,6 +74,7 @@ export function AdminUnitsChaptersPage() {
         (a, b) => safeSortOrder(a.sortOrder) - safeSortOrder(b.sortOrder) || compareNaturalText(a.title, b.title)
       );
       setSubjects(sortedSubjs);
+      setCourses(crs);
       setUnits(sortedUnits);
       setChapters(sortedChapters);
       setTopics(tpcs);
@@ -430,6 +434,17 @@ export function AdminUnitsChaptersPage() {
 
         {notice && <SuccessBanner message={notice} />}
         {error && <ErrorState message={error} onRetry={() => void loadData()} />}
+
+        {!loading && (
+          <UnassignedSubjectRepairCard
+            subjects={subjects}
+            courses={courses}
+            units={units}
+            chapters={chapters}
+            topics={topics}
+            onRefresh={loadData}
+          />
+        )}
 
         {loading ? (
           <LoadingState label="Loading units and chapters..." />
