@@ -19,24 +19,29 @@ export interface CanonicalSubjectDefinition {
 
 export const CANONICAL_SUBJECT_DEFINITIONS: CanonicalSubjectDefinition[] = [
   {
-    slug: 'geography',
-    title: 'Geography',
+    slug: 'general-studies',
+    title: 'General Studies',
     scope: 'general',
     sortOrder: 1,
+    aliases: ['general studies', 'gs', 'general studies (gs)'],
+  },
+  {
+    slug: 'uttarakhand-special',
+    title: 'Uttarakhand Special',
+    scope: 'uttarakhand',
+    sortOrder: 2,
     aliases: [
-      'geography',
-      'geography of uttarakhand',
-      'uttarakhand geography',
-      'indian geography',
-      'indian and world geography',
-      'physical geography',
+      'uttarakhand special',
+      'uk special',
+      'uttarakhand',
+      'uttarakhand state special',
     ],
   },
   {
     slug: 'history',
     title: 'History',
     scope: 'general',
-    sortOrder: 2,
+    sortOrder: 3,
     aliases: [
       'history',
       'history of uttarakhand',
@@ -52,13 +57,27 @@ export const CANONICAL_SUBJECT_DEFINITIONS: CanonicalSubjectDefinition[] = [
     ],
   },
   {
-    slug: 'polity',
-    title: 'Polity',
+    slug: 'geography',
+    title: 'Geography',
     scope: 'general',
-    sortOrder: 3,
+    sortOrder: 4,
     aliases: [
-      'polity',
+      'geography',
+      'geography of uttarakhand',
+      'uttarakhand geography',
+      'indian geography',
+      'indian and world geography',
+      'physical geography',
+    ],
+  },
+  {
+    slug: 'polity',
+    title: 'Indian Polity',
+    scope: 'general',
+    sortOrder: 5,
+    aliases: [
       'indian polity',
+      'polity',
       'indian constitution and polity',
       'polity and administration of uttarakhand',
       'uttarakhand polity',
@@ -72,7 +91,7 @@ export const CANONICAL_SUBJECT_DEFINITIONS: CanonicalSubjectDefinition[] = [
     slug: 'economy',
     title: 'Economy',
     scope: 'general',
-    sortOrder: 4,
+    sortOrder: 6,
     aliases: [
       'economy',
       'indian economy',
@@ -83,12 +102,13 @@ export const CANONICAL_SUBJECT_DEFINITIONS: CanonicalSubjectDefinition[] = [
   },
   {
     slug: 'environment',
-    title: 'Environment',
+    title: 'Environment & Ecology',
     scope: 'general',
-    sortOrder: 5,
+    sortOrder: 7,
     aliases: [
-      'environment',
+      'environment & ecology',
       'environment and ecology',
+      'environment',
       'environment and ecology of uttarakhand',
       'uttarakhand environment',
       'ecology and environment',
@@ -96,10 +116,48 @@ export const CANONICAL_SUBJECT_DEFINITIONS: CanonicalSubjectDefinition[] = [
     ],
   },
   {
+    slug: 'general-science',
+    title: 'General Science',
+    scope: 'general',
+    sortOrder: 8,
+    aliases: ['general science', 'science', 'everyday science'],
+  },
+  {
+    slug: 'science-and-technology',
+    title: 'Science & Technology',
+    scope: 'general',
+    sortOrder: 9,
+    aliases: [
+      'science & technology',
+      'science and technology',
+      'general science and technology',
+      'science & tech',
+      'sci-tech',
+    ],
+  },
+  {
+    slug: 'current-affairs',
+    title: 'Current Affairs',
+    scope: 'general',
+    sortOrder: 10,
+    aliases: [
+      'current affairs',
+      'uttarakhand current affairs',
+      'national current affairs',
+    ],
+  },
+  {
+    slug: 'csat',
+    title: 'CSAT',
+    scope: 'general',
+    sortOrder: 11,
+    aliases: ['csat', 'csat and aptitude', 'aptitude'],
+  },
+  {
     slug: 'art-and-culture',
     title: 'Art & Culture',
     scope: 'general',
-    sortOrder: 6,
+    sortOrder: 12,
     aliases: [
       'art & culture',
       'art and culture',
@@ -110,22 +168,10 @@ export const CANONICAL_SUBJECT_DEFINITIONS: CanonicalSubjectDefinition[] = [
     ],
   },
   {
-    slug: 'science-and-technology',
-    title: 'Science & Technology',
-    scope: 'general',
-    sortOrder: 7,
-    aliases: [
-      'science & technology',
-      'science and technology',
-      'general science',
-      'general science and technology',
-    ],
-  },
-  {
     slug: 'uttarakhand-gk',
     title: 'Uttarakhand General Knowledge',
     scope: 'uttarakhand',
-    sortOrder: 8,
+    sortOrder: 13,
     aliases: [
       'uttarakhand general knowledge',
       'uttarakhand gk',
@@ -135,49 +181,31 @@ export const CANONICAL_SUBJECT_DEFINITIONS: CanonicalSubjectDefinition[] = [
     ],
   },
   {
-    slug: 'current-affairs',
-    title: 'Current Affairs',
-    scope: 'general',
-    sortOrder: 9,
-    aliases: [
-      'current affairs',
-      'uttarakhand current affairs',
-      'national current affairs',
-    ],
-  },
-  {
     slug: 'general-hindi',
     title: 'General Hindi',
     scope: 'general',
-    sortOrder: 10,
+    sortOrder: 14,
     aliases: ['general hindi', 'hindi'],
   },
   {
     slug: 'general-english',
     title: 'General English',
     scope: 'general',
-    sortOrder: 11,
+    sortOrder: 15,
     aliases: ['general english', 'english'],
-  },
-  {
-    slug: 'csat',
-    title: 'CSAT',
-    scope: 'general',
-    sortOrder: 12,
-    aliases: ['csat', 'csat and aptitude', 'aptitude'],
   },
   {
     slug: 'society-and-social-justice',
     title: 'Society & Social Justice',
     scope: 'general',
-    sortOrder: 13,
+    sortOrder: 16,
     aliases: ['society & social justice', 'indian society', 'social justice'],
   },
   {
     slug: 'ethics-and-essay',
     title: 'Ethics & Essay',
     scope: 'general',
-    sortOrder: 14,
+    sortOrder: 17,
     aliases: [
       'ethics & essay',
       'ethics, integrity and aptitude',
@@ -238,6 +266,23 @@ export interface CanonicalSubjectGroup {
   memberSubjects: Subject[];
 }
 
+const MINOR_TITLE_WORDS = new Set(['and', 'of', 'in', 'for', 'the', 'to', 'on', 'with']);
+
+export function formatSubjectDisplayTitle(rawTitle: string): string {
+  const collapsed = rawTitle.trim().replace(/\s+/g, ' ');
+  if (!collapsed) return '';
+  if (collapsed !== collapsed.toLowerCase()) {
+    return collapsed;
+  }
+  return collapsed
+    .split(' ')
+    .map((word, index) => {
+      if (index > 0 && MINOR_TITLE_WORDS.has(word)) return word;
+      return word.charAt(0).toUpperCase() + word.slice(1);
+    })
+    .join(' ');
+}
+
 export function buildCanonicalSubjectGroups(subjects: Subject[]): CanonicalSubjectGroup[] {
   const visibleRawSubjects = subjects.filter(
     (subject) => !EXCLUDED_RAW_SUBJECT_NAMES.has(normalizeTextKey(subject.title))
@@ -278,10 +323,11 @@ export function buildCanonicalSubjectGroups(subjects: Subject[]): CanonicalSubje
       if (existing) {
         existing.members.push(subject);
       } else {
+        const rawSort = safeSortOrder(subject.sortOrder);
         buckets.set(bucketKey, {
           slug: customSlug,
-          title: subject.title.trim(),
-          sortOrder: safeSortOrder(subject.sortOrder),
+          title: formatSubjectDisplayTitle(subject.title) || subject.id,
+          sortOrder: rawSort === Number.MAX_SAFE_INTEGER ? Number.MAX_SAFE_INTEGER : 1000 + rawSort,
           members: [subject],
           isCanonicalGroup: false,
         });
