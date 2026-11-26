@@ -14,6 +14,8 @@ import {
 } from './server/authMiddleware';
 import { randomUUID } from 'crypto';
 import { FieldValue } from 'firebase-admin/firestore';
+import { GoogleGenAI, Type } from '@google/genai';
+import WordExtractor from 'word-extractor';
 
 dotenv.config();
 
@@ -72,7 +74,15 @@ function isNonEmptyString(value: unknown, min: number, max: number): value is st
 async function createServer() {
   const app = express();
 
-  app.use(express.json({ limit: '256kb' }));
+  const defaultJsonParser = express.json({ limit: '256kb' });
+  const bulkUploadJsonParser = express.json({ limit: '20mb' });
+  app.use('/api/admin/bulk-questions', bulkUploadJsonParser);
+  app.use((req, res, next) => {
+    if (req.path.startsWith('/api/admin/bulk-questions')) {
+      return next();
+    }
+    return defaultJsonParser(req, res, next);
+  });
 
   // Basic security headers suitable for iframe + standalone deployment
   app.use((_req, res, next) => {
@@ -141,6 +151,191 @@ async function createServer() {
     }
   );
 
+  // Admin-only legacy .doc (OLE2 binary Word) text extractor
+  app.post(
+    '/api/admin/bulk-questions/parse-doc',
+    verifyBearerToken,
+    requireAdminRole,
+    async (req: AuthenticatedRequest, res: Response) => {
+      try {
+        const fileName = typeof req.body?.fileName === 'string' ? req.body.fileName.trim() : 'document.doc';
+        const base64 = typeof req.body?.base64 === 'string' ? req.body.base64.trim() : '';
+        if (!base64) {
+          return res.status(400).json({ error: 'Missing base64 file content for .doc extraction.' });
+        }
+        const cleanBase64 = base64.replace(/^data:[^;]+;base64,/, '');
+        const buffer = Buffer.from(cleanBase64, 'base64');
+        if (buffer.length === 0 || buffer.length > 15 * 1024 * 1024) {
+          return res.status(400).json({ error: 'Uploaded .doc file must be between 1 byte and 15 MB.' });
+        }
+
+        const extractor = new WordExtractor();
+        const extracted = await extractor.extract(buffer);
+        const body = extracted.getBody({ includeHeadersAndFooters: false }) || '';
+        const textboxes = typeof extracted.getTextboxes === 'function' ? extracted.getTextboxes() || '' : '';
+        const combinedText = [body.trim(), textboxes.trim()].filter(Boolean).join('\n\n');
+
+        if (!combinedText) {
+          return res.status(422).json({
+            error: `No readable text was found inside "${fileName}". Convert it to .docx or PDF with selectable text if it contains embedded images.`,
+          });
+        }
+
+        return res.status(200).json({ fileName, text: combinedText });
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Unable to extract text from .doc file.';
+        console.error('Admin .doc parse failed:', error);
+        return res.status(422).json({
+          error: `Could not read legacy .doc file (${message}). Save the file as .docx, .pdf, or .txt and retry.`,
+        });
+      }
+    }
+  );
+
+  // Admin-only OCR endpoint for scanned / image-based PDFs (verbatim Hindi Devanagari + English text)
+  app.post(
+    '/api/admin/bulk-questions/ocr',
+    verifyBearerToken,
+    requireAdminRole,
+    async (req: AuthenticatedRequest, res: Response) => {
+      const apiKey = process.env.GEMINI_API_KEY?.trim();
+      if (!apiKey) {
+        return res.status(503).json({
+          code: 'OCR_UNAVAILABLE',
+          error:
+            'This PDF appears scanned or image-based without a readable text layer, and server OCR (GEMINI_API_KEY) is not configured. Upload a text-selectable PDF, DOCX, XLSX, CSV, or TXT file, or configure GEMINI_API_KEY in server secrets.',
+        });
+      }
+
+      try {
+        const fileName = typeof req.body?.fileName === 'string' ? req.body.fileName.trim() : 'document.pdf';
+        const pages = Array.isArray(req.body?.pages) ? req.body.pages : [];
+        const pdfBase64 = typeof req.body?.pdfBase64 === 'string' ? req.body.pdfBase64.trim() : '';
+
+        if (pages.length === 0 && !pdfBase64) {
+          return res.status(400).json({ error: 'Provide rendered PDF page images or pdfBase64 for OCR.' });
+        }
+        if (pages.length > 25) {
+          return res.status(400).json({ error: 'OCR batch limit is 25 pages per request.' });
+        }
+
+        const ai = new GoogleGenAI({
+          apiKey,
+          httpOptions: {
+            headers: {
+              'User-Agent': 'aistudio-build',
+            },
+          },
+        });
+
+        const parts: Array<{ inlineData: { mimeType: string; data: string } } | { text: string }> = [];
+        if (pages.length > 0) {
+          for (const page of pages) {
+            const pageNum = Number(page?.pageNumber) || parts.length + 1;
+            const mimeType =
+              typeof page?.mimeType === 'string' && /^image\/(png|jpeg|webp)$/i.test(page.mimeType)
+                ? page.mimeType
+                : 'image/jpeg';
+            const data =
+              typeof page?.imageBase64 === 'string'
+                ? page.imageBase64.replace(/^data:[^;]+;base64,/, '').trim()
+                : '';
+            if (!data) continue;
+            parts.push({ text: `--- Page ${pageNum} ---` });
+            parts.push({ inlineData: { mimeType, data } });
+          }
+        } else if (pdfBase64) {
+          const cleanPdf = pdfBase64.replace(/^data:[^;]+;base64,/, '').trim();
+          const pdfBytes = Buffer.from(cleanPdf, 'base64');
+          if (pdfBytes.length === 0 || pdfBytes.length > 14 * 1024 * 1024) {
+            return res.status(400).json({ error: 'PDF payload for OCR must be under 14 MB.' });
+          }
+          parts.push({ inlineData: { mimeType: 'application/pdf', data: cleanPdf } });
+        }
+
+        if (parts.length === 0) {
+          return res.status(400).json({ error: 'No valid image or PDF page data provided for OCR.' });
+        }
+
+        parts.push({
+          text: [
+            'Transcribe every visible question, option, answer key, explanation, exam header, year, paper name, marks, and word limit from these exam pages verbatim.',
+            'Preserve Hindi Devanagari script and English text accurately in reading order.',
+            'Keep question numbers (e.g., Q.1, 1., प्र. 1), option labels ((a), (b), (c), (d) or (अ), (ब), (स), (द)), marks (e.g., [10 Marks]), word limits, and page breaks.',
+            'CRITICAL: Do NOT invent, guess, or fill in missing answer keys, options, years, marks, or explanations that are not actually printed on the pages.',
+            'Return structured JSON matching the schema with one entry per page.',
+          ].join(' '),
+        });
+
+        const response = await ai.models.generateContent({
+          model: 'gemini-4-hydrogen',
+          contents: { parts },
+          config: {
+            responseMimeType: 'application/json',
+            responseSchema: {
+              type: Type.OBJECT,
+              properties: {
+                pages: {
+                  type: Type.ARRAY,
+                  items: {
+                    type: Type.OBJECT,
+                    properties: {
+                      pageNumber: { type: Type.INTEGER },
+                      text: { type: Type.STRING },
+                    },
+                    required: ['pageNumber', 'text'],
+                  },
+                },
+              },
+              required: ['pages'],
+            },
+          },
+        });
+
+        const rawJson = (response.text ?? '').trim();
+        let parsedPages: Array<{ pageNumber: number; text: string }> = [];
+        try {
+          const parsed = JSON.parse(rawJson) as { pages?: Array<{ pageNumber?: unknown; text?: unknown }> };
+          if (Array.isArray(parsed.pages)) {
+            parsedPages = parsed.pages
+              .map((p, idx) => ({
+                pageNumber: Number.isInteger(p.pageNumber) ? Number(p.pageNumber) : idx + 1,
+                text: typeof p.text === 'string' ? p.text.trim() : '',
+              }))
+              .filter((p) => p.text.length > 0);
+          }
+        } catch {
+          if (rawJson) {
+            parsedPages = [{ pageNumber: 1, text: rawJson }];
+          }
+        }
+
+        if (parsedPages.length === 0) {
+          return res.status(422).json({
+            error: `OCR completed for "${fileName}" but detected no readable question text.`,
+          });
+        }
+
+        const combinedText = parsedPages
+          .map((p) => `[Page ${p.pageNumber}]\n${p.text}`)
+          .join('\n\n');
+
+        return res.status(200).json({
+          fileName,
+          model: 'gemini-4-hydrogen',
+          pages: parsedPages,
+          text: combinedText,
+        });
+      } catch (error) {
+        console.error('Admin PDF OCR failed:', error);
+        const msg = error instanceof Error ? error.message : 'OCR processing failed.';
+        return res.status(502).json({
+          error: `OCR failed while processing scanned PDF: ${msg}`,
+        });
+      }
+    }
+  );
+
   // Public contact form: persist validated inquiries in Firestore.
   app.post('/api/contact', async (req: Request, res: Response) => {
     const body = (req.body ?? {}) as ContactPayload;
@@ -205,13 +400,32 @@ async function createServer() {
           subjectId: question.subjectId,
           examinationId: question.examinationId,
           questionType: question.questionType,
+          ...(typeof question.questionFormat === 'string' && question.questionFormat.trim()
+            ? { questionFormat: question.questionFormat.trim() }
+            : {}),
+          ...(typeof question.examCommission === 'string' && question.examCommission.trim()
+            ? { examCommission: question.examCommission.trim() }
+            : {}),
           stem: question.stem,
-          options: question.options,
+          options: Array.isArray(question.options) ? question.options : [],
           difficulty: question.difficulty,
           ...(typeof question.examName === 'string' && question.examName.trim()
             ? { examName: question.examName.trim() }
             : {}),
           ...(Number.isInteger(question.examYear) ? { examYear: question.examYear } : {}),
+          ...(typeof question.paperName === 'string' && question.paperName.trim()
+            ? { paperName: question.paperName.trim() }
+            : {}),
+          ...(typeof question.marks === 'number' && Number.isFinite(question.marks)
+            ? { marks: question.marks }
+            : {}),
+          ...(Number.isInteger(question.wordLimit) ? { wordLimit: question.wordLimit } : {}),
+          ...(typeof question.questionNumber === 'string' && question.questionNumber.trim()
+            ? { questionNumber: question.questionNumber.trim() }
+            : {}),
+          ...(typeof question.modelAnswer === 'string' && question.modelAnswer.trim()
+            ? { modelAnswer: question.modelAnswer.trim() }
+            : {}),
           ...(typeof question.sourceReference === 'string' && question.sourceReference.trim()
             ? { sourceReference: question.sourceReference.trim() }
             : {}),
@@ -264,7 +478,10 @@ async function createServer() {
         return res.status(404).json({ error: 'Published question not found.' });
       }
       const question = questionSnap.data()!;
-      if (!Array.isArray(question.options) || optionIndex >= question.options.length ||
+      if (question.questionFormat === 'descriptive' || question.questionFormat === 'other' || !Array.isArray(question.options) || question.options.length < 2) {
+        return res.status(400).json({ error: 'Descriptive or non-MCQ questions do not use option-based answer checking.' });
+      }
+      if (optionIndex >= question.options.length ||
           !Number.isInteger(question.correctOptionIndex) || question.correctOptionIndex < 0 ||
           question.correctOptionIndex >= question.options.length) {
         return res.status(409).json({ error: 'This question has invalid answer settings.' });

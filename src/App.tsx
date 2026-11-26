@@ -89,6 +89,7 @@ export default function App() {
               <Route path="/admin/questions" element={<AdminRoute><AdminQuestionBankPage defaultType="mcq" /></AdminRoute>} />
               <Route path="/admin/tests" element={<AdminRoute><AdminTestsPage /></AdminRoute>} />
               <Route path="/admin/pyq" element={<AdminRoute><AdminQuestionBankPage defaultType="pyq" /></AdminRoute>} />
+              <Route path="/admin/bulk-import" element={<AdminRoute><AdminQuestionBankPage defaultType="pyq" initialTab="bulk" /></AdminRoute>} />
               <Route path="/admin/current-affairs" element={<AdminRoute><AdminCurrentAffairsPage /></AdminRoute>} />
               <Route path="/admin/announcements" element={<AdminRoute><AdminAnnouncementsPage /></AdminRoute>} />
               <Route path="/admin/import-export" element={<AdminRoute><AdminImportExportPage /></AdminRoute>} />

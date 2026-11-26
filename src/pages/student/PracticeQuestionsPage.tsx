@@ -17,10 +17,16 @@ interface PracticeQuestion {
   topicId: string;
   subjectId: string;
   questionType: QuestionType;
+  questionFormat?: 'objective' | 'descriptive' | 'other';
+  examCommission?: string;
   stem: string;
   options: string[];
   difficulty: string;
   examYear?: number;
+  paperName?: string;
+  marks?: number;
+  wordLimit?: number;
+  modelAnswer?: string;
 }
 
 interface AnswerFeedback {
@@ -43,6 +49,7 @@ export function PracticeQuestionsPage() {
   const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
   const [typeFilter, setTypeFilter] = useState<'all' | QuestionType>('all');
   const [feedback, setFeedback] = useState<Record<string, AnswerFeedback>>({});
+  const [revealedModelAnswers, setRevealedModelAnswers] = useState<Record<string, boolean>>({});
   const [checkingId, setCheckingId] = useState<string | null>(null);
 
   const loadPractice = async () => {
@@ -198,44 +205,87 @@ export function PracticeQuestionsPage() {
               const topic = topics.find((item) => item.id === question.topicId);
               const isSaved = bookmarks.some((item) => item.targetType === 'question' && item.targetId === question.id);
 
+              const opts = Array.isArray(question.options) ? question.options : [];
+              const isDescriptive =
+                question.questionFormat === 'descriptive' ||
+                question.questionFormat === 'other' ||
+                opts.length < 2;
+              const isOutlineOpen = Boolean(revealedModelAnswers[question.id]);
+
               return (
                 <article key={question.id} className="rounded-xl border border-edge bg-panel p-5 sm:p-6 shadow-sm space-y-4">
                   <div className="flex items-start justify-between gap-4">
                     <div className="text-xs leading-relaxed text-ink-faint">
-                      Q{index + 1} · {subject?.title || 'Subject'} · {topic?.title || 'Topic'} · {question.questionType.toUpperCase()} · {question.difficulty}
+                      Q{index + 1} · {subject?.title || 'Subject'} · {topic?.title || 'Topic'} · {question.questionType.toUpperCase()}
+                      {isDescriptive ? ' (Descriptive)' : ''} · {question.difficulty}
+                      {question.examCommission ? ` · ${question.examCommission.replace('_', ' ')}` : ''}
                       {question.examYear ? ` · ${question.examYear}` : ''}
+                      {question.paperName ? ` · ${question.paperName}` : ''}
+                      {question.marks !== undefined ? ` · ${question.marks} Marks` : ''}
+                      {question.wordLimit !== undefined ? ` · ${question.wordLimit} Words` : ''}
                     </div>
                     <button type="button" onClick={() => void handleBookmark(question)} aria-label="Bookmark question" className={`rounded-md border p-2 ${isSaved ? 'border-accent bg-accent/10 text-accent-text' : 'border-edge-strong text-ink-muted hover:text-ink'}`}>
                       <BookmarkIcon className="h-4 w-4" />
                     </button>
                   </div>
                   <p className="text-sm sm:text-base font-semibold leading-relaxed text-ink">{question.stem}</p>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                    {question.options.map((option, optionIndex) => {
-                      const isCorrect = answer?.correctOptionIndex === optionIndex;
-                      const isChosen = answer?.selectedIndex === optionIndex;
-                      const style = answer
-                        ? isCorrect
-                          ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-200'
-                          : isChosen
-                            ? 'border-red-500 bg-red-50 dark:bg-red-950/40 text-red-900 dark:text-red-200'
-                            : 'border-edge bg-field text-ink-muted'
-                        : 'border-edge-strong bg-field hover:bg-subtle text-ink';
-                      return (
-                        <button key={optionIndex} type="button" disabled={Boolean(answer) || checkingId === question.id} onClick={() => void handleAnswer(question, optionIndex)} className={`flex items-center justify-between gap-2 rounded-lg border px-4 py-3 text-left text-sm transition-colors disabled:cursor-default ${style}`}>
-                          <span><span className="mr-2 font-mono text-xs opacity-70">{String.fromCharCode(65 + optionIndex)}.</span>{option}</span>
-                          {answer && isCorrect && <CheckCircle2 className="h-4 w-4 shrink-0" />}
-                          {answer && isChosen && !isCorrect && <XCircle className="h-4 w-4 shrink-0" />}
-                          {checkingId === question.id && !answer && <span className="text-xs">Checking…</span>}
-                        </button>
-                      );
-                    })}
-                  </div>
-                  {answer && (
-                    <div className={`rounded-lg border p-4 text-sm ${answer.correct ? 'border-emerald-500/40 bg-emerald-500/5' : 'border-red-500/40 bg-red-500/5'}`}>
-                      <div className="font-bold text-ink">{answer.correct ? 'Correct answer' : 'Not quite — review the correct option'}</div>
-                      {answer.explanation && <p className="mt-1 leading-relaxed text-ink-muted">{answer.explanation}</p>}
+                  {isDescriptive ? (
+                    <div className="space-y-3">
+                      <div className="rounded-lg border border-edge bg-subtle/60 px-3.5 py-2.5 text-xs text-ink-muted">
+                        Descriptive / Mains question — prepare structured answer points within the marks and word limit.
+                      </div>
+                      {question.modelAnswer && (
+                        <div>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setRevealedModelAnswers((prev) => ({
+                                ...prev,
+                                [question.id]: !prev[question.id],
+                              }))
+                            }
+                            className="rounded-lg border border-edge-strong bg-field px-3 py-1.5 text-xs font-semibold text-accent-text hover:border-accent"
+                          >
+                            {isOutlineOpen ? 'Hide Reference Answer Outline' : 'Show Reference Answer Outline'}
+                          </button>
+                          {isOutlineOpen && (
+                            <div className="mt-2.5 rounded-lg bg-subtle p-4 text-sm leading-relaxed text-ink-muted whitespace-pre-wrap">
+                              {question.modelAnswer}
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
+                  ) : (
+                    <>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                        {opts.map((option, optionIndex) => {
+                          const isCorrect = answer?.correctOptionIndex === optionIndex;
+                          const isChosen = answer?.selectedIndex === optionIndex;
+                          const style = answer
+                            ? isCorrect
+                              ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-200'
+                              : isChosen
+                                ? 'border-red-500 bg-red-50 dark:bg-red-950/40 text-red-900 dark:text-red-200'
+                                : 'border-edge bg-field text-ink-muted'
+                            : 'border-edge-strong bg-field hover:bg-subtle text-ink';
+                          return (
+                            <button key={optionIndex} type="button" disabled={Boolean(answer) || checkingId === question.id} onClick={() => void handleAnswer(question, optionIndex)} className={`flex items-center justify-between gap-2 rounded-lg border px-4 py-3 text-left text-sm transition-colors disabled:cursor-default ${style}`}>
+                              <span><span className="mr-2 font-mono text-xs opacity-70">{String.fromCharCode(65 + optionIndex)}.</span>{option}</span>
+                              {answer && isCorrect && <CheckCircle2 className="h-4 w-4 shrink-0" />}
+                              {answer && isChosen && !isCorrect && <XCircle className="h-4 w-4 shrink-0" />}
+                              {checkingId === question.id && !answer && <span className="text-xs">Checking…</span>}
+                            </button>
+                          );
+                        })}
+                      </div>
+                      {answer && (
+                        <div className={`rounded-lg border p-4 text-sm ${answer.correct ? 'border-emerald-500/40 bg-emerald-500/5' : 'border-red-500/40 bg-red-500/5'}`}>
+                          <div className="font-bold text-ink">{answer.correct ? 'Correct answer' : 'Not quite — review the correct option'}</div>
+                          {answer.explanation && <p className="mt-1 leading-relaxed text-ink-muted">{answer.explanation}</p>}
+                        </div>
+                      )}
+                    </>
                   )}
                 </article>
               );

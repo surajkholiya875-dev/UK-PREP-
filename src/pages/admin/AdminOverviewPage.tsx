@@ -7,6 +7,7 @@ import {
   ClipboardCheck,
   FileCheck2,
   FileText,
+  FileUp,
   HelpCircle,
   Library,
   Newspaper,
@@ -143,13 +144,22 @@ export function AdminOverviewPage() {
       isAdminWorkspace
     >
       <div className="space-y-6">
-        <div className="bg-panel border border-edge rounded-xl p-6 shadow-sm">
-          <h2 className="text-lg font-semibold text-ink">
-            Academic Hierarchy &amp; Content Coverage Control
-          </h2>
-          <p className="mt-1 text-sm text-ink-muted">
-            Manage examinations, courses, subjects, units, chapters, topics, study materials, MCQs, verified PYQs, practice assessments, and student accounts. Only published records are visible in the Student Portal.
-          </p>
+        <div className="bg-panel border border-edge rounded-xl p-6 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h2 className="text-lg font-semibold text-ink">
+              Academic Hierarchy &amp; Content Coverage Control
+            </h2>
+            <p className="mt-1 text-sm text-ink-muted">
+              Manage examinations, courses, subjects, units, chapters, topics, study materials, MCQs, verified PYQs, practice assessments, and student accounts. Only published records are visible in the Student Portal.
+            </p>
+          </div>
+          <Link
+            to="/admin/bulk-import"
+            className="inline-flex items-center gap-2 shrink-0 px-4 py-2.5 text-xs font-semibold rounded-lg bg-accent text-accent-ink hover:bg-accent-hover transition-colors"
+          >
+            <FileUp className="w-4 h-4" />
+            <span>Bulk Question Import</span>
+          </Link>
         </div>
 
         {loading ? (

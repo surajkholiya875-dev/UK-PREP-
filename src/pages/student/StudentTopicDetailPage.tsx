@@ -32,11 +32,18 @@ interface PracticeQuestion {
   topicId: string;
   subjectId: string;
   questionType: 'mcq' | 'pyq' | 'current_affairs';
+  questionFormat?: 'objective' | 'descriptive' | 'other';
+  examCommission?: string;
   stem: string;
   options: string[];
   difficulty: string;
   examName?: string;
   examYear?: number;
+  paperName?: string;
+  marks?: number;
+  wordLimit?: number;
+  questionNumber?: string;
+  modelAnswer?: string;
   sourceReference?: string;
   isVerified?: boolean;
 }
@@ -122,6 +129,7 @@ export function StudentTopicDetailPage() {
   const [questionError, setQuestionError] = useState<string | null>(null);
   const [questionReload, setQuestionReload] = useState(0);
   const [feedback, setFeedback] = useState<Record<string, AnswerFeedback>>({});
+  const [revealedModelAnswers, setRevealedModelAnswers] = useState<Record<string, boolean>>({});
   const [questionFilter, setQuestionFilter] = useState<'all' | 'incorrect'>('all');
   const [checkingId, setCheckingId] = useState<string | null>(null);
 
@@ -292,7 +300,8 @@ export function StudentTopicDetailPage() {
           .replace(/[’‘]/g, "'")
           .replace(/[^\p{L}\p{N}]+/gu, ' ')
           .trim();
-      const key = `${question.questionType}|${normalize(question.stem)}|${question.options.map(normalize).sort().join('|')}`;
+      const opts = Array.isArray(question.options) ? question.options : [];
+      const key = `${question.questionType}|${question.questionFormat ?? 'objective'}|${normalize(question.stem)}|${opts.map(normalize).sort().join('|')}`;
       if (seen.has(key)) return false;
       seen.add(key);
       return true;
@@ -771,6 +780,13 @@ export function StudentTopicDetailPage() {
 
                   {displayedQuestions.map((question, index) => {
                     const answer = feedback[question.id];
+                    const opts = Array.isArray(question.options) ? question.options : [];
+                    const isDescriptive =
+                      question.questionFormat === 'descriptive' ||
+                      question.questionFormat === 'other' ||
+                      opts.length < 2;
+                    const isOutlineOpen = Boolean(revealedModelAnswers[question.id]);
+
                     return (
                       <article
                         key={question.id}
@@ -778,9 +794,15 @@ export function StudentTopicDetailPage() {
                       >
                         <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-semibold text-accent-text">
                           <span>
-                            {activeTab === 'mcq' ? 'Practice MCQ' : 'Verified PYQ'} {index + 1}
+                            {activeTab === 'mcq' ? 'Practice' : 'Verified PYQ'}{' '}
+                            {isDescriptive ? '(Descriptive / Mains)' : 'MCQ'} {index + 1}
+                            {question.examCommission ? ` · ${question.examCommission.replace('_', ' ')}` : ''}
                             {question.examName ? ` · ${question.examName}` : ''}
-                            {question.examYear ? ` (${question.examYear})` : ''} · {question.difficulty}
+                            {question.examYear ? ` (${question.examYear})` : ''}
+                            {question.paperName ? ` · ${question.paperName}` : ''}
+                            {question.marks !== undefined ? ` · ${question.marks} Marks` : ''}
+                            {question.wordLimit !== undefined ? ` · ${question.wordLimit} Words` : ''} ·{' '}
+                            {question.difficulty}
                           </span>
                           {activeTab === 'pyq' && question.sourceReference && (
                             <span className="font-normal text-ink-faint">
@@ -789,32 +811,63 @@ export function StudentTopicDetailPage() {
                           )}
                         </div>
                         <h3 className="font-semibold leading-7 text-ink">{question.stem}</h3>
-                        <div className="grid gap-2 sm:grid-cols-2">
-                          {question.options.map((option, optionIndex) => (
-                            <button
-                              key={optionIndex}
-                              type="button"
-                              disabled={Boolean(answer) || checkingId === question.id}
-                              onClick={() => void handleAnswer(question, optionIndex)}
-                              className={`rounded-lg border p-3 text-left text-sm transition-colors ${
-                                answer?.correctOptionIndex === optionIndex
-                                  ? 'border-emerald-500 bg-emerald-500/10 text-ink font-medium'
-                                  : answer?.selectedIndex === optionIndex
-                                    ? 'border-red-500 bg-red-500/10 text-ink'
-                                    : 'border-edge-strong bg-field text-ink hover:bg-subtle'
-                              }`}
-                            >
-                              {String.fromCharCode(65 + optionIndex)}. {option}
-                            </button>
-                          ))}
-                        </div>
-                        {answer && (
-                          <div className="rounded-lg bg-subtle p-4 text-sm text-ink">
-                            <strong>{answer.correct ? 'Correct' : 'Incorrect'}</strong>
-                            {answer.explanation && (
-                              <p className="mt-2 leading-7 text-ink-muted">{answer.explanation}</p>
+                        {isDescriptive ? (
+                          <div className="space-y-3">
+                            <div className="rounded-lg border border-edge bg-subtle/60 px-3.5 py-2.5 text-xs text-ink-muted">
+                              Descriptive / Mains question — practice writing structured points within the indicated marks and word limit.
+                            </div>
+                            {question.modelAnswer && (
+                              <div>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    setRevealedModelAnswers((prev) => ({
+                                      ...prev,
+                                      [question.id]: !prev[question.id],
+                                    }))
+                                  }
+                                  className="rounded-lg border border-edge-strong bg-field px-3 py-1.5 text-xs font-semibold text-accent-text hover:border-accent"
+                                >
+                                  {isOutlineOpen ? 'Hide Reference Answer Outline' : 'Show Reference Answer Outline'}
+                                </button>
+                                {isOutlineOpen && (
+                                  <div className="mt-2.5 rounded-lg bg-subtle p-4 text-sm leading-7 text-ink-muted whitespace-pre-wrap">
+                                    {question.modelAnswer}
+                                  </div>
+                                )}
+                              </div>
                             )}
                           </div>
+                        ) : (
+                          <>
+                            <div className="grid gap-2 sm:grid-cols-2">
+                              {opts.map((option, optionIndex) => (
+                                <button
+                                  key={optionIndex}
+                                  type="button"
+                                  disabled={Boolean(answer) || checkingId === question.id}
+                                  onClick={() => void handleAnswer(question, optionIndex)}
+                                  className={`rounded-lg border p-3 text-left text-sm transition-colors ${
+                                    answer?.correctOptionIndex === optionIndex
+                                      ? 'border-emerald-500 bg-emerald-500/10 text-ink font-medium'
+                                      : answer?.selectedIndex === optionIndex
+                                        ? 'border-red-500 bg-red-500/10 text-ink'
+                                        : 'border-edge-strong bg-field text-ink hover:bg-subtle'
+                                  }`}
+                                >
+                                  {String.fromCharCode(65 + optionIndex)}. {option}
+                                </button>
+                              ))}
+                            </div>
+                            {answer && (
+                              <div className="rounded-lg bg-subtle p-4 text-sm text-ink">
+                                <strong>{answer.correct ? 'Correct' : 'Incorrect'}</strong>
+                                {answer.explanation && (
+                                  <p className="mt-2 leading-7 text-ink-muted">{answer.explanation}</p>
+                                )}
+                              </div>
+                            )}
+                          </>
                         )}
                       </article>
                     );

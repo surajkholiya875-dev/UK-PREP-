@@ -222,7 +222,7 @@ service cloud.firestore {
 
     function isValidQuestion(data, questionId) {
       return data.keys().hasAll(['id', 'topicId', 'chapterId', 'subjectId', 'examinationId', 'questionType', 'stem', 'options', 'correctOptionIndex', 'difficulty', 'isPublished', 'createdBy', 'createdAt', 'updatedAt'])
-        && data.keys().hasOnly(['id', 'topicId', 'chapterId', 'subjectId', 'examinationId', 'questionType', 'stem', 'options', 'correctOptionIndex', 'explanation', 'difficulty', 'examName', 'examYear', 'sourceReference', 'isVerified', 'isPublished', 'createdBy', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['id', 'topicId', 'chapterId', 'subjectId', 'examinationId', 'questionType', 'questionFormat', 'examCommission', 'stem', 'options', 'correctOptionIndex', 'explanation', 'difficulty', 'examName', 'examYear', 'paperName', 'marks', 'wordLimit', 'questionNumber', 'modelAnswer', 'sourceReference', 'isVerified', 'isPublished', 'createdBy', 'createdAt', 'updatedAt'])
         && data.id == questionId
         && isValidId(data.id)
         && isValidId(data.topicId)
@@ -230,13 +230,32 @@ service cloud.firestore {
         && isValidId(data.subjectId)
         && isValidId(data.examinationId)
         && data.questionType in ['mcq', 'pyq', 'current_affairs']
+        && (!('questionFormat' in data) || data.questionFormat in ['objective', 'descriptive', 'other'])
+        && (!('examCommission' in data) || data.examCommission in ['UKPSC_PCS', 'UKSSSC', 'UPSC', 'Other'])
         && isValidString(data.stem, 5, 3000)
-        && data.options is list && data.options.size() >= 2 && data.options.size() <= 5 && data.options[0] is string
-        && isValidNumber(data.correctOptionIndex, 0, 4)
+        && data.options is list
+        && (
+          (
+            'questionFormat' in data
+            && data.questionFormat in ['descriptive', 'other']
+            && data.options.size() == 0
+            && data.correctOptionIndex == -1
+          ) || (
+            data.options.size() >= 2
+            && data.options.size() <= 5
+            && data.options[0] is string
+            && isValidNumber(data.correctOptionIndex, 0, 4)
+          )
+        )
         && (!('explanation' in data) || isValidString(data.explanation, 0, 3000))
         && data.difficulty in ['foundation', 'standard', 'advanced']
         && (!('examName' in data) || isValidString(data.examName, 0, 120))
         && (!('examYear' in data) || isValidNumber(data.examYear, 1990, 2100))
+        && (!('paperName' in data) || isValidString(data.paperName, 0, 160))
+        && (!('marks' in data) || isValidNumber(data.marks, 0, 250))
+        && (!('wordLimit' in data) || isValidNumber(data.wordLimit, 1, 5000))
+        && (!('questionNumber' in data) || isValidString(data.questionNumber, 0, 40))
+        && (!('modelAnswer' in data) || isValidString(data.modelAnswer, 0, 6000))
         && (!('sourceReference' in data) || isValidString(data.sourceReference, 0, 300))
         && (!('isVerified' in data) || data.isVerified is bool)
         && data.isPublished is bool
@@ -654,7 +673,7 @@ service cloud.firestore {
         && incoming().createdBy == existing().createdBy
         && incoming().createdAt == existing().createdAt
         && incoming().updatedAt == request.time
-        && incoming().diff(existing()).affectedKeys().hasOnly(['topicId', 'chapterId', 'subjectId', 'examinationId', 'questionType', 'stem', 'options', 'correctOptionIndex', 'explanation', 'difficulty', 'examName', 'examYear', 'sourceReference', 'isVerified', 'isPublished', 'updatedAt']);
+        && incoming().diff(existing()).affectedKeys().hasOnly(['topicId', 'chapterId', 'subjectId', 'examinationId', 'questionType', 'questionFormat', 'examCommission', 'stem', 'options', 'correctOptionIndex', 'explanation', 'difficulty', 'examName', 'examYear', 'paperName', 'marks', 'wordLimit', 'questionNumber', 'modelAnswer', 'sourceReference', 'isVerified', 'isPublished', 'updatedAt']);
       allow delete: if isValidId(questionId) && isAdmin();
     }
 

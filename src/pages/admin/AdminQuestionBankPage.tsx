@@ -1,11 +1,13 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { ArrowLeft, Eye, Pencil, Plus, Search, Trash2, X } from 'lucide-react';
+import { Link, useSearchParams } from 'react-router-dom';
+import { ArrowLeft, Eye, FileUp, Pencil, Plus, Search, Trash2, X } from 'lucide-react';
+import { BulkQuestionImportPanel } from '../../components/admin/BulkQuestionImportPanel';
 import { CascadingTopicSelector } from '../../components/admin/CascadingTopicSelector';
 import { AppShell } from '../../components/ui/AppShell';
 import { EmptyState, ErrorState, LoadingState, SuccessBanner } from '../../components/ui/StateBlocks';
 import { ADMIN_NAV_ITEMS } from '../../config/navigation';
 import { useAuth } from '../../context/AuthContext';
+import { COMMISSION_LABELS, FORMAT_LABELS } from '../../lib/bulkQuestionImport/types';
 import { compareNaturalText, safeSortOrder } from '../../lib/syllabusHierarchy';
 import { normalizeQuestionKey } from '../../lib/topicContent/types';
 import {
@@ -18,17 +20,29 @@ import {
 import {
   Chapter,
   Course,
+  ExamCommission,
   Examination,
   Question,
   QuestionDifficulty,
+  QuestionFormat,
   QuestionType,
   Subject,
   Topic,
   Unit,
 } from '../../types/academic';
 
-export function AdminQuestionBankPage({ defaultType = 'mcq' }: { defaultType?: QuestionType }) {
+export function AdminQuestionBankPage({
+  defaultType = 'mcq',
+  initialTab = 'manage',
+}: {
+  defaultType?: QuestionType;
+  initialTab?: 'manage' | 'bulk';
+}) {
   const { firebaseUser } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tabParam = searchParams.get('tab');
+  const activeTab: 'manage' | 'bulk' =
+    tabParam === 'bulk' ? 'bulk' : tabParam === 'manage' ? 'manage' : initialTab;
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -47,10 +61,16 @@ export function AdminQuestionBankPage({ defaultType = 'mcq' }: { defaultType?: Q
     options: string[];
     correctOptionIndex: number;
     explanation: string;
+    modelAnswer?: string;
     questionType: QuestionType;
+    questionFormat?: QuestionFormat;
+    examCommission?: ExamCommission;
     difficulty: QuestionDifficulty;
     examName?: string;
     examYear?: number;
+    paperName?: string;
+    marks?: number;
+    wordLimit?: number;
     sourceReference?: string;
     topicPath: string;
   } | null>(null);
@@ -62,11 +82,15 @@ export function AdminQuestionBankPage({ defaultType = 'mcq' }: { defaultType?: Q
   const [topicFilter, setTopicFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'published' | 'draft'>('all');
   const [difficultyFilter, setDifficultyFilter] = useState<'all' | QuestionDifficulty>('all');
+  const [commissionFilter, setCommissionFilter] = useState<'all' | ExamCommission>('all');
+  const [formatFilter, setFormatFilter] = useState<'all' | QuestionFormat>('all');
 
   const [form, setForm] = useState({
     examinationId: '',
     topicId: '',
     questionType: defaultType,
+    questionFormat: 'objective' as QuestionFormat,
+    examCommission: 'UKPSC_PCS' as ExamCommission,
     stem: '',
     optA: '',
     optB: '',
@@ -74,9 +98,13 @@ export function AdminQuestionBankPage({ defaultType = 'mcq' }: { defaultType?: Q
     optD: '',
     correctOptionIndex: 0,
     explanation: '',
+    modelAnswer: '',
     difficulty: 'standard' as QuestionDifficulty,
     examName: '',
     examYear: 2024,
+    paperName: '',
+    marks: '' as string | number,
+    wordLimit: '' as string | number,
     sourceReference: '',
     isVerified: defaultType === 'pyq',
     isPublished: true,
@@ -178,6 +206,8 @@ export function AdminQuestionBankPage({ defaultType = 'mcq' }: { defaultType?: Q
       examinationId: preserveTopic && p.examinationId ? p.examinationId : exams[0]?.id || '',
       topicId: preserveTopic && p.topicId ? p.topicId : topics[0]?.id || '',
       questionType: defaultType,
+      questionFormat: 'objective',
+      examCommission: preserveTopic ? p.examCommission : 'UKPSC_PCS',
       stem: '',
       optA: '',
       optB: '',
@@ -185,9 +215,13 @@ export function AdminQuestionBankPage({ defaultType = 'mcq' }: { defaultType?: Q
       optD: '',
       correctOptionIndex: 0,
       explanation: '',
+      modelAnswer: '',
       difficulty: 'standard',
       examName: '',
       examYear: 2024,
+      paperName: '',
+      marks: '',
+      wordLimit: '',
       sourceReference: '',
       isVerified: defaultType === 'pyq',
       isPublished: true,
@@ -218,16 +252,19 @@ export function AdminQuestionBankPage({ defaultType = 'mcq' }: { defaultType?: Q
       return;
     }
 
-    const options = [form.optA, form.optB, form.optC, form.optD]
-      .map((o) => o.trim())
-      .filter(Boolean);
-    if (options.length < 2) {
-      setError('Provide at least 2 non-empty answer options.');
-      return;
-    }
-    if (form.correctOptionIndex >= options.length) {
-      setError('Selected Correct Option does not match a filled option.');
-      return;
+    const isObjective = form.questionFormat === 'objective';
+    const options = isObjective
+      ? [form.optA, form.optB, form.optC, form.optD].map((o) => o.trim()).filter(Boolean)
+      : [];
+    if (isObjective) {
+      if (options.length < 2) {
+        setError('Provide at least 2 non-empty answer options for Objective MCQs.');
+        return;
+      }
+      if (form.correctOptionIndex >= options.length) {
+        setError('Selected Correct Option does not match a filled option.');
+        return;
+      }
     }
 
     const stemKey = normalizeQuestionKey(form.stem);
@@ -253,6 +290,11 @@ export function AdminQuestionBankPage({ defaultType = 'mcq' }: { defaultType?: Q
     const isEdit = Boolean(editingId);
     const id = editingId ?? generateSafeId('q');
     const existingQuestion = isEdit ? questions.find((q) => q.id === editingId) : undefined;
+    const parsedMarks = form.marks !== '' && Number.isFinite(Number(form.marks)) ? Number(form.marks) : undefined;
+    const parsedWordLimit =
+      form.wordLimit !== '' && Number.isInteger(Number(form.wordLimit)) && Number(form.wordLimit) >= 1
+        ? Number(form.wordLimit)
+        : undefined;
 
     setSaving(true);
     setError(null);
@@ -269,10 +311,16 @@ export function AdminQuestionBankPage({ defaultType = 'mcq' }: { defaultType?: Q
           subjectId: resolvedSubjectId,
           examinationId: resolvedExaminationId,
           questionType: form.questionType,
+          questionFormat: form.questionFormat,
+          examCommission: form.examCommission,
           stem: clampString(form.stem, 3000),
           options,
-          correctOptionIndex: Math.min(form.correctOptionIndex, options.length - 1),
+          correctOptionIndex: isObjective ? Math.min(form.correctOptionIndex, options.length - 1) : -1,
           explanation: clampString(form.explanation, 3000),
+          ...(form.modelAnswer.trim() ? { modelAnswer: clampString(form.modelAnswer, 6000) } : {}),
+          ...(form.paperName.trim() ? { paperName: clampString(form.paperName, 160) } : {}),
+          ...(parsedMarks !== undefined && parsedMarks >= 0 ? { marks: Math.min(parsedMarks, 250) } : {}),
+          ...(parsedWordLimit !== undefined ? { wordLimit: Math.min(parsedWordLimit, 5000) } : {}),
           difficulty: form.difficulty,
           ...(form.questionType === 'pyq'
             ? {
@@ -302,8 +350,9 @@ export function AdminQuestionBankPage({ defaultType = 'mcq' }: { defaultType?: Q
   const togglePublish = async (q: Question) => {
     const nextPublish = !q.isPublished;
     if (nextPublish) {
-      if (!Array.isArray(q.options) || q.options.length < 2) {
-        setError('Cannot publish a question with fewer than 2 answer options.');
+      const format = q.questionFormat ?? 'objective';
+      if (format === 'objective' && (!Array.isArray(q.options) || q.options.length < 2)) {
+        setError('Cannot publish an Objective MCQ with fewer than 2 answer options.');
         return;
       }
       if (q.questionType === 'pyq' && (q.isVerified === false || !q.examName?.trim() || !Number.isInteger(q.examYear))) {
@@ -339,10 +388,13 @@ export function AdminQuestionBankPage({ defaultType = 'mcq' }: { defaultType?: Q
       if (statusFilter === 'published' && !q.isPublished) return false;
       if (statusFilter === 'draft' && q.isPublished) return false;
       if (difficultyFilter !== 'all' && q.difficulty !== difficultyFilter) return false;
+      if (commissionFilter !== 'all' && (q.examCommission ?? 'Other') !== commissionFilter) return false;
+      if (formatFilter !== 'all' && (q.questionFormat ?? 'objective') !== formatFilter) return false;
       if (
         query &&
         !q.stem.toLowerCase().includes(query) &&
         !(q.examName || '').toLowerCase().includes(query) &&
+        !(q.paperName || '').toLowerCase().includes(query) &&
         !(q.sourceReference || '').toLowerCase().includes(query) &&
         !(topicMap.get(q.topicId)?.title || '').toLowerCase().includes(query)
       ) {
@@ -350,19 +402,37 @@ export function AdminQuestionBankPage({ defaultType = 'mcq' }: { defaultType?: Q
       }
       return true;
     });
-  }, [questions, defaultType, subjectFilter, topicFilter, statusFilter, difficultyFilter, searchQuery, topicMap]);
+  }, [
+    questions,
+    defaultType,
+    subjectFilter,
+    topicFilter,
+    statusFilter,
+    difficultyFilter,
+    commissionFilter,
+    formatFilter,
+    searchQuery,
+    topicMap,
+  ]);
 
   const filterTopics = useMemo(
     () => (subjectFilter ? topics.filter((t) => t.subjectId === subjectFilter) : topics),
     [topics, subjectFilter]
   );
 
+  const pageHeading =
+    activeTab === 'bulk'
+      ? 'Bulk Question Import'
+      : defaultType === 'pyq'
+        ? 'PYQ Management'
+        : 'MCQ Question Bank';
+
   return (
     <AppShell
       workspaceTitle="Admin Workspace"
       navItems={ADMIN_NAV_ITEMS}
-      pageTitle={defaultType === 'pyq' ? 'PYQ Management' : 'MCQ Question Bank'}
-      breadcrumb={`UK Prep / Admin / ${defaultType === 'pyq' ? 'PYQ Management' : 'MCQ Question Bank'}`}
+      pageTitle={pageHeading}
+      breadcrumb={`UK Prep / Admin / ${pageHeading}`}
       isAdminWorkspace
     >
       <div className="space-y-6">
@@ -374,16 +444,79 @@ export function AdminQuestionBankPage({ defaultType = 'mcq' }: { defaultType?: Q
             <ArrowLeft className="w-3.5 h-3.5" />
             <span>Back to Admin Overview</span>
           </Link>
-          <Link
-            to="/admin/topics"
-            className="text-xs font-semibold text-accent-text hover:underline whitespace-nowrap"
-          >
-            Open Topic Batch Sync &amp; JSON Import →
-          </Link>
+          <div className="flex flex-wrap items-center gap-3">
+            <Link
+              to="/admin/import-export"
+              className="text-xs font-medium text-ink-muted hover:text-ink whitespace-nowrap"
+            >
+              Academic Archive JSON Import / Export
+            </Link>
+            <Link
+              to="/admin/topics"
+              className="text-xs font-semibold text-accent-text hover:underline whitespace-nowrap"
+            >
+              Open Topic Batch Sync →
+            </Link>
+          </div>
+        </div>
+
+        {/* Mode Switcher: Single Entry & Question Bank vs Bulk Question Import */}
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-edge bg-panel p-3 shadow-sm">
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setSearchParams({ tab: 'manage' })}
+              className={`whitespace-nowrap shrink-0 px-4 py-2 text-xs font-semibold rounded-lg border transition-colors ${
+                activeTab === 'manage'
+                  ? 'border-accent bg-accent text-accent-ink'
+                  : 'border-edge-strong bg-field text-ink-muted hover:text-ink'
+              }`}
+            >
+              {defaultType === 'pyq' ? 'PYQ Bank & Single Entry' : 'MCQ Bank & Single Entry'}
+            </button>
+            <button
+              type="button"
+              onClick={() => setSearchParams({ tab: 'bulk' })}
+              className={`inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 px-4 py-2 text-xs font-semibold rounded-lg border transition-colors ${
+                activeTab === 'bulk'
+                  ? 'border-accent bg-accent text-accent-ink'
+                  : 'border-edge-strong bg-field text-ink-muted hover:text-ink'
+              }`}
+            >
+              <FileUp className="w-3.5 h-3.5" />
+              <span>Bulk Question Import</span>
+            </button>
+          </div>
+          <div className="text-xs text-ink-muted font-mono tabular-nums">
+            Total Bank: {questions.length} question{questions.length === 1 ? '' : 's'}
+          </div>
         </div>
 
         {notice && <SuccessBanner message={notice} />}
         {error && <ErrorState message={error} onRetry={() => void loadData()} />}
+
+        {activeTab === 'bulk' ? (
+          loading ? (
+            <LoadingState label="Loading academic hierarchy and existing questions..." />
+          ) : !firebaseUser ? (
+            <ErrorState message="Administrator authentication required." />
+          ) : (
+            <BulkQuestionImportPanel
+              adminUid={firebaseUser.uid}
+              getIdToken={() => firebaseUser.getIdToken()}
+              examinations={exams}
+              courses={courses}
+              subjects={subjects}
+              units={units}
+              chapters={chapters}
+              topics={topics}
+              existingQuestions={questions}
+              defaultCommission="UKPSC_PCS"
+              onImportComplete={loadData}
+            />
+          )
+        ) : (
+          <>
 
         {previewQuestion && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
@@ -392,9 +525,13 @@ export function AdminQuestionBankPage({ defaultType = 'mcq' }: { defaultType?: Q
                 <div>
                   <div className="text-[11px] font-mono uppercase text-accent-text">
                     {previewQuestion.questionType === 'pyq' ? 'Verified PYQ' : 'Practice MCQ'} ·{' '}
+                    {FORMAT_LABELS[previewQuestion.questionFormat ?? 'objective']} ·{' '}
+                    {previewQuestion.examCommission || 'UKPSC_PCS'} ·{' '}
                     {previewQuestion.difficulty}
                     {previewQuestion.examName ? ` · ${previewQuestion.examName}` : ''}
                     {previewQuestion.examYear ? ` (${previewQuestion.examYear})` : ''}
+                    {previewQuestion.marks !== undefined ? ` · ${previewQuestion.marks} Marks` : ''}
+                    {previewQuestion.wordLimit !== undefined ? ` · ${previewQuestion.wordLimit} Words` : ''}
                   </div>
                   <div className="text-xs text-ink-faint mt-0.5">{previewQuestion.topicPath}</div>
                 </div>
@@ -416,23 +553,25 @@ export function AdminQuestionBankPage({ defaultType = 'mcq' }: { defaultType?: Q
                     Source Reference: <span className="font-medium text-ink">{previewQuestion.sourceReference}</span>
                   </div>
                 )}
-                <div className="grid gap-2 sm:grid-cols-2">
-                  {previewQuestion.options.map((opt, idx) => {
-                    const isAnswer = showPreviewAnswer && idx === previewQuestion.correctOptionIndex;
-                    return (
-                      <div
-                        key={idx}
-                        className={`rounded-lg border p-3 text-xs sm:text-sm ${
-                          isAnswer
-                            ? 'border-emerald-500 bg-emerald-500/10 text-ink font-semibold'
-                            : 'border-edge-strong bg-field text-ink'
-                        }`}
-                      >
-                        {String.fromCharCode(65 + idx)}. {opt}
-                      </div>
-                    );
-                  })}
-                </div>
+                {(previewQuestion.questionFormat ?? 'objective') === 'objective' && previewQuestion.options.length > 0 && (
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    {previewQuestion.options.map((opt, idx) => {
+                      const isAnswer = showPreviewAnswer && idx === previewQuestion.correctOptionIndex;
+                      return (
+                        <div
+                          key={idx}
+                          className={`rounded-lg border p-3 text-xs sm:text-sm ${
+                            isAnswer
+                              ? 'border-emerald-500 bg-emerald-500/10 text-ink font-semibold'
+                              : 'border-edge-strong bg-field text-ink'
+                          }`}
+                        >
+                          {String.fromCharCode(65 + idx)}. {opt}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
                 <div className="flex items-center justify-between pt-2 border-t border-edge">
                   <button
                     type="button"
@@ -446,6 +585,12 @@ export function AdminQuestionBankPage({ defaultType = 'mcq' }: { defaultType?: Q
                   <div className="rounded-lg bg-subtle p-4 text-xs sm:text-sm text-ink-muted leading-6">
                     <strong className="text-ink">Explanation: </strong>
                     {previewQuestion.explanation}
+                  </div>
+                )}
+                {showPreviewAnswer && previewQuestion.modelAnswer && (
+                  <div className="rounded-lg bg-subtle p-4 text-xs sm:text-sm text-ink-muted leading-6 whitespace-pre-wrap">
+                    <strong className="text-ink">Reference Answer Outline: </strong>
+                    {previewQuestion.modelAnswer}
                   </div>
                 )}
               </div>
@@ -553,6 +698,41 @@ export function AdminQuestionBankPage({ defaultType = 'mcq' }: { defaultType?: Q
                   </div>
                 </div>
 
+                <div className="grid grid-cols-2 gap-2.5">
+                  <div>
+                    <label htmlFor="q-commission" className="block text-[11px] font-medium text-ink-muted mb-1">
+                      Exam Commission
+                    </label>
+                    <select
+                      id="q-commission"
+                      value={form.examCommission}
+                      onChange={(e) => setForm((p) => ({ ...p, examCommission: e.target.value as ExamCommission }))}
+                      className="w-full px-2.5 py-2 text-xs rounded-lg border border-edge-strong bg-field text-ink"
+                    >
+                      {(Object.keys(COMMISSION_LABELS) as ExamCommission[]).map((key) => (
+                        <option key={key} value={key}>
+                          {key === 'UKPSC_PCS' ? 'UKPSC PCS' : key}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label htmlFor="q-format" className="block text-[11px] font-medium text-ink-muted mb-1">
+                      Question Format
+                    </label>
+                    <select
+                      id="q-format"
+                      value={form.questionFormat}
+                      onChange={(e) => setForm((p) => ({ ...p, questionFormat: e.target.value as QuestionFormat }))}
+                      className="w-full px-2.5 py-2 text-xs rounded-lg border border-edge-strong bg-field text-ink"
+                    >
+                      <option value="objective">Objective MCQ</option>
+                      <option value="descriptive">Descriptive / Mains</option>
+                      <option value="other">Other Format</option>
+                    </select>
+                  </div>
+                </div>
+
                 {form.questionType === 'pyq' && (
                   <div className="rounded-lg border border-edge bg-subtle/60 p-3 space-y-2.5">
                     <div className="text-[11px] font-semibold uppercase tracking-wider text-accent-text">
@@ -624,19 +804,26 @@ export function AdminQuestionBankPage({ defaultType = 'mcq' }: { defaultType?: Q
                     <button
                       type="button"
                       onClick={() => {
-                        const options = [form.optA, form.optB, form.optC, form.optD]
-                          .map((o) => o.trim())
-                          .filter(Boolean);
+                        const options =
+                          form.questionFormat === 'objective'
+                            ? [form.optA, form.optB, form.optC, form.optD].map((o) => o.trim()).filter(Boolean)
+                            : [];
                         setShowPreviewAnswer(true);
                         setPreviewQuestion({
                           stem: form.stem || 'Question preview',
-                          options: options.length ? options : ['Option A', 'Option B'],
-                          correctOptionIndex: form.correctOptionIndex,
+                          options,
+                          correctOptionIndex: form.questionFormat === 'objective' ? form.correctOptionIndex : -1,
                           explanation: form.explanation,
+                          modelAnswer: form.modelAnswer || undefined,
                           questionType: form.questionType,
+                          questionFormat: form.questionFormat,
+                          examCommission: form.examCommission,
                           difficulty: form.difficulty,
                           examName: form.questionType === 'pyq' ? form.examName : undefined,
                           examYear: form.questionType === 'pyq' ? form.examYear : undefined,
+                          paperName: form.paperName || undefined,
+                          marks: form.marks !== '' ? Number(form.marks) : undefined,
+                          wordLimit: form.wordLimit !== '' ? Number(form.wordLimit) : undefined,
                           sourceReference: form.questionType === 'pyq' ? form.sourceReference : undefined,
                           topicPath: getTopicPath(form.topicId),
                         });
@@ -657,29 +844,93 @@ export function AdminQuestionBankPage({ defaultType = 'mcq' }: { defaultType?: Q
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-2">
-                  <input type="text" required placeholder="Option A" value={form.optA} onChange={(e) => setForm((p) => ({ ...p, optA: e.target.value }))} className="px-3 py-2 text-xs rounded-lg border border-edge-strong bg-field text-ink placeholder:text-ink-faint" />
-                  <input type="text" required placeholder="Option B" value={form.optB} onChange={(e) => setForm((p) => ({ ...p, optB: e.target.value }))} className="px-3 py-2 text-xs rounded-lg border border-edge-strong bg-field text-ink placeholder:text-ink-faint" />
-                  <input type="text" placeholder="Option C" value={form.optC} onChange={(e) => setForm((p) => ({ ...p, optC: e.target.value }))} className="px-3 py-2 text-xs rounded-lg border border-edge-strong bg-field text-ink placeholder:text-ink-faint" />
-                  <input type="text" placeholder="Option D" value={form.optD} onChange={(e) => setForm((p) => ({ ...p, optD: e.target.value }))} className="px-3 py-2 text-xs rounded-lg border border-edge-strong bg-field text-ink placeholder:text-ink-faint" />
-                </div>
+                {form.questionFormat === 'objective' ? (
+                  <>
+                    <div className="grid grid-cols-2 gap-2">
+                      <input type="text" required placeholder="Option A" value={form.optA} onChange={(e) => setForm((p) => ({ ...p, optA: e.target.value }))} className="px-3 py-2 text-xs rounded-lg border border-edge-strong bg-field text-ink placeholder:text-ink-faint" />
+                      <input type="text" required placeholder="Option B" value={form.optB} onChange={(e) => setForm((p) => ({ ...p, optB: e.target.value }))} className="px-3 py-2 text-xs rounded-lg border border-edge-strong bg-field text-ink placeholder:text-ink-faint" />
+                      <input type="text" placeholder="Option C" value={form.optC} onChange={(e) => setForm((p) => ({ ...p, optC: e.target.value }))} className="px-3 py-2 text-xs rounded-lg border border-edge-strong bg-field text-ink placeholder:text-ink-faint" />
+                      <input type="text" placeholder="Option D" value={form.optD} onChange={(e) => setForm((p) => ({ ...p, optD: e.target.value }))} className="px-3 py-2 text-xs rounded-lg border border-edge-strong bg-field text-ink placeholder:text-ink-faint" />
+                    </div>
 
-                <div>
-                  <label htmlFor="q-correct" className="block text-xs font-medium text-ink-muted mb-1">
-                    Correct Option
-                  </label>
-                  <select
-                    id="q-correct"
-                    value={form.correctOptionIndex}
-                    onChange={(e) => setForm((p) => ({ ...p, correctOptionIndex: Number(e.target.value) }))}
-                    className="w-full px-3 py-2 text-xs rounded-lg border border-edge-strong bg-field text-ink"
-                  >
-                    <option value={0}>Option A</option>
-                    <option value={1}>Option B</option>
-                    <option value={2}>Option C</option>
-                    <option value={3}>Option D</option>
-                  </select>
-                </div>
+                    <div>
+                      <label htmlFor="q-correct" className="block text-xs font-medium text-ink-muted mb-1">
+                        Correct Option
+                      </label>
+                      <select
+                        id="q-correct"
+                        value={form.correctOptionIndex}
+                        onChange={(e) => setForm((p) => ({ ...p, correctOptionIndex: Number(e.target.value) }))}
+                        className="w-full px-3 py-2 text-xs rounded-lg border border-edge-strong bg-field text-ink"
+                      >
+                        <option value={0}>Option A</option>
+                        <option value={1}>Option B</option>
+                        <option value={2}>Option C</option>
+                        <option value={3}>Option D</option>
+                      </select>
+                    </div>
+                  </>
+                ) : (
+                  <div className="space-y-2.5 rounded-lg border border-edge bg-subtle/50 p-3">
+                    <div className="grid grid-cols-3 gap-2">
+                      <div>
+                        <label htmlFor="q-paper" className="block text-[11px] font-medium text-ink-muted mb-1">
+                          Paper Name
+                        </label>
+                        <input
+                          id="q-paper"
+                          type="text"
+                          placeholder="e.g., GS Paper I"
+                          value={form.paperName}
+                          onChange={(e) => setForm((p) => ({ ...p, paperName: e.target.value }))}
+                          className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-edge-strong bg-field text-ink"
+                        />
+                      </div>
+                      <div>
+                        <label htmlFor="q-marks" className="block text-[11px] font-medium text-ink-muted mb-1">
+                          Marks
+                        </label>
+                        <input
+                          id="q-marks"
+                          type="number"
+                          min={0}
+                          max={250}
+                          placeholder="e.g., 10"
+                          value={form.marks}
+                          onChange={(e) => setForm((p) => ({ ...p, marks: e.target.value }))}
+                          className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-edge-strong bg-field text-ink font-mono"
+                        />
+                      </div>
+                      <div>
+                        <label htmlFor="q-word-limit" className="block text-[11px] font-medium text-ink-muted mb-1">
+                          Word Limit
+                        </label>
+                        <input
+                          id="q-word-limit"
+                          type="number"
+                          min={1}
+                          max={5000}
+                          placeholder="e.g., 150"
+                          value={form.wordLimit}
+                          onChange={(e) => setForm((p) => ({ ...p, wordLimit: e.target.value }))}
+                          className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-edge-strong bg-field text-ink font-mono"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label htmlFor="q-model-answer" className="block text-[11px] font-medium text-ink-muted mb-1">
+                        Reference Answer Outline (optional)
+                      </label>
+                      <textarea
+                        id="q-model-answer"
+                        rows={3}
+                        value={form.modelAnswer}
+                        onChange={(e) => setForm((p) => ({ ...p, modelAnswer: e.target.value }))}
+                        className="w-full px-3 py-2 text-xs rounded-lg border border-edge-strong bg-field text-ink"
+                      />
+                    </div>
+                  </div>
+                )}
 
                 <div>
                   <label htmlFor="q-exp" className="block text-xs font-medium text-ink-muted mb-1">
@@ -737,7 +988,7 @@ export function AdminQuestionBankPage({ defaultType = 'mcq' }: { defaultType?: Q
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 <select
                   aria-label="Filter by subject"
                   value={subjectFilter}
@@ -766,6 +1017,29 @@ export function AdminQuestionBankPage({ defaultType = 'mcq' }: { defaultType?: Q
                       {t.title}
                     </option>
                   ))}
+                </select>
+                <select
+                  aria-label="Filter by exam commission"
+                  value={commissionFilter}
+                  onChange={(e) => setCommissionFilter(e.target.value as 'all' | ExamCommission)}
+                  className="px-2.5 py-1.5 text-xs rounded-lg border border-edge-strong bg-field text-ink"
+                >
+                  <option value="all">All Commissions</option>
+                  <option value="UKPSC_PCS">UKPSC PCS</option>
+                  <option value="UKSSSC">UKSSSC</option>
+                  <option value="UPSC">UPSC</option>
+                  <option value="Other">Other</option>
+                </select>
+                <select
+                  aria-label="Filter by question format"
+                  value={formatFilter}
+                  onChange={(e) => setFormatFilter(e.target.value as 'all' | QuestionFormat)}
+                  className="px-2.5 py-1.5 text-xs rounded-lg border border-edge-strong bg-field text-ink"
+                >
+                  <option value="all">All Formats</option>
+                  <option value="objective">Objective MCQ</option>
+                  <option value="descriptive">Descriptive / Mains</option>
+                  <option value="other">Other Format</option>
                 </select>
                 <select
                   aria-label="Filter by publication status"
@@ -808,9 +1082,12 @@ export function AdminQuestionBankPage({ defaultType = 'mcq' }: { defaultType?: Q
                   <div key={q.id} className="p-4 flex flex-col sm:flex-row sm:items-start justify-between gap-3">
                     <div className="min-w-0">
                       <div className="text-xs font-mono text-accent-text">
-                        {q.questionType.toUpperCase()} · {q.difficulty}
+                        {q.questionType.toUpperCase()} · {FORMAT_LABELS[q.questionFormat ?? 'objective']} ·{' '}
+                        {q.examCommission || 'UKPSC_PCS'} · {q.difficulty}
                         {q.examName ? ` · ${q.examName}` : ''}
                         {q.examYear ? ` (${q.examYear})` : ''}
+                        {q.marks !== undefined ? ` · ${q.marks}m` : ''}
+                        {q.wordLimit !== undefined ? ` · ${q.wordLimit}w` : ''}
                         {q.questionType === 'pyq' ? ` · ${q.isVerified === false ? 'Unverified' : 'Verified'}` : ''} ·{' '}
                         {q.isPublished ? 'Published' : 'Draft'}
                       </div>
@@ -835,10 +1112,16 @@ export function AdminQuestionBankPage({ defaultType = 'mcq' }: { defaultType?: Q
                             options: q.options,
                             correctOptionIndex: q.correctOptionIndex,
                             explanation: q.explanation ?? '',
+                            modelAnswer: q.modelAnswer,
                             questionType: q.questionType,
+                            questionFormat: q.questionFormat ?? 'objective',
+                            examCommission: q.examCommission,
                             difficulty: q.difficulty,
                             examName: q.examName,
                             examYear: q.examYear,
+                            paperName: q.paperName,
+                            marks: q.marks,
+                            wordLimit: q.wordLimit,
                             sourceReference: q.sourceReference,
                             topicPath: getTopicPath(q.topicId),
                           });
@@ -863,16 +1146,22 @@ export function AdminQuestionBankPage({ defaultType = 'mcq' }: { defaultType?: Q
                             examinationId: q.examinationId,
                             topicId: q.topicId,
                             questionType: q.questionType,
+                            questionFormat: q.questionFormat ?? 'objective',
+                            examCommission: q.examCommission ?? 'UKPSC_PCS',
                             stem: q.stem,
                             optA: q.options[0] ?? '',
                             optB: q.options[1] ?? '',
                             optC: q.options[2] ?? '',
                             optD: q.options[3] ?? '',
-                            correctOptionIndex: q.correctOptionIndex,
+                            correctOptionIndex: q.correctOptionIndex >= 0 ? q.correctOptionIndex : 0,
                             explanation: q.explanation ?? '',
+                            modelAnswer: q.modelAnswer ?? '',
                             difficulty: q.difficulty,
                             examName: q.examName ?? '',
                             examYear: q.examYear ?? 2024,
+                            paperName: q.paperName ?? '',
+                            marks: q.marks ?? '',
+                            wordLimit: q.wordLimit ?? '',
                             sourceReference: q.sourceReference ?? '',
                             isVerified: q.isVerified !== false,
                             isPublished: q.isPublished,
@@ -925,6 +1214,8 @@ export function AdminQuestionBankPage({ defaultType = 'mcq' }: { defaultType?: Q
             )}
           </div>
         </div>
+          </>
+        )}
       </div>
     </AppShell>
   );

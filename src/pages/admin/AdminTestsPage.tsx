@@ -154,11 +154,16 @@ export function AdminTestsPage() {
   };
 
   const pickerQuestions = useMemo(() => {
-    let list = questions;
+    let list = questions.filter(
+      (q) =>
+        (q.questionFormat ?? 'objective') === 'objective' &&
+        Array.isArray(q.options) &&
+        q.options.length >= 2
+    );
     if (form.topicId) {
-      list = questions.filter((q) => q.topicId === form.topicId);
+      list = list.filter((q) => q.topicId === form.topicId);
     } else if (form.subjectId) {
-      list = questions.filter((q) => q.subjectId === form.subjectId);
+      list = list.filter((q) => q.subjectId === form.subjectId);
     }
     return [...list].sort((a, b) => Number(b.isPublished) - Number(a.isPublished));
   }, [questions, form.topicId, form.subjectId]);
@@ -214,7 +219,15 @@ export function AdminTestsPage() {
       return;
     }
     const publishedTopicMcqs = questions
-      .filter((q) => q.topicId === form.topicId && q.isPublished && q.questionType !== 'pyq')
+      .filter(
+        (q) =>
+          q.topicId === form.topicId &&
+          q.isPublished &&
+          q.questionType !== 'pyq' &&
+          (q.questionFormat ?? 'objective') === 'objective' &&
+          Array.isArray(q.options) &&
+          q.options.length >= 2
+      )
       .slice(0, 200)
       .map((q) => q.id);
     if (publishedTopicMcqs.length === 0) {
